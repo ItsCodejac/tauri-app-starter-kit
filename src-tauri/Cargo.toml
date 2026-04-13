@@ -23,7 +23,14 @@ serde = { version = "1.0", features = ["derive"] }
 log = "0.4"
 dirs = "5"
 url = "2"
-tauri = { version = "2.9.5", features = ["devtools", "tray-icon"] }
+tauri = { version = "2.9.5", features = [
+  "devtools",           # Web inspector (Cmd+Alt+I). Remove for App Store builds.
+  "tray-icon",          # System tray support
+  "protocol-asset",     # Serve bundled assets (images, fonts) via asset:// protocol
+  "image-png",          # PNG image support for tray icons, notifications
+  "image-ico",          # ICO image support (Windows)
+  "linux-libxdo",       # Required for Cut/Copy/Paste menu items on Linux
+] }
 tauri-plugin-log = "2"
 tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
