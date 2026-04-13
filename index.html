@@ -7,41 +7,110 @@
     <title>App</title>
     <link rel="stylesheet" href="/src/styles/shared.css" />
     <style>
-      /* Default template content -- replace this entire <style> and body content
-         with your frontend framework (React, Svelte, Vue, etc.) */
-      .welcome-docs {
-        max-width: 720px;
+      .welcome {
+        max-width: 760px;
         margin: 0 auto;
-        padding: 48px 32px;
-        line-height: 1.6;
+        padding: 40px 32px;
         color: var(--text-secondary);
+        line-height: 1.6;
       }
-      .welcome-docs h1 {
-        font-size: 24px;
+      .welcome h1 {
+        font-size: 22px;
         font-weight: 600;
         color: var(--text-bright);
-        margin-bottom: 8px;
+        margin-bottom: 4px;
       }
-      .welcome-docs .tagline {
-        font-size: 14px;
+      .welcome .tagline {
+        font-size: 13px;
         color: var(--text-tertiary);
-        margin-bottom: 32px;
+        margin-bottom: 28px;
       }
-      .welcome-docs h2 {
-        font-size: 14px;
+      .welcome h2 {
+        font-size: 12px;
         font-weight: 600;
         color: var(--text-primary);
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        margin: 32px 0 12px;
-        padding-bottom: 8px;
+        margin: 28px 0 12px;
+        padding-bottom: 6px;
         border-bottom: 1px solid var(--border-subtle);
       }
-      .welcome-docs p {
-        font-size: 13px;
-        margin-bottom: 12px;
+
+      /* Interactive feature buttons */
+      .demo-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 6px;
+        margin-bottom: 16px;
       }
-      .welcome-docs code {
+      .demo-btn {
+        font-size: 12px;
+        padding: 10px 12px;
+        background: var(--surface-secondary);
+        border: 1px solid var(--border-subtle);
+        border-radius: 4px;
+        color: var(--text-secondary);
+        cursor: pointer;
+        text-align: left;
+        font-family: var(--font-ui);
+        transition: border-color 0.1s, background 0.1s;
+      }
+      .demo-btn:hover {
+        background: var(--surface-hover);
+        border-color: var(--border-standard);
+        color: var(--text-primary);
+      }
+      .demo-btn:active {
+        background: var(--surface-active);
+      }
+      .demo-btn .shortcut {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--text-tertiary);
+        display: block;
+        margin-top: 2px;
+      }
+
+      /* Non-interactive features (no window to open) */
+      .feature-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 6px;
+        margin-bottom: 16px;
+      }
+      .feature-item {
+        font-size: 11px;
+        padding: 8px 12px;
+        color: var(--text-tertiary);
+      }
+      .feature-item::before {
+        content: "✓ ";
+        color: var(--accent-green);
+      }
+
+      /* Steps */
+      .step {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 10px;
+        align-items: baseline;
+      }
+      .step-num {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--accent-blue);
+        background: rgba(74, 158, 255, 0.1);
+        width: 22px;
+        height: 22px;
+        border-radius: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .step-text { font-size: 13px; }
+      code {
         font-family: var(--font-mono);
         font-size: 12px;
         background: var(--surface-tertiary);
@@ -49,7 +118,7 @@
         border-radius: 3px;
         color: var(--accent-blue);
       }
-      .welcome-docs pre {
+      pre {
         background: var(--surface-tertiary);
         border: 1px solid var(--border-standard);
         border-radius: 4px;
@@ -61,97 +130,64 @@
         margin-bottom: 16px;
         color: var(--text-primary);
       }
-      .welcome-docs .step {
-        display: flex;
-        gap: 12px;
-        margin-bottom: 12px;
-        align-items: baseline;
-      }
-      .welcome-docs .step-num {
-        font-family: var(--font-mono);
-        font-size: 11px;
-        font-weight: 600;
-        color: var(--accent-blue);
-        background: rgba(74, 158, 255, 0.1);
-        width: 24px;
-        height: 24px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-      }
-      .welcome-docs .step-text {
-        font-size: 13px;
-      }
-      .welcome-docs .features {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-        margin-bottom: 16px;
-      }
-      .welcome-docs .feature {
-        font-size: 12px;
-        padding: 8px 12px;
-        background: var(--surface-secondary);
-        border: 1px solid var(--border-subtle);
-        border-radius: 4px;
-        color: var(--text-secondary);
-      }
-      .welcome-docs .hint {
+      .hint {
         font-size: 11px;
         color: var(--text-tertiary);
-        margin-top: 32px;
+        margin-top: 28px;
         padding-top: 16px;
         border-top: 1px solid var(--border-subtle);
       }
+      .doc-link {
+        color: var(--accent-blue);
+        cursor: pointer;
+        text-decoration: none;
+      }
+      .doc-link:hover { text-decoration: underline; }
     </style>
   </head>
   <body>
-    <!--
-      Default template content. Replace everything inside <body> with your
-      frontend framework:
-
-        React:   npm install react react-dom @vitejs/plugin-react
-        Svelte:  npm install svelte @sveltejs/vite-plugin-svelte
-        Vue:     npm install vue @vitejs/plugin-vue
-        Vanilla: edit this file directly
-    -->
     <div id="app">
-      <div class="welcome-docs">
+      <div class="welcome">
         <h1>TASK — Tauri App Starter Kit</h1>
-        <p class="tagline">Your app's workspace starts here. Everything below this is replaceable.</p>
+        <p class="tagline">Your app's workspace starts here. Everything below is replaceable.</p>
 
-        <h2>What's already working</h2>
-        <div class="features">
-          <div class="feature">Native menus (File, Edit, View, Window, Help)</div>
-          <div class="feature">Settings &amp; Preferences (Cmd+,)</div>
-          <div class="feature">Keyboard Shortcuts viewer</div>
-          <div class="feature">About dialog</div>
-          <div class="feature">System tray</div>
-          <div class="feature">Autosave + crash recovery</div>
-          <div class="feature">Crash reporting + error logs</div>
-          <div class="feature">Diagnostics collection</div>
-          <div class="feature">Window state persistence</div>
-          <div class="feature">Single instance lock</div>
-          <div class="feature">Drag and drop (files)</div>
-          <div class="feature">Native notifications</div>
-          <div class="feature">Secure keyring storage</div>
-          <div class="feature">Localization (i18n)</div>
-          <div class="feature">Auto-updater (when configured)</div>
-          <div class="feature">Splash screen on launch</div>
+        <h2>Try it — click to open each window</h2>
+        <div class="demo-grid">
+          <button class="demo-btn" data-window="settings">Settings / Preferences<span class="shortcut">⌘ ,</span></button>
+          <button class="demo-btn" data-window="about">About</button>
+          <button class="demo-btn" data-window="shortcuts">Keyboard Shortcuts</button>
+          <button class="demo-btn" data-window="logs">Log Viewer</button>
+          <button class="demo-btn" data-window="update">Check for Updates</button>
+          <button class="demo-btn" data-window="whatsnew">What's New</button>
+          <button class="demo-btn" data-window="welcome">Welcome / Onboarding</button>
+          <button class="demo-btn" data-window="splash">Splash Screen</button>
+          <button class="demo-btn" id="btn-docs">Documentation<span class="shortcut">mdBook</span></button>
         </div>
-        <p>Try the menus above — Settings, About, Keyboard Shortcuts, and Log Viewer all open as separate native windows.</p>
+
+        <h2>Also included (no window to open)</h2>
+        <div class="feature-grid">
+          <span class="feature-item">Native OS menus</span>
+          <span class="feature-item">System tray</span>
+          <span class="feature-item">Autosave + recovery</span>
+          <span class="feature-item">Crash reporting</span>
+          <span class="feature-item">Window state persistence</span>
+          <span class="feature-item">Single instance lock</span>
+          <span class="feature-item">Drag and drop</span>
+          <span class="feature-item">Native notifications</span>
+          <span class="feature-item">Secure keyring</span>
+          <span class="feature-item">Localization (i18n)</span>
+          <span class="feature-item">Quit confirmation</span>
+          <span class="feature-item">Browser shortcut prevention</span>
+        </div>
 
         <h2>Make it yours</h2>
-        <div class="step"><span class="step-num">1</span><span class="step-text">Change app name in <code>src-tauri/tauri.conf.json</code> → <code>productName</code></span></div>
-        <div class="step"><span class="step-num">2</span><span class="step-text">Edit menus in <code>src-tauri/src/menu.rs</code> → <code>custom_menus()</code></span></div>
-        <div class="step"><span class="step-num">3</span><span class="step-text">Set your branding in <code>src/lib/branding.js</code></span></div>
+        <div class="step"><span class="step-num">1</span><span class="step-text">Change app name → <code>src-tauri/tauri.conf.json</code> productName</span></div>
+        <div class="step"><span class="step-num">2</span><span class="step-text">Edit menus → <code>src-tauri/src/menu.rs</code> custom_menus()</span></div>
+        <div class="step"><span class="step-num">3</span><span class="step-text">Set branding → <code>src/lib/branding.js</code></span></div>
         <div class="step"><span class="step-num">4</span><span class="step-text">Add your frontend framework and replace this page</span></div>
 
         <h2>Add your frontend</h2>
-<pre>
-# React
+<pre># React
 npm install react react-dom @vitejs/plugin-react
 
 # Svelte
@@ -160,15 +196,33 @@ npm install svelte @sveltejs/vite-plugin-svelte
 # Vue
 npm install vue @vitejs/plugin-vue
 
-# Or just write vanilla HTML/JS in this file
-</pre>
+# Or just write vanilla HTML/JS in this file</pre>
 
         <h2>Documentation</h2>
-        <p>Full guides are in <code>docs/</code>. Run <code>mdbook serve docs</code> to browse them, or click <strong>Help → Documentation</strong> in the menu bar.</p>
+        <p>Full guides in <code>docs/</code>. Run <code>mdbook serve docs</code> or click <a class="doc-link" id="link-docs">Help → Documentation</a> in the menu bar.</p>
 
-        <p class="hint">This content is the template's default workspace. Replace the body of <code>index.html</code> with your app's UI. The Rust backbone, utility windows, and all OS-level features continue working regardless of what framework you choose.</p>
+        <p class="hint">This is the template's default workspace. Replace the body of <code>index.html</code> with your app's UI. The Rust backbone and utility windows work regardless of framework.</p>
       </div>
     </div>
     <script type="module" src="/src/main.js"></script>
+    <script type="module">
+      import { ipc } from '/src/lib/ipc.js';
+
+      // Wire up demo buttons to open their windows
+      document.querySelectorAll('.demo-btn[data-window]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          ipc.openWindow(btn.dataset.window);
+        });
+      });
+
+      // Documentation link
+      document.getElementById('btn-docs')?.addEventListener('click', () => {
+        ipc.openDocs();
+      });
+      document.getElementById('link-docs')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        ipc.openDocs();
+      });
+    </script>
   </body>
 </html>
