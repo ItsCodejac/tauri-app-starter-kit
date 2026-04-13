@@ -2,122 +2,340 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Settings</title>
+  <title>Preferences</title>
   <link rel="stylesheet" href="../styles/shared.css" />
   <style>
-    body { overflow-y: auto; }
-    .settings-container {
-      max-width: 600px;
-      margin: 0 auto;
+    body {
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    /* Window title bar */
+    .window-title {
+      text-align: center;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      padding: 10px 0 8px;
+      border-bottom: 1px solid var(--border-standard);
+      background: var(--surface-tertiary);
+      flex-shrink: 0;
+    }
+
+    /* Main layout: sidebar + content */
+    .settings-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Left sidebar navigation */
+    .sidebar {
+      width: 180px;
+      min-width: 180px;
+      background: var(--surface-secondary);
+      border-right: 1px solid var(--border-standard);
+      overflow-y: auto;
       padding: 8px 0;
+      flex-shrink: 0;
     }
-    .settings-header {
-      padding: 16px 20px 8px;
-      font-size: 16px;
+    .sidebar-item {
+      display: block;
+      width: 100%;
+      padding: 4px 16px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      background: none;
+      border: none;
+      text-align: left;
+      cursor: pointer;
+      outline: none;
+      font-family: var(--font-ui);
+    }
+    .sidebar-item:hover {
+      color: var(--text-primary);
+    }
+    .sidebar-item.active {
+      background: var(--accent-blue);
+      color: white;
+    }
+
+    /* Right content area */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 24px;
+    }
+
+    /* Settings section (hidden unless active) */
+    .pane { display: none; }
+    .pane.active { display: block; }
+
+    /* Form rows: label left, control right */
+    .form-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 0;
+      min-height: 28px;
+    }
+    .form-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+      padding-right: 16px;
+    }
+    .form-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Section headers within a pane */
+    .form-section {
+      font-size: 12px;
       font-weight: 600;
-      color: var(--text-bright);
+      color: var(--text-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 16px 0 8px;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 8px;
     }
-    .section:last-child { border-bottom: none; }
-    .actions {
-      padding: 16px 20px;
+    .form-section:first-child { padding-top: 0; }
+
+    /* Checkbox rows (Premiere-style) */
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 0;
+    }
+    .checkbox-row input[type="checkbox"] {
+      width: 14px;
+      height: 14px;
+      accent-color: var(--accent-blue);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .checkbox-row label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    /* Inputs and selects */
+    select, input[type="text"], input[type="number"] {
+      background: var(--surface-primary);
+      border: 1px solid var(--border-standard);
+      color: var(--text-primary);
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 2px;
+      font-family: var(--font-ui);
+      outline: none;
+      min-width: 120px;
+    }
+    select:focus, input:focus {
+      border-color: var(--accent-blue);
+    }
+
+    /* Footer buttons */
+    .footer {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-top: 1px solid var(--border-standard);
+      background: var(--surface-secondary);
+      flex-shrink: 0;
+    }
+    .footer .left {
+      margin-right: auto;
       display: flex;
       gap: 8px;
     }
-    .danger { color: var(--accent-red); border-color: var(--accent-red); }
-    .danger:hover { background: rgba(244, 67, 54, 0.1); }
   </style>
 </head>
 <body>
-  <div class="settings-container">
-    <div class="settings-header">Settings</div>
+  <div class="window-title">Preferences</div>
 
-    <!-- General -->
-    <div class="section">
-      <div class="section-title">General</div>
-      <div class="setting-row">
-        <div>
-          <div class="setting-label">Launch at login</div>
-          <div class="setting-hint">Start app when you log in</div>
+  <div class="settings-layout">
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+      <button class="sidebar-item active" data-pane="general">General</button>
+      <button class="sidebar-item" data-pane="appearance">Appearance</button>
+      <button class="sidebar-item" data-pane="autosave">Auto Save</button>
+      <button class="sidebar-item" data-pane="performance">Performance</button>
+      <button class="sidebar-item" data-pane="cache">Media Cache</button>
+      <button class="sidebar-item" data-pane="tray">System Tray</button>
+    </nav>
+
+    <!-- Content -->
+    <div class="content">
+      <!-- General -->
+      <div class="pane active" id="pane-general">
+        <div class="form-section">Startup</div>
+        <div class="form-row">
+          <span class="form-label">At Startup:</span>
+          <div class="form-control">
+            <select id="startup-behavior">
+              <option value="empty">Show Empty Workspace</option>
+              <option value="last">Restore Last Project</option>
+              <option value="welcome">Show Welcome Screen</option>
+            </select>
+          </div>
         </div>
-        <label class="toggle">
+        <div class="checkbox-row">
+          <input type="checkbox" id="check-updates" checked />
+          <label for="check-updates">Check for updates on startup</label>
+        </div>
+        <div class="checkbox-row">
           <input type="checkbox" id="autostart" />
-        </label>
-      </div>
-      <div class="setting-row">
-        <div>
-          <div class="setting-label">Check for updates on startup</div>
+          <label for="autostart">Launch at login</label>
         </div>
-        <label class="toggle">
-          <input type="checkbox" id="updates-check" />
-        </label>
-      </div>
-    </div>
 
-    <!-- Appearance -->
-    <div class="section">
-      <div class="section-title">Appearance</div>
-      <div class="setting-row">
-        <div class="setting-label">Theme</div>
-        <select id="theme">
-          <option value="dark">Dark</option>
-          <option value="light">Light</option>
-          <option value="system">System</option>
-        </select>
-      </div>
-      <div class="setting-row">
-        <div class="setting-label">Zoom level</div>
-        <select id="zoom">
-          <option value="80">80%</option>
-          <option value="90">90%</option>
-          <option value="100">100%</option>
-          <option value="110">110%</option>
-          <option value="120">120%</option>
-          <option value="150">150%</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Autosave -->
-    <div class="section">
-      <div class="section-title">Autosave</div>
-      <div class="setting-row">
-        <div>
-          <div class="setting-label">Enable autosave</div>
-          <div class="setting-hint">Automatically save your work</div>
+        <div class="form-section">Language</div>
+        <div class="form-row">
+          <span class="form-label">Display Language:</span>
+          <div class="form-control">
+            <select id="locale">
+              <option value="en">English</option>
+              <option value="es">Español</option>
+            </select>
+          </div>
         </div>
-        <label class="toggle">
-          <input type="checkbox" id="autosave-enabled" />
-        </label>
       </div>
-      <div class="setting-row">
-        <div class="setting-label">Autosave interval</div>
-        <select id="autosave-interval">
-          <option value="30">30 seconds</option>
-          <option value="60">1 minute</option>
-          <option value="120">2 minutes</option>
-          <option value="300">5 minutes</option>
-        </select>
-      </div>
-    </div>
 
-    <!-- Tray -->
-    <div class="section">
-      <div class="section-title">System Tray</div>
-      <div class="setting-row">
-        <div>
-          <div class="setting-label">Minimize to tray</div>
-          <div class="setting-hint">Keep running in the background when closed</div>
+      <!-- Appearance -->
+      <div class="pane" id="pane-appearance">
+        <div class="form-section">Theme</div>
+        <div class="form-row">
+          <span class="form-label">Application Theme:</span>
+          <div class="form-control">
+            <select id="theme">
+              <option value="dark">Dark</option>
+              <option value="light">Light</option>
+              <option value="system">System</option>
+            </select>
+          </div>
         </div>
-        <label class="toggle">
+        <div class="form-row">
+          <span class="form-label">UI Zoom:</span>
+          <div class="form-control">
+            <select id="zoom">
+              <option value="80">80%</option>
+              <option value="90">90%</option>
+              <option value="100" selected>100%</option>
+              <option value="110">110%</option>
+              <option value="120">120%</option>
+              <option value="150">150%</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-section">Display</div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="show-statusbar" checked />
+          <label for="show-statusbar">Show Status Bar</label>
+        </div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="show-tooltips" checked />
+          <label for="show-tooltips">Show Tooltips</label>
+        </div>
+      </div>
+
+      <!-- Auto Save -->
+      <div class="pane" id="pane-autosave">
+        <div class="form-section">Auto Save</div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="autosave-enabled" checked />
+          <label for="autosave-enabled">Automatically save recovery information</label>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Auto Save Interval:</span>
+          <div class="form-control">
+            <input type="number" id="autosave-interval" value="60" min="10" max="600" style="width: 60px" />
+            <span style="font-size: 12px; color: var(--text-tertiary)">Seconds</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Performance -->
+      <div class="pane" id="pane-performance">
+        <div class="form-section">Processing</div>
+        <div class="form-row">
+          <span class="form-label">Performance Mode:</span>
+          <div class="form-control">
+            <select id="perf-mode">
+              <option value="balanced">Balanced</option>
+              <option value="low">Power Saver</option>
+              <option value="maximum">Maximum Performance</option>
+            </select>
+          </div>
+        </div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="hw-accel" checked />
+          <label for="hw-accel">Enable hardware acceleration</label>
+        </div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="gpu-enabled" checked />
+          <label for="gpu-enabled">Enable GPU processing</label>
+        </div>
+      </div>
+
+      <!-- Media Cache -->
+      <div class="pane" id="pane-cache">
+        <div class="form-section">Cache Location</div>
+        <div class="form-row">
+          <span class="form-label">Cache Folder:</span>
+          <div class="form-control">
+            <input type="text" id="cache-location" readonly style="width: 260px; color: var(--text-tertiary);" />
+            <button class="btn btn-secondary" id="browse-cache">Browse...</button>
+          </div>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Maximum Cache Size:</span>
+          <div class="form-control">
+            <input type="number" id="cache-max" value="10" min="1" max="100" style="width: 60px" />
+            <span style="font-size: 12px; color: var(--text-tertiary)">GB</span>
+          </div>
+        </div>
+
+        <div class="form-section">Maintenance</div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="cleanup-cache" checked />
+          <label for="cleanup-cache">Automatically clean old cache files</label>
+        </div>
+        <button class="btn btn-secondary" id="clear-cache" style="margin-top: 8px">Clean Cache Now</button>
+      </div>
+
+      <!-- System Tray -->
+      <div class="pane" id="pane-tray">
+        <div class="form-section">System Tray</div>
+        <div class="checkbox-row">
           <input type="checkbox" id="minimize-to-tray" />
-        </label>
+          <label for="minimize-to-tray">Minimize to system tray on close</label>
+        </div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="show-tray-icon" checked />
+          <label for="show-tray-icon">Show icon in system tray</label>
+        </div>
       </div>
     </div>
+  </div>
 
-    <!-- Actions -->
-    <div class="actions">
-      <button class="danger" id="reset-btn">Reset All Settings</button>
+  <!-- Footer buttons (Premiere-style) -->
+  <div class="footer">
+    <div class="left">
+      <button class="btn btn-secondary" id="help-btn">Help</button>
+      <button class="btn btn-secondary" id="reset-btn">Reset...</button>
     </div>
+    <button class="btn btn-secondary" id="cancel-btn">Cancel</button>
+    <button class="btn btn-primary" id="ok-btn">OK</button>
   </div>
 
   <script type="module" src="settings.js"></script>
