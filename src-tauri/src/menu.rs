@@ -169,8 +169,6 @@ fn help_menu() -> MenuConfig {
             MenuDef::Separator,
             MenuDef::Item { id: "help_check-for-updates", label: "Check for Updates...", accel: None },
             MenuDef::Item { id: "help_whats-new", label: "What's New", accel: None },
-            MenuDef::Separator,
-            MenuDef::Native(NativeItem::About),
         ],
     }
 }
@@ -231,7 +229,7 @@ fn macos_app_menu() -> MenuConfig {
     MenuConfig {
         label: "__APP__", // replaced with actual app name at build time
         items: vec![
-            MenuDef::Native(NativeItem::About),
+            MenuDef::Item { id: "app_about", label: "About", accel: None },
             MenuDef::Separator,
             MenuDef::Item { id: "app_preferences", label: "Settings...", accel: Some("CmdOrCtrl+,") },
             MenuDef::Separator,
@@ -260,6 +258,10 @@ fn macos_app_menu() -> MenuConfig {
 fn handle_native(app: &AppHandle, id: &str) -> bool {
     match id {
         // -- Window-opening menu items (handled natively, not forwarded to frontend) --
+        "app_about" => {
+            crate::windows::open_window_internal(app, "about");
+            return true;
+        }
         "app_preferences" | "window_settings" => {
             crate::windows::open_window_internal(app, "settings");
             return true;
