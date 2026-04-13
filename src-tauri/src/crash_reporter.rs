@@ -25,7 +25,7 @@ pub struct CrashReport {
 fn fallback_crash_dir() -> PathBuf {
     dirs::home_dir()
         .unwrap_or_else(|| PathBuf::from("."))
-        .join(".tauri-app-starter-kit")
+        .join(".task-crash-reports")
         .join("crash-reports")
 }
 

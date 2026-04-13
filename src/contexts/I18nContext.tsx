@@ -18,6 +18,7 @@ interface I18nContextValue {
   availableLocales: string[];
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const I18nContext = createContext<I18nContextValue | null>(null);
 
 export function I18nProvider({ children }: { children: ReactNode }) {

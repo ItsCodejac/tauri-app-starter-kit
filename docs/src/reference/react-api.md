@@ -82,6 +82,8 @@ Modal command palette with fuzzy search filtering. Renders as a centered overlay
 | `commands` | `Command[]` | required | List of available commands. |
 | `open` | `boolean` | required | Whether the palette is visible. |
 | `onClose` | `() => void` | required | Called on backdrop click or Escape key. |
+| `placeholder` | `string` | `"Type a command..."` | Placeholder text for the search input. |
+| `noResultsText` | `string` | `"No matching commands"` | Text shown when no commands match the query. |
 
 #### Command
 
@@ -202,6 +204,128 @@ React error boundary that catches render errors in the component tree. Shows a d
   <App />
 </ErrorBoundary>
 ```
+
+---
+
+### WelcomeOverlay
+
+`src/components/ui/WelcomeOverlay.tsx`
+
+Full-screen overlay shown on first launch. Replace the placeholder content with your own onboarding experience. Uses i18n keys `app.welcome.title`, `app.welcome.message`, and `app.welcome.getStarted`.
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `onDismiss` | `() => void` | required | Called when the user clicks the "Get Started" button. |
+
+#### Example
+
+```tsx
+const { isFirstRun, dismissFirstRun } = useFirstRun();
+{isFirstRun && <WelcomeOverlay onDismiss={dismissFirstRun} />}
+```
+
+---
+
+### SettingsPanel
+
+`src/components/ui/SettingsPanel.tsx`
+
+Multi-section settings dialog with sidebar navigation. Includes sections for General, Appearance, Autosave, Cache, Tray, and Security (keyring management).
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `open` | `boolean` | required | Whether the settings panel is visible. |
+| `onClose` | `() => void` | required | Called on backdrop click. |
+
+Sections:
+
+- **General** -- Language, autostart, check for updates on startup, reset first-run overlay.
+- **Appearance** -- Theme selector, show/hide status bar (syncs with check menu item).
+- **Autosave** -- Enable/disable autosave and interval slider (30--300s).
+- **Cache** -- Shows cache directory location and a clear button placeholder.
+- **Tray** -- Minimize-to-tray toggle.
+- **Security** -- View, add, and delete OS keychain secrets via `ipc.keyringSet` / `keyringDelete`.
+
+---
+
+### AboutDialog
+
+`src/components/ui/AboutDialog.tsx`
+
+Modal dialog showing application name, version, and links to website/GitHub/licenses. Fetches app info from `ipc.getAppInfo()` when opened.
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `open` | `boolean` | required | Whether the dialog is visible. |
+| `onClose` | `() => void` | required | Called on backdrop click. |
+
+---
+
+### ShortcutsPanel
+
+`src/components/ui/ShortcutsPanel.tsx`
+
+Modal panel listing all keyboard shortcuts, grouped by category (File, Edit, View, App). Includes a search input for filtering shortcuts. Platform-aware: shows Mac symbols on macOS and `Ctrl+` on other platforms.
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `open` | `boolean` | required | Whether the panel is visible. |
+| `onClose` | `() => void` | required | Called on backdrop click or Escape key. |
+
+---
+
+### LogViewer
+
+`src/components/ui/LogViewer.tsx`
+
+Modal log viewer that displays application log contents from `ipc.getLogContents()`. Includes level filtering (All, Info, Warn, Error), refresh, copy-to-clipboard, and clear actions. Log lines are color-coded by level.
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `open` | `boolean` | required | Whether the log viewer is visible. |
+| `onClose` | `() => void` | required | Called on backdrop click. |
+
+---
+
+### UpdateDialog
+
+`src/components/ui/UpdateDialog.tsx`
+
+Update checker and installer dialog. Cycles through states: checking, update-available, downloading, up-to-date, and error. When an update is available, shows version comparison, release notes, and buttons to install, skip, or dismiss.
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `open` | `boolean` | required | Whether the dialog is visible. |
+| `onClose` | `() => void` | required | Called on backdrop click or dismiss buttons. |
+
+---
+
+### WhatsNewDialog
+
+`src/components/ui/WhatsNewDialog.tsx`
+
+Changelog dialog showing release notes for the current version. On close, persists `app.lastSeenVersion` so the dialog is not shown again until the next update.
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `open` | `boolean` | required | Whether the dialog is visible. |
+| `onClose` | `() => void` | required | Called on backdrop click or OK button. |
+
+To add release notes, update the `changelog` array in the component source.
 
 ---
 
@@ -452,6 +576,71 @@ execute({
 
 ---
 
+### useFirstRun
+
+`src/hooks/useFirstRun.ts`
+
+Checks whether this is the user's first launch. Reads the `first_run` setting (defaults to `true`). Call `dismissFirstRun()` to set it to `false` so the welcome screen does not appear again.
+
+```typescript
+function useFirstRun(): {
+  isFirstRun: boolean;
+  loaded: boolean;
+  dismissFirstRun: () => Promise<void>;
+}
+```
+
+| Return Field | Type | Description |
+|-------------|------|-------------|
+| `isFirstRun` | `boolean` | `true` if this is the first launch (or if `first_run` setting is `true`). |
+| `loaded` | `boolean` | `false` until the setting has been read from the backend. |
+| `dismissFirstRun` | `() => Promise<void>` | Sets `first_run` to `false` locally and persists to settings. |
+
+#### Example
+
+```tsx
+const { isFirstRun, loaded, dismissFirstRun } = useFirstRun();
+
+if (loaded && isFirstRun) {
+  return <WelcomeOverlay onDismiss={dismissFirstRun} />;
+}
+```
+
+---
+
+### useTranslation
+
+`src/hooks/useTranslation.ts`
+
+Access the i18n system. Must be called inside an `I18nProvider`.
+
+```typescript
+function useTranslation(): {
+  t: (key: string, params?: Record<string, string>) => string;
+  locale: string;
+  setLocale: (locale: string) => void;
+  availableLocales: string[];
+}
+```
+
+| Return Field | Type | Description |
+|-------------|------|-------------|
+| `t` | `(key: string, params?: Record<string, string>) => string` | Translate a key with optional interpolation parameters. |
+| `locale` | `string` | Current active locale code (e.g. `"en"`). |
+| `setLocale` | `(locale: string) => void` | Switch to a different locale. Persists to settings. |
+| `availableLocales` | `string[]` | List of available locale codes. |
+
+#### Example
+
+```tsx
+const { t, locale, setLocale } = useTranslation();
+
+<h1>{t('app.welcome.title')}</h1>
+<button onClick={() => setLocale('es')}>Espanol</button>
+```
+
+---
+
 ## Lib Modules
 
 ### UndoRedoManager
@@ -555,3 +744,28 @@ function Root() {
 ```
 
 Throws if `useToast` is called outside the provider.
+
+---
+
+### I18nProvider
+
+`src/contexts/I18nContext.tsx`
+
+Wrap your app with `I18nProvider` to enable `useTranslation`. Detects the user's locale on mount and checks for a previously saved locale in settings. Does not render children until the saved locale has been loaded.
+
+```tsx
+import { I18nProvider } from './contexts/I18nContext';
+
+function Root() {
+  return (
+    <I18nProvider>
+      <ToastProvider>
+        <App />
+        <ToastContainer />
+      </ToastProvider>
+    </I18nProvider>
+  );
+}
+```
+
+Throws if `useTranslation` is called outside the provider.

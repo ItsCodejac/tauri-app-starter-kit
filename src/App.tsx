@@ -81,6 +81,8 @@ function AppInner() {
   const [logsOpen, setLogsOpen] = useState(false);
   const [whatsNewOpen, setWhatsNewOpen] = useState(false);
   const [statusText, setStatusText] = useState(() => t('status.ready'));
+  const [appVersion, setAppVersion] = useState('v0.0.0');
+  const [showStatusBar, setShowStatusBar] = useState(true);
   const { toast } = useToast();
   const { contextMenu, showContextMenu, hideContextMenu } = useContextMenu();
   const { isFirstRun, loaded: firstRunLoaded, dismissFirstRun } = useFirstRun();
@@ -125,6 +127,40 @@ function AppInner() {
     { label: t('menu.resetToDefault'), action: () => toast(t('toast.reset'), 'info') },
     { label: t('menu.copyValue'), action: () => toast(t('toast.copied'), 'info') },
   ], [toast, t]);
+
+  // Load app version and status bar setting on mount
+  useEffect(() => {
+    ipc.getAppInfo()
+      .then((info) => setAppVersion(`v${info.version}`))
+      .catch(() => { /* fall back to v0.0.0 */ });
+
+    ipc.getSetting('view_status_bar')
+      .then((val) => { if (val === false) setShowStatusBar(false); })
+      .catch(() => {});
+  }, []);
+
+  // Listen for View > Show Status Bar menu toggle
+  useEffect(() => {
+    let unlisten: (() => void) | undefined;
+    events.onMenuEvent('menu:view:status-bar', () => {
+      setShowStatusBar((prev) => {
+        const next = !prev;
+        ipc.setSetting('view_status_bar', next).catch(() => {});
+        ipc.menuSetChecked('view_status_bar', next).catch(() => {});
+        return next;
+      });
+    }).then((u) => { unlisten = u; });
+    return () => { unlisten?.(); };
+  }, []);
+
+  // Sync status bar visibility when changed from SettingsPanel
+  useEffect(() => {
+    const handler = (e: Event) => {
+      setShowStatusBar((e as CustomEvent).detail as boolean);
+    };
+    window.addEventListener('settings:view_status_bar', handler);
+    return () => window.removeEventListener('settings:view_status_bar', handler);
+  }, []);
 
   // Menu event listeners from Tauri backend
   useEffect(() => {
@@ -195,7 +231,7 @@ function AppInner() {
         await ipc.setSetting('app.lastSeenVersion', info.version).catch(() => {});
       }
     }).catch(() => {});
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   // Check for updates on startup (if enabled)
   useEffect(() => {
@@ -222,7 +258,7 @@ function AppInner() {
         return () => clearTimeout(timer);
       }
     }).catch(() => {});
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   // Check for crash from previous session on mount
   useEffect(() => {
@@ -237,7 +273,7 @@ function AppInner() {
     }).catch(() => {
       // Ignore -- crash check is best-effort
     });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const togglePalette = useCallback(() => setPaletteOpen((o) => !o), []);
 
@@ -334,6 +370,10 @@ function AppInner() {
           </div>
         }
         centerPanel={
+          // Render different content based on activeTab:
+          // activeTab === 'workspace-1' ? <WorkspaceOne /> :
+          // activeTab === 'workspace-2' ? <WorkspaceTwo /> :
+          // <WorkspaceThree />
           <div onContextMenu={(e) => showContextMenu(e, editMenuItems)} style={{ height: '100%' }}>
             <PlaceholderContent label="" />
           </div>
@@ -352,15 +392,17 @@ function AppInner() {
         rightWidth={240}
         bottomHeight={180}
       />
-      <StatusBar
-        statusText={statusText}
-        rightContent={
-          <>
-            <LocaleSelector />
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10 }}>v0.1.0</span>
-          </>
-        }
-      />
+      {showStatusBar && (
+        <StatusBar
+          statusText={statusText}
+          rightContent={
+            <>
+              <LocaleSelector />
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10 }}>{appVersion}</span>
+            </>
+          }
+        />
+      )}
       <ToastContainer />
       <CommandPalette
         commands={commands}

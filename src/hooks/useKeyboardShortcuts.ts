@@ -42,7 +42,9 @@ export function formatShortcut(shortcut: Shortcut): string {
 
 export function useKeyboardShortcuts(shortcuts: Shortcut[]) {
   const shortcutsRef = useRef(shortcuts);
-  shortcutsRef.current = shortcuts;
+  useEffect(() => {
+    shortcutsRef.current = shortcuts;
+  });
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {

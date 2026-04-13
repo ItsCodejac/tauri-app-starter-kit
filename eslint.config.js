@@ -19,5 +19,13 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      // These React 19 strict rules flag many legitimate patterns (resetting state
+      // when a prop changes, lazy-init refs, DOM-measurement-driven setState).
+      // Downgrade to warnings so they surface without blocking the build.
+      'react-hooks/set-state-in-effect': 'warn',
+      'react-hooks/refs': 'warn',
+      'react-hooks/immutability': 'warn',
+    },
   },
 ])

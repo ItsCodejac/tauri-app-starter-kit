@@ -33,7 +33,9 @@ export function useDragDrop(options: UseDragDropOptions = {}): UseDragDropReturn
   const [isDragging, setIsDragging] = useState(false);
   const [droppedFiles, setDroppedFiles] = useState<string[]>([]);
   const optionsRef = useRef(options);
-  optionsRef.current = options;
+  useEffect(() => {
+    optionsRef.current = options;
+  });
 
   const handleDrop = useCallback((paths: string[]) => {
     const accept = optionsRef.current.accept ?? [];

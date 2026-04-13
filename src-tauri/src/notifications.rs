@@ -6,6 +6,7 @@ pub fn send_notification(
     app: tauri::AppHandle,
     title: String,
     body: String,
+    // TODO: icon support depends on platform — currently unused by the notification builder
     _icon: Option<String>,
 ) -> Result<(), String> {
     app.notification()

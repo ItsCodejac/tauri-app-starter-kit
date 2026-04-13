@@ -25,14 +25,16 @@ Items listed under "Native handlers" are handled in Rust and **not** forwarded t
 | `menu:file:save` | `void` | `file_save` | File > Save |
 | `menu:file:save-as` | `void` | `file_save_as` | File > Save As... |
 | `menu:recent:clear` | `void` | `recent_clear` | File > Open Recent > Clear Recent |
-| `menu:view:zoom-in` | `void` | `view_zoom_in` | View > Zoom In |
-| `menu:view:zoom-out` | `void` | `view_zoom_out` | View > Zoom Out |
-| `menu:view:actual-size` | `void` | `view_actual_size` | View > Actual Size |
 | `menu:view:status-bar` | `void` | `view_status_bar` | View > Show Status Bar (check toggle) |
 | `menu:app:preferences` | `void` | `app_preferences` | App menu > Settings... (macOS) / File > Settings... (Win/Linux) |
 | `menu:edit:find` | `void` | `edit_find` | Edit > Find... |
 | `menu:edit:find-replace` | `void` | `edit_find-replace` | Edit > Find and Replace... |
 | `menu:help:report-issue` | `void` | `help_report_issue` | Help > Report Issue |
+| `menu:help:shortcuts` | `void` | `help_shortcuts` | Help > Keyboard Shortcuts |
+| `menu:help:view-logs` | `void` | `help_view-logs` | Help > View Logs... |
+| `menu:help:check-for-updates` | `void` | `help_check-for-updates` | Help > Check for Updates... |
+| `menu:help:whats-new` | `void` | `help_whats-new` | Help > What's New |
+| `menu:window:settings` | `void` | `window_settings` | Window > Settings |
 
 ### Handled Natively in Rust (not forwarded)
 
@@ -42,7 +44,11 @@ Items listed under "Native handlers" are handled in Rust and **not** forwarded t
 | `help_docs` | Opens the documentation site in the default browser |
 | `view_devtools` | Toggles the developer tools panel (debug builds only) |
 | `view_fullscreen` | Toggles fullscreen on the main window |
+| `view_zoom_in` | Zooms in the webview by 10% (persists to settings) |
+| `view_zoom_out` | Zooms out the webview by 10% (persists to settings) |
+| `view_actual_size` | Resets webview zoom to 100% (persists to settings) |
 | `window_zoom` | Toggles maximize/restore on the main window |
+| `window_stay-on-top` | Toggles always-on-top for the main window and updates the check menu item |
 | `window_bring_all` | Unminimizes, shows, and focuses the main window |
 
 ### ID-to-Event Conversion Rule

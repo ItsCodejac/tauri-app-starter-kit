@@ -40,6 +40,7 @@ export default function CommandPalette({
     ? commands.filter((c) => fuzzyMatch(query, c.label))
     : commands;
 
+  // Reset state when palette opens and focus the input
   useEffect(() => {
     if (open) {
       setQuery('');
@@ -48,6 +49,7 @@ export default function CommandPalette({
     }
   }, [open]);
 
+  // Reset selection when query changes
   useEffect(() => {
     setSelectedIndex(0);
   }, [query]);

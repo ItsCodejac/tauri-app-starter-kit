@@ -9,6 +9,7 @@ The menu system is defined entirely in `src-tauri/src/menu.rs` using a data-driv
 pub enum MenuDef {
     Separator,
     Item { id: &'static str, label: &'static str, accel: Option<&'static str> },
+    Check { id: &'static str, label: &'static str, checked: bool, accel: Option<&'static str> },
     Native(NativeItem),
     Submenu { id: &'static str, label: &'static str, items: Vec<MenuDef> },
 }
@@ -40,6 +41,47 @@ MenuDef::Item { id: "help_docs", label: "Documentation", accel: None },
 ```
 
 Accelerator format uses Tauri's cross-platform syntax: `CmdOrCtrl`, `Shift`, `Alt`, `Ctrl`, combined with `+`. Examples: `"CmdOrCtrl+S"`, `"CmdOrCtrl+Shift+S"`, `"Ctrl+CmdOrCtrl+F"`.
+
+### Check
+
+Checkbox menu item with an initial checked state. Displays a checkmark when checked. The checked state can be updated at runtime from Rust or from the frontend.
+
+```rust
+MenuDef::Check { id: "view_status_bar", label: "Show Status Bar", checked: true, accel: None },
+MenuDef::Check { id: "window_stay-on-top", label: "Stay on Top", checked: false, accel: None },
+```
+
+The `view_menu()` in the starter kit uses this for the "Show Status Bar" item, and `window_menu()` uses it for "Stay on Top".
+
+#### Updating Check State from the Frontend
+
+Use `ipc.menuSetChecked()` to toggle the checkmark from React:
+
+```typescript
+import { ipc } from '../lib/ipc';
+
+// Set "Show Status Bar" to unchecked
+await ipc.menuSetChecked('view_status_bar', false);
+
+// Set "Stay on Top" to checked
+await ipc.menuSetChecked('window_stay-on-top', true);
+```
+
+#### Updating Check State from Rust
+
+In a native handler, find the menu item and call `set_checked`:
+
+```rust
+if let Some(menu) = app.menu() {
+    if let Some(item) = find_menu_item(&menu, "view_status_bar") {
+        if let MenuItemKind::Check(check) = item {
+            let _ = check.set_checked(new_value);
+        }
+    }
+}
+```
+
+The `window_stay-on-top` handler in the starter kit demonstrates this pattern -- it toggles the always-on-top window state and updates the check menu item in a single native handler.
 
 ### Native
 

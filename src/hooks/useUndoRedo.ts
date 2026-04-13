@@ -80,7 +80,6 @@ export function useUndoRedo(maxStackSize = 100): UseUndoRedoReturn {
       undoLabel: manager.undoLabel,
       redoLabel: manager.redoLabel,
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- revision forces recalculation
     [execute, undo, redo, manager.canUndo, manager.canRedo, manager.undoLabel, manager.redoLabel],
   );
 }

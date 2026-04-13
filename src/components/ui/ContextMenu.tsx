@@ -32,7 +32,11 @@ export default function ContextMenu({ menu, onClose }: ContextMenuProps) {
     x = Math.max(0, x);
     y = Math.max(0, y);
 
-    setPosition({ x, y });
+    // Only update if position actually changed to avoid cascading renders
+    setPosition((prev) => {
+      if (prev.x === x && prev.y === y) return prev;
+      return { x, y };
+    });
   }, [menu]);
 
   // Close on click outside

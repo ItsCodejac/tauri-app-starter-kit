@@ -57,7 +57,7 @@ dialog, fs, shell, opener, store, window-state, log, single-instance, notificati
 Prerequisites: [Rust](https://rustup.rs/), [Node.js](https://nodejs.org/) (v18+), [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/)
 
 ```bash
-git clone https://github.com/youruser/tauri-app-starter-kit.git
+git clone <your-repo-url>
 cd tauri-app-starter-kit
 npm install
 cargo tauri dev
@@ -114,13 +114,6 @@ React frontend (swappable):
 ```
 
 The Rust backend works with any frontend framework. If you prefer Svelte, Vue, or Solid, keep `src-tauri/` and replace `src/`.
-
-## Screenshots
-
-<!-- Add screenshots here: -->
-<!-- ![Main window](docs/assets/screenshot-main.png) -->
-<!-- ![Settings](docs/assets/screenshot-settings.png) -->
-<!-- ![Command palette](docs/assets/screenshot-palette.png) -->
 
 ## License
 

@@ -10,8 +10,27 @@ Persisted to `settings.json` via `tauri-plugin-store`.
 |---------|-----------|-------------|-------------|
 | `get_setting` | `key: string` | `serde_json::Value` | Get a single setting by key. Errors if key not found. |
 | `set_setting` | `key: string, value: any` | `void` | Set a single setting and persist to disk. |
-| `get_all_settings` | none | `{ theme, recent_files, autosave_enabled, autosave_interval_secs }` | Get all settings with defaults for missing keys. |
+| `get_all_settings` | none | See full return type below | Get all settings with defaults for missing keys. |
 | `reset_settings` | none | `void` | Reset all settings to defaults. |
+
+### get_all_settings Return Type
+
+```typescript
+{
+  theme: string;                    // "dark"
+  recent_files: string[];           // []
+  autosave_enabled: boolean;        // true
+  autosave_interval_secs: number;   // 60
+  first_run: boolean;               // true
+  locale: string;                   // "en"
+  "tray.minimize_to_tray": boolean; // false
+  autostart: boolean;               // false
+  view_zoom_level: number;          // 100
+  "updates.checkOnStartup": boolean;// true
+  "updates.lastCheck": number;      // 0
+  "app.lastSeenVersion": string;    // ""
+}
+```
 
 Default settings values:
 
@@ -21,6 +40,14 @@ Default settings values:
 | `recent_files` | `string[]` | `[]` |
 | `autosave_enabled` | `boolean` | `true` |
 | `autosave_interval_secs` | `number` | `60` |
+| `first_run` | `boolean` | `true` |
+| `locale` | `string` | `"en"` |
+| `tray.minimize_to_tray` | `boolean` | `false` |
+| `autostart` | `boolean` | `false` |
+| `view_zoom_level` | `number` | `100` |
+| `updates.checkOnStartup` | `boolean` | `true` |
+| `updates.lastCheck` | `number` | `0` |
+| `app.lastSeenVersion` | `string` | `""` |
 
 ## Autosave
 
@@ -131,3 +158,102 @@ interface CrashReport {
   size_bytes: number;  // file size in bytes
 }
 ```
+
+## Diagnostics
+
+Collect system and application information for debugging and support.
+
+| Command | Arguments | Return Type | Description |
+|---------|-----------|-------------|-------------|
+| `collect_diagnostics` | none | `DiagnosticsReport` | Collect a structured diagnostics report including OS info, memory usage, uptime, settings, and recent crash reports. |
+| `collect_diagnostics_string` | none | `string` | Collect diagnostics and return as a pre-formatted plain-text string suitable for pasting into bug reports. |
+
+### DiagnosticsReport
+
+```typescript
+interface DiagnosticsReport {
+  app_name: string;
+  app_version: string;
+  os_name: string;
+  os_version: string;
+  os_arch: string;
+  rust_version: string;
+  tauri_version: string;
+  settings: Record<string, unknown>;
+  recent_crash_reports: CrashReportSummary[];
+  memory_usage_bytes: number | null;
+  uptime_secs: number;
+}
+
+interface CrashReportSummary {
+  name: string;
+  timestamp: string;
+}
+```
+
+## Notifications
+
+Send native OS notifications via `tauri-plugin-notification`.
+
+| Command | Arguments | Return Type | Description |
+|---------|-----------|-------------|-------------|
+| `send_notification` | `title: string, body: string, icon?: string` | `void` | Send a native OS notification with a title and body. The `icon` parameter is reserved for future use. |
+
+## Log Viewer
+
+| Command | Arguments | Return Type | Description |
+|---------|-----------|-------------|-------------|
+| `get_log_contents` | none | `string` | Read the application log file contents. Returns the last ~500KB to avoid huge payloads. Returns an empty string if the log file does not exist. |
+
+## Updater
+
+Check for and install application updates via `tauri-plugin-updater`.
+
+| Command | Arguments | Return Type | Description |
+|---------|-----------|-------------|-------------|
+| `check_for_updates` | none | `UpdateInfo \| null` | Check for available updates. Returns update info if an update is available, or `null` if up-to-date. |
+| `install_update` | none | `void` | Download and install the available update, then restart the application. Errors if no update is available. |
+
+### UpdateInfo
+
+```typescript
+interface UpdateInfo {
+  version: string;
+  body: string | null;
+  date: string | null;
+}
+```
+
+## Keyring (via plugin)
+
+Secure secret storage using the OS keychain (Keychain Access on macOS, Credential Manager on Windows, libsecret on Linux). These are client-side wrappers around `tauri-plugin-keyring` exposed through the IPC facade -- not Tauri `invoke` commands.
+
+| IPC Method | Arguments | Return Type | Description |
+|------------|-----------|-------------|-------------|
+| `ipc.keyringSet` | `service: string, key: string, value: string` | `Promise<void>` | Store a secret in the OS keychain. |
+| `ipc.keyringGet` | `service: string, key: string` | `Promise<string \| null>` | Retrieve a secret from the OS keychain. Returns `null` if not found. |
+| `ipc.keyringDelete` | `service: string, key: string` | `Promise<void>` | Remove a secret from the OS keychain. |
+| `ipc.keyringHas` | `service: string, key: string` | `Promise<boolean>` | Check whether a secret exists in the OS keychain. |
+
+## Autostart (via plugin)
+
+Control whether the application launches at login via `tauri-plugin-autostart`. These are client-side wrappers exposed through the IPC facade.
+
+| IPC Method | Arguments | Return Type | Description |
+|------------|-----------|-------------|-------------|
+| `ipc.autostartEnable` | none | `Promise<void>` | Enable autostart at login. |
+| `ipc.autostartDisable` | none | `Promise<void>` | Disable autostart at login. |
+| `ipc.autostartIsEnabled` | none | `Promise<boolean>` | Check whether autostart is currently enabled. |
+
+## Clipboard (via plugin)
+
+| IPC Method | Arguments | Return Type | Description |
+|------------|-----------|-------------|-------------|
+| `ipc.clipboardWriteText` | `text: string` | `Promise<void>` | Write text to the system clipboard. |
+
+## Process (via plugin)
+
+| IPC Method | Arguments | Return Type | Description |
+|------------|-----------|-------------|-------------|
+| `ipc.relaunch` | none | `Promise<void>` | Restart the application. |
+| `ipc.exit` | `code?: number` | `Promise<void>` | Exit the application with the given code (default `0`). |

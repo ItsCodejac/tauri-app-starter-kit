@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, type CSSProperties } from 'react';
 import { ipc } from '../../lib/ipc';
 import { useSettings } from '../../hooks/useSettings';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useToast } from '../../hooks/useToast';
 import { localeLabels } from '../../lib/i18n';
 
 interface SettingsPanelProps {
@@ -202,6 +203,7 @@ function SectionHeader({ title }: { title: string }) {
 export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
   const [activeSection, setActiveSection] = useState<Section>('general');
   const { getSetting, setSetting, loading } = useSettings();
+  const { toast } = useToast();
   const { locale, setLocale, availableLocales: locales } = useTranslation();
   const [cacheDir, setCacheDir] = useState('');
   const [keyringKeys, setKeyringKeys] = useState<{ service: string; key: string }[]>([]);
@@ -219,7 +221,7 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
     }
   }, [open]);
 
-  // Load stored keyring key names from settings
+  // Load stored keyring key names from settings when panel opens
   useEffect(() => {
     if (open) {
       const stored = getSetting<{ service: string; key: string }[]>('keyring_keys', []);
@@ -346,6 +348,8 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
                   } catch {
                     // Menu item may not exist
                   }
+                  // Notify App to sync status bar visibility
+                  window.dispatchEvent(new CustomEvent('settings:view_status_bar', { detail: v }));
                 }}
               />
             </SettingRow>
@@ -393,8 +397,8 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
             </SettingRow>
             <SettingRow label="Clear Cache" description="Remove all cached files">
               <button style={dangerBtnStyle} onClick={() => {
-                // Placeholder -- implement actual cache clearing
-                console.log('Cache cleared');
+                // Wire real cache clearing for your app here
+                toast('Cache cleared', 'success');
               }}>
                 Clear
               </button>
