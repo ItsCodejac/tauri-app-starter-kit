@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>What's New</title>
+  <link rel="stylesheet" href="../styles/shared.css" />
+  <style>
+    body { overflow-y: auto; }
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .header-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      background: var(--accent-blue);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; color: white; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .header-text h1 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-bright);
+    }
+    .header-text .version {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .release {
+      margin-bottom: 24px;
+    }
+    .release-version {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-bright);
+      margin-bottom: 4px;
+    }
+    .release-date {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      margin-bottom: 12px;
+    }
+    .release-body {
+      font-size: 12px;
+      color: var(--text-primary);
+      line-height: 1.6;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+    .release-body ul {
+      padding-left: 18px;
+      margin: 4px 0;
+    }
+    .release-body li {
+      margin-bottom: 4px;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 4px;
+      margin-right: 4px;
+    }
+    .badge-new { background: rgba(74, 158, 255, 0.2); color: var(--accent-blue); }
+    .badge-fix { background: rgba(76, 175, 80, 0.2); color: var(--accent-green); }
+    .badge-improved { background: rgba(255, 152, 0, 0.2); color: var(--accent-orange); }
+    .footer {
+      padding-top: 16px;
+      border-top: 1px solid var(--border-subtle);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-icon" id="icon">M</div>
+      <div class="header-text">
+        <h1>What's New</h1>
+        <div class="version" id="version"></div>
+      </div>
+    </div>
+    <div id="releases"></div>
+    <div class="footer">
+      <button class="primary" id="close-btn">Got it</button>
+    </div>
+  </div>
+  <script type="module" src="whatsnew.js"></script>
+</body>
+</html>

@@ -1,6 +1,25 @@
 use serde::{Deserialize, Serialize};
-use tauri::AppHandle;
-use tauri_plugin_updater::UpdaterExt;
+use std::sync::atomic::{AtomicBool, Ordering};
+
+/// Set to true when the updater plugin is registered in lib.rs.
+static UPDATER_ENABLED: AtomicBool = AtomicBool::new(false);
+
+/// Call this after registering the updater plugin.
+pub fn mark_enabled() {
+    UPDATER_ENABLED.store(true, Ordering::SeqCst);
+}
+
+fn is_enabled() -> Result<(), String> {
+    if UPDATER_ENABLED.load(Ordering::SeqCst) {
+        Ok(())
+    } else {
+        Err(
+            "Updater not configured. Uncomment the updater plugin in lib.rs \
+             and configure endpoints + pubkey in tauri.conf.json."
+                .to_string(),
+        )
+    }
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateInfo {
@@ -10,9 +29,11 @@ pub struct UpdateInfo {
 }
 
 /// Check for available updates.
-/// Returns update info if an update is available, or null if up-to-date.
 #[tauri::command]
-pub async fn check_for_updates(app: AppHandle) -> Result<Option<UpdateInfo>, String> {
+pub async fn check_for_updates(app: tauri::AppHandle) -> Result<Option<UpdateInfo>, String> {
+    is_enabled()?;
+
+    use tauri_plugin_updater::UpdaterExt;
     let updater = app.updater().map_err(|e| e.to_string())?;
 
     match updater.check().await {
@@ -28,20 +49,21 @@ pub async fn check_for_updates(app: AppHandle) -> Result<Option<UpdateInfo>, Str
 
 /// Download and install the available update, then restart.
 #[tauri::command]
-pub async fn install_update(app: AppHandle) -> Result<(), String> {
+pub async fn install_update(app: tauri::AppHandle) -> Result<(), String> {
+    is_enabled()?;
+
+    use tauri_plugin_updater::UpdaterExt;
     let updater = app.updater().map_err(|e| e.to_string())?;
 
     match updater.check().await {
         Ok(Some(update)) => {
-            // Download and install
             update
                 .download_and_install(|_, _| {}, || {})
                 .await
                 .map_err(|e| e.to_string())?;
-            // Restart the app
             app.restart();
         }
-        Ok(None) => Err("No update available".to_string()),
-        Err(e) => Err(e.to_string()),
+        Ok(None) => return Err("No update available".to_string()),
+        Err(e) => return Err(e.to_string()),
     }
 }

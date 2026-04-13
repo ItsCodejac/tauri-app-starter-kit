@@ -1,13 +1,21 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>App</title>
+    <link rel="stylesheet" href="/src/styles/shared.css" />
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <!--
+      Main workspace. Add your frontend framework here:
+      - React:   npm install react react-dom @vitejs/plugin-react, mount to #app
+      - Svelte:  npm install svelte @sveltejs/vite-plugin-svelte, mount to #app
+      - Vue:     npm install vue @vitejs/plugin-vue, mount to #app
+      - Vanilla: write your UI directly in this file
+    -->
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
   </body>
 </html>

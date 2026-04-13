@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Settings</title>
+  <link rel="stylesheet" href="../styles/shared.css" />
+  <style>
+    body { overflow-y: auto; }
+    .settings-container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 8px 0;
+    }
+    .settings-header {
+      padding: 16px 20px 8px;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-bright);
+    }
+    .section:last-child { border-bottom: none; }
+    .actions {
+      padding: 16px 20px;
+      display: flex;
+      gap: 8px;
+    }
+    .danger { color: var(--accent-red); border-color: var(--accent-red); }
+    .danger:hover { background: rgba(244, 67, 54, 0.1); }
+  </style>
+</head>
+<body>
+  <div class="settings-container">
+    <div class="settings-header">Settings</div>
+
+    <!-- General -->
+    <div class="section">
+      <div class="section-title">General</div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Launch at login</div>
+          <div class="setting-hint">Start app when you log in</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="autostart" />
+        </label>
+      </div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Check for updates on startup</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="updates-check" />
+        </label>
+      </div>
+    </div>
+
+    <!-- Appearance -->
+    <div class="section">
+      <div class="section-title">Appearance</div>
+      <div class="setting-row">
+        <div class="setting-label">Theme</div>
+        <select id="theme">
+          <option value="dark">Dark</option>
+          <option value="light">Light</option>
+          <option value="system">System</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <div class="setting-label">Zoom level</div>
+        <select id="zoom">
+          <option value="80">80%</option>
+          <option value="90">90%</option>
+          <option value="100">100%</option>
+          <option value="110">110%</option>
+          <option value="120">120%</option>
+          <option value="150">150%</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Autosave -->
+    <div class="section">
+      <div class="section-title">Autosave</div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Enable autosave</div>
+          <div class="setting-hint">Automatically save your work</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="autosave-enabled" />
+        </label>
+      </div>
+      <div class="setting-row">
+        <div class="setting-label">Autosave interval</div>
+        <select id="autosave-interval">
+          <option value="30">30 seconds</option>
+          <option value="60">1 minute</option>
+          <option value="120">2 minutes</option>
+          <option value="300">5 minutes</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Tray -->
+    <div class="section">
+      <div class="section-title">System Tray</div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Minimize to tray</div>
+          <div class="setting-hint">Keep running in the background when closed</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="minimize-to-tray" />
+        </label>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button class="danger" id="reset-btn">Reset All Settings</button>
+    </div>
+  </div>
+
+  <script type="module" src="settings.js"></script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Welcome</title>
+  <link rel="stylesheet" href="../styles/shared.css" />
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .welcome-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+      text-align: center;
+    }
+    .logo {
+      width: 72px; height: 72px;
+      border-radius: 16px;
+      background: var(--accent-blue);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px; font-weight: 700; color: white;
+      margin-bottom: 20px;
+    }
+    .logo img { width: 56px; height: 56px; object-fit: contain; }
+    h1 {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text-bright);
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+    }
+    .features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      max-width: 420px;
+      margin-bottom: 32px;
+      text-align: left;
+    }
+    .feature {
+      padding: 12px 16px;
+      background: var(--surface-primary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+    }
+    .feature-icon {
+      font-size: 20px;
+      margin-bottom: 6px;
+    }
+    .feature-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-bright);
+      margin-bottom: 2px;
+    }
+    .feature-desc {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      line-height: 1.4;
+    }
+    .footer {
+      padding: 16px 32px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .footer label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .footer input[type="checkbox"] {
+      width: 14px;
+      height: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="welcome-container">
+    <div class="logo" id="logo">M</div>
+    <h1 id="welcome-title">Welcome</h1>
+    <div class="subtitle" id="subtitle"></div>
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">&#9881;</div>
+        <div class="feature-title">Settings</div>
+        <div class="feature-desc">Preferences persist automatically across sessions.</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">&#9000;</div>
+        <div class="feature-title">Keyboard Shortcuts</div>
+        <div class="feature-desc">Fast navigation with customizable shortcuts.</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">&#128190;</div>
+        <div class="feature-title">Autosave</div>
+        <div class="feature-desc">Your work is saved automatically at regular intervals.</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">&#128296;</div>
+        <div class="feature-title">Native Menus</div>
+        <div class="feature-desc">Full native menu bar with platform-standard shortcuts.</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <label>
+      <input type="checkbox" id="dont-show" />
+      Don't show this again
+    </label>
+    <button class="primary" id="get-started">Get Started</button>
+  </div>
+  <script type="module" src="welcome.js"></script>
+</body>
+</html>

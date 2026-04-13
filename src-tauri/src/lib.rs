@@ -8,6 +8,7 @@ mod recent_files;
 mod settings;
 mod tray;
 mod updater;
+mod windows;
 
 use std::sync::atomic::{AtomicBool, Ordering};
 use tauri::{Emitter, Manager, State, Wry};
@@ -97,7 +98,9 @@ pub fn run() {
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
             None,
         ))
-        .plugin(tauri_plugin_updater::Builder::new().build())
+        // Updater: uncomment when you've configured endpoints + pubkey in tauri.conf.json
+        // See docs/src/guides/updater.md and docs/src/guides/shipping.md
+        // .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_keyring::init())
         .plugin(
             tauri_plugin_log::Builder::default()
@@ -152,6 +155,8 @@ pub fn run() {
             // Updater
             updater::check_for_updates,
             updater::install_update,
+            // Window management
+            windows::open_window,
         ])
         // -- Setup --
         .setup(|app| {
@@ -179,6 +184,11 @@ pub fn run() {
             // Initialize settings with defaults
             if let Err(e) = settings::init_settings(app.handle()) {
                 log::error!("Failed to initialize settings: {}", e);
+            }
+
+            // Show the main window (was hidden to avoid flash during init)
+            if let Some(main_window) = app.get_webview_window("main") {
+                let _ = main_window.show();
             }
 
             // Check for crash recovery and notify frontend after a short delay

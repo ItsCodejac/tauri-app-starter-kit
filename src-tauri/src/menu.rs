@@ -259,6 +259,27 @@ fn macos_app_menu() -> MenuConfig {
 
 fn handle_native(app: &AppHandle, id: &str) -> bool {
     match id {
+        // -- Window-opening menu items (handled natively, not forwarded to frontend) --
+        "app_preferences" | "window_settings" => {
+            crate::windows::open_window_internal(app, "settings");
+            return true;
+        }
+        "help_shortcuts" => {
+            crate::windows::open_window_internal(app, "shortcuts");
+            return true;
+        }
+        "help_view-logs" => {
+            crate::windows::open_window_internal(app, "logs");
+            return true;
+        }
+        "help_check-for-updates" => {
+            crate::windows::open_window_internal(app, "update");
+            return true;
+        }
+        "help_whats-new" => {
+            crate::windows::open_window_internal(app, "whatsnew");
+            return true;
+        }
         "help_docs" => {
             let handle = app.clone();
             tauri::async_runtime::spawn(async move {

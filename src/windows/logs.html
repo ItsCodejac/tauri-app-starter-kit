@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Logs</title>
+  <link rel="stylesheet" href="../styles/shared.css" />
+  <style>
+    body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border-subtle);
+      flex-shrink: 0;
+    }
+    .toolbar h1 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-bright);
+      margin-right: auto;
+    }
+    .log-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 12px;
+    }
+    .log-content {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      white-space: pre-wrap;
+      word-break: break-all;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+    .log-content .error { color: var(--accent-red); }
+    .log-content .warn { color: var(--accent-orange); }
+    .log-content .info { color: var(--accent-blue); }
+    .empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-tertiary);
+      font-size: 12px;
+    }
+    .filter-input { width: 180px; }
+    .status-bar {
+      padding: 4px 12px;
+      border-top: 1px solid var(--border-subtle);
+      font-size: 10px;
+      color: var(--text-tertiary);
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <h1>Log Viewer</h1>
+    <input type="search" class="filter-input" id="filter" placeholder="Filter logs..." />
+    <button id="copy-btn">Copy</button>
+    <button id="refresh-btn">Refresh</button>
+  </div>
+  <div class="log-container" id="log-container">
+    <pre class="log-content" id="log-content"></pre>
+  </div>
+  <div class="status-bar" id="status-bar"></div>
+  <script type="module" src="logs.js"></script>
+</body>
+</html>

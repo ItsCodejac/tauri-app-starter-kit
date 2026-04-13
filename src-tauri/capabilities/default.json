@@ -2,7 +2,7 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Default capabilities for the app starter template",
-  "windows": ["main"],
+  "windows": ["main", "splash", "settings", "about", "shortcuts", "logs", "update", "whatsnew", "welcome"],
   "permissions": [
     "core:default",
     "core:window:default",

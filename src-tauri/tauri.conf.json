@@ -12,11 +12,13 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "App",
         "width": 1280,
         "height": 800,
         "minWidth": 900,
         "minHeight": 600,
+        "visible": false,
         "resizable": true,
         "fullscreen": false,
         "decorations": true

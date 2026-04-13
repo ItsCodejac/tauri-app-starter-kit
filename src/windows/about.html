@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>About</title>
+  <link rel="stylesheet" href="../styles/shared.css" />
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+      padding: 24px;
+      gap: 4px;
+    }
+    .logo {
+      width: 64px; height: 64px;
+      border-radius: 14px;
+      background: var(--accent-blue);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px; font-weight: 700; color: white;
+      margin-bottom: 12px;
+    }
+    .logo img { width: 48px; height: 48px; object-fit: contain; }
+    .app-name { font-size: 18px; font-weight: 600; color: var(--text-bright); }
+    .version { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; }
+    .tagline { font-size: 12px; color: var(--text-tertiary); margin-bottom: 16px; }
+    .links { display: flex; gap: 16px; margin-bottom: 16px; }
+    .links a { font-size: 12px; }
+    .copyright { font-size: 11px; color: var(--text-tertiary); }
+    .license { font-size: 11px; color: var(--text-tertiary); margin-top: 4px; }
+    .diagnostics {
+      margin-top: 16px;
+      font-size: 11px;
+      color: var(--text-tertiary);
+      cursor: pointer;
+    }
+    .diagnostics:hover { color: var(--accent-blue); }
+  </style>
+</head>
+<body>
+  <div class="logo" id="logo">M</div>
+  <div class="app-name" id="name">My App</div>
+  <div class="version" id="version"></div>
+  <div class="tagline" id="tagline"></div>
+  <div class="links" id="links"></div>
+  <div class="copyright" id="copyright"></div>
+  <div class="license" id="license"></div>
+  <div class="diagnostics" id="diagnostics">Copy Diagnostics</div>
+  <script type="module" src="about.js"></script>
+</body>
+</html>
