@@ -181,15 +181,32 @@ pub fn run() {
                 menu::handle_menu_event(&handle, &event);
             });
 
+            // Open splash screen immediately (before any init work)
+            windows::open_window_internal(app.handle(), "splash");
+
             // Initialize settings with defaults
             if let Err(e) = settings::init_settings(app.handle()) {
                 log::error!("Failed to initialize settings: {}", e);
             }
 
-            // Show the main window (was hidden to avoid flash during init)
-            if let Some(main_window) = app.get_webview_window("main") {
-                let _ = main_window.show();
-            }
+            // Show main window and close splash after a short delay
+            // This gives the splash time to display while init completes
+            let startup_handle = app.handle().clone();
+            std::thread::spawn(move || {
+                // Minimum splash duration so branding is visible
+                std::thread::sleep(std::time::Duration::from_secs(2));
+
+                // Show main window
+                if let Some(main_window) = startup_handle.get_webview_window("main") {
+                    let _ = main_window.show();
+                    let _ = main_window.set_focus();
+                }
+
+                // Close splash
+                if let Some(splash) = startup_handle.get_webview_window("splash") {
+                    let _ = splash.close();
+                }
+            });
 
             // Check for crash recovery and notify frontend after a short delay
             let recovery_handle = app.handle().clone();

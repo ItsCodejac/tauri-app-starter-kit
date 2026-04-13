@@ -6,16 +6,169 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>App</title>
     <link rel="stylesheet" href="/src/styles/shared.css" />
+    <style>
+      /* Default template content -- replace this entire <style> and body content
+         with your frontend framework (React, Svelte, Vue, etc.) */
+      .welcome-docs {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 48px 32px;
+        line-height: 1.6;
+        color: var(--text-secondary);
+      }
+      .welcome-docs h1 {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--text-bright);
+        margin-bottom: 8px;
+      }
+      .welcome-docs .tagline {
+        font-size: 14px;
+        color: var(--text-tertiary);
+        margin-bottom: 32px;
+      }
+      .welcome-docs h2 {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-primary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 32px 0 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--border-subtle);
+      }
+      .welcome-docs p {
+        font-size: 13px;
+        margin-bottom: 12px;
+      }
+      .welcome-docs code {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        background: var(--surface-tertiary);
+        padding: 2px 6px;
+        border-radius: 3px;
+        color: var(--accent-blue);
+      }
+      .welcome-docs pre {
+        background: var(--surface-tertiary);
+        border: 1px solid var(--border-standard);
+        border-radius: 4px;
+        padding: 12px 16px;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        line-height: 1.5;
+        overflow-x: auto;
+        margin-bottom: 16px;
+        color: var(--text-primary);
+      }
+      .welcome-docs .step {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 12px;
+        align-items: baseline;
+      }
+      .welcome-docs .step-num {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--accent-blue);
+        background: rgba(74, 158, 255, 0.1);
+        width: 24px;
+        height: 24px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .welcome-docs .step-text {
+        font-size: 13px;
+      }
+      .welcome-docs .features {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+      .welcome-docs .feature {
+        font-size: 12px;
+        padding: 8px 12px;
+        background: var(--surface-secondary);
+        border: 1px solid var(--border-subtle);
+        border-radius: 4px;
+        color: var(--text-secondary);
+      }
+      .welcome-docs .hint {
+        font-size: 11px;
+        color: var(--text-tertiary);
+        margin-top: 32px;
+        padding-top: 16px;
+        border-top: 1px solid var(--border-subtle);
+      }
+    </style>
   </head>
   <body>
     <!--
-      Main workspace. Add your frontend framework here:
-      - React:   npm install react react-dom @vitejs/plugin-react, mount to #app
-      - Svelte:  npm install svelte @sveltejs/vite-plugin-svelte, mount to #app
-      - Vue:     npm install vue @vitejs/plugin-vue, mount to #app
-      - Vanilla: write your UI directly in this file
+      Default template content. Replace everything inside <body> with your
+      frontend framework:
+
+        React:   npm install react react-dom @vitejs/plugin-react
+        Svelte:  npm install svelte @sveltejs/vite-plugin-svelte
+        Vue:     npm install vue @vitejs/plugin-vue
+        Vanilla: edit this file directly
     -->
-    <div id="app"></div>
+    <div id="app">
+      <div class="welcome-docs">
+        <h1>TASK — Tauri App Starter Kit</h1>
+        <p class="tagline">Your app's workspace starts here. Everything below this is replaceable.</p>
+
+        <h2>What's already working</h2>
+        <div class="features">
+          <div class="feature">Native menus (File, Edit, View, Window, Help)</div>
+          <div class="feature">Settings &amp; Preferences (Cmd+,)</div>
+          <div class="feature">Keyboard Shortcuts viewer</div>
+          <div class="feature">About dialog</div>
+          <div class="feature">System tray</div>
+          <div class="feature">Autosave + crash recovery</div>
+          <div class="feature">Crash reporting + error logs</div>
+          <div class="feature">Diagnostics collection</div>
+          <div class="feature">Window state persistence</div>
+          <div class="feature">Single instance lock</div>
+          <div class="feature">Drag and drop (files)</div>
+          <div class="feature">Native notifications</div>
+          <div class="feature">Secure keyring storage</div>
+          <div class="feature">Localization (i18n)</div>
+          <div class="feature">Auto-updater (when configured)</div>
+          <div class="feature">Splash screen on launch</div>
+        </div>
+        <p>Try the menus above — Settings, About, Keyboard Shortcuts, and Log Viewer all open as separate native windows.</p>
+
+        <h2>Make it yours</h2>
+        <div class="step"><span class="step-num">1</span><span class="step-text">Change app name in <code>src-tauri/tauri.conf.json</code> → <code>productName</code></span></div>
+        <div class="step"><span class="step-num">2</span><span class="step-text">Edit menus in <code>src-tauri/src/menu.rs</code> → <code>custom_menus()</code></span></div>
+        <div class="step"><span class="step-num">3</span><span class="step-text">Set your branding in <code>src/lib/branding.js</code></span></div>
+        <div class="step"><span class="step-num">4</span><span class="step-text">Add your frontend framework and replace this page</span></div>
+
+        <h2>Add your frontend</h2>
+<pre>
+# React
+npm install react react-dom @vitejs/plugin-react
+
+# Svelte
+npm install svelte @sveltejs/vite-plugin-svelte
+
+# Vue
+npm install vue @vitejs/plugin-vue
+
+# Or just write vanilla HTML/JS in this file
+</pre>
+
+        <h2>Documentation</h2>
+        <p>Full guides are in <code>docs/</code>. Run <code>mdbook serve docs</code> to browse them, or click <strong>Help → Documentation</strong> in the menu bar.</p>
+
+        <p class="hint">This content is the template's default workspace. Replace the body of <code>index.html</code> with your app's UI. The Rust backbone, utility windows, and all OS-level features continue working regardless of what framework you choose.</p>
+      </div>
+    </div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
