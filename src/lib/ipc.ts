@@ -12,40 +12,6 @@ import { enable as enableAutostart, disable as disableAutostart, isEnabled as is
 import { writeText as clipboardWriteText } from '@tauri-apps/plugin-clipboard-manager';
 import { relaunch, exit } from '@tauri-apps/plugin-process';
 import { getPassword, setPassword, deletePassword } from 'tauri-plugin-keyring-api';
-import {
-  ai,
-  complete,
-  AIStream,
-  streamToString,
-  listModels,
-  loadModel,
-  unloadModel,
-  setApiKey,
-  getApiKey,
-  removeApiKey,
-  getProviders,
-  cancelStream,
-  infer,
-  listBackends,
-  tensorFromFloat32,
-  tensorFromUint8,
-  tensorToFloat32,
-} from 'tauri-plugin-ai-api';
-export type {
-  CompletionRequest,
-  CompletionResponse,
-  StreamCallbacks,
-  StreamChunk,
-  Message,
-  Usage,
-  ModelInfo,
-  ModelConfig,
-  TensorData,
-  InferenceInput,
-  InferenceOutput,
-  BackendInfo,
-} from 'tauri-plugin-ai-api';
-
 // ---------------------------------------------------------------------------
 // Types mirroring Rust structs
 // ---------------------------------------------------------------------------
@@ -262,43 +228,7 @@ export const ipc = {
     return value !== null;
   },
 
-  // -- AI (plugin) -------------------------------------------------------------
-  /** Send a completion request and wait for the full response. */
-  aiComplete: complete,
-  /** Stream a completion and collect the full text. */
-  aiStreamToString: streamToString,
-  /** Create a new streaming completion manager. */
-  AIStream,
-  /** List all available models across all providers. */
-  aiListModels: listModels,
-  /** Load a local model via the appropriate backend. */
-  aiLoadModel: loadModel,
-  /** Unload a previously loaded local model. */
-  aiUnloadModel: unloadModel,
-  /** Set an API key for a cloud provider (in-memory only). */
-  aiSetApiKey: setApiKey,
-  /** Get the current in-memory API key for a provider. */
-  aiGetApiKey: getApiKey,
-  /** Remove the in-memory API key for a provider. */
-  aiRemoveApiKey: removeApiKey,
-  /** List registered provider names. */
-  aiGetProviders: getProviders,
-  /** Cancel an active streaming request. */
-  aiCancelStream: cancelStream,
-  /** Run inference on a loaded model. */
-  aiInfer: infer,
-  /** List all inference backends and their loaded models. */
-  aiListBackends: listBackends,
-  /** Create TensorData from a Float32Array. */
-  aiTensorFromFloat32: tensorFromFloat32,
-  /** Create TensorData from a Uint8Array. */
-  aiTensorFromUint8: tensorFromUint8,
-  /** Extract Float32Array from TensorData output. */
-  aiTensorToFloat32: tensorToFloat32,
 };
-
-// Re-export the ai namespace for direct usage
-export { ai };
 
 // ---------------------------------------------------------------------------
 // Event listeners

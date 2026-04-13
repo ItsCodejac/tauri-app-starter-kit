@@ -21,7 +21,7 @@ Stop rebuilding the same boilerplate. TASK gives you every feature users expect 
 - Native notifications — OS-level notifications
 - Autostart — launch at login
 - Secure secret storage — OS keychain via keyring (API keys, tokens, passwords)
-- AI integration — cloud LLM providers (Anthropic, OpenAI, Ollama) and local model inference via tauri-plugin-ai
+- AI integration — available separately via tauri-plugin-ai (see [AI guide](docs/src/guides/ai.md))
 - File dialogs — open, save with filters
 - Diagnostics — collect system info, crash logs, sanitized settings for bug reports
 - Browser shortcut prevention — blocks Cmd+L, F5, etc. in production
@@ -42,7 +42,7 @@ Stop rebuilding the same boilerplate. TASK gives you every feature users expect 
 - Localization — useTranslation hook, locale selector, EN/ES included
 
 **Panels & Dialogs:**
-- Settings panel — 7 sections (General, Appearance, Autosave, Cache, Tray, Security, AI)
+- Settings panel — 6 sections (General, Appearance, Autosave, Cache, Tray, Security)
 - About dialog — app icon, name, version, links
 - Keyboard shortcuts viewer — searchable, grouped by category
 - Update dialog — check, download, install with progress
@@ -50,8 +50,8 @@ Stop rebuilding the same boilerplate. TASK gives you every feature users expect 
 - What's New dialog — changelog shown after updates
 - Welcome overlay — first-run onboarding
 
-**17 Tauri Plugins Integrated:**
-dialog, fs, shell, opener, store, window-state, log, single-instance, notification, process, clipboard-manager, os, autostart, prevent-default, updater, keyring, ai
+**16 Tauri Plugins Integrated:**
+dialog, fs, shell, opener, store, window-state, log, single-instance, notification, process, clipboard-manager, os, autostart, prevent-default, updater, keyring
 
 ## Quick Start
 

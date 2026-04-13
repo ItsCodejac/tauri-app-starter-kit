@@ -64,7 +64,6 @@
     "keyring:default",
     "keyring:allow-get-password",
     "keyring:allow-set-password",
-    "keyring:allow-delete-password",
-    "ai:default"
+    "keyring:allow-delete-password"
   ]
 }

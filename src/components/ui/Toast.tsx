@@ -26,6 +26,8 @@ export default function ToastContainer() {
       {toasts.map((t) => (
         <div
           key={t.id}
+          role="alert"
+          aria-live="polite"
           style={{
             display: 'flex',
             alignItems: 'center',

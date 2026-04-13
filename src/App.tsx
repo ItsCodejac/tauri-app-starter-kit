@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { events, ipc, ai } from './lib/ipc';
+import { events, ipc } from './lib/ipc';
 import { hasRecentCrash } from './lib/crash';
 import { confirm } from '@tauri-apps/plugin-dialog';
 import './styles/theme.css';
@@ -184,7 +184,8 @@ function AppInner() {
         try {
           const diagString = await ipc.collectDiagnosticsString();
           await navigator.clipboard.writeText(diagString);
-          await ipc.openExternalUrl('https://github.com/your-org/your-repo/issues/new');
+          const issueUrl = branding.github ? `${branding.github}/issues/new` : '';
+          if (issueUrl) await ipc.openExternalUrl(issueUrl);
           toast(t('toast.reportIssue'), 'success');
         } catch (e) {
           toast(`Failed to collect diagnostics: ${e}`, 'error');
@@ -352,62 +353,6 @@ function AppInner() {
       id: 'toggle-right-panel',
       label: t('command.toggleRightPanel'),
       action: () => toast(t('toast.togglePanel', { panel: 'right' }), 'info'),
-    },
-    // AI commands
-    {
-      id: 'ai-set-api-key',
-      label: 'AI: Set API Key',
-      action: () => setSettingsOpen(true),
-    },
-    {
-      id: 'ai-list-models',
-      label: 'AI: List Models',
-      action: async () => {
-        try {
-          const models = await ai.listModels();
-          if (models.length === 0) {
-            toast('No models available. Set an API key first.', 'info');
-          } else {
-            const names = models.map((m) => `${m.provider}/${m.name}`).join(', ');
-            toast(`Models: ${names}`, 'info', 6000);
-          }
-        } catch (err) {
-          toast(`Failed to list models: ${err}`, 'error');
-        }
-      },
-    },
-    {
-      id: 'ai-list-backends',
-      label: 'AI: List Backends',
-      action: async () => {
-        try {
-          const backends = await ai.listBackends();
-          if (backends.length === 0) {
-            toast('No inference backends registered.', 'info');
-          } else {
-            const info = backends.map((b) => `${b.name} (${b.loaded_models.length} models)`).join(', ');
-            toast(`Backends: ${info}`, 'info', 6000);
-          }
-        } catch (err) {
-          toast(`Failed to list backends: ${err}`, 'error');
-        }
-      },
-    },
-    {
-      id: 'ai-list-providers',
-      label: 'AI: List Providers',
-      action: async () => {
-        try {
-          const providers = await ai.getProviders();
-          if (providers.length === 0) {
-            toast('No AI providers registered.', 'info');
-          } else {
-            toast(`Providers: ${providers.join(', ')}`, 'info', 5000);
-          }
-        } catch (err) {
-          toast(`Failed to list providers: ${err}`, 'error');
-        }
-      },
     },
   ], [toast, t]);
 

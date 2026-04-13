@@ -78,7 +78,7 @@ const changelog: { version: string; date: string; notes: string }[] = [
       '- System tray with minimize-to-tray support',
       '- Autosave and crash recovery',
       '- Settings persistence with tauri-plugin-store',
-      '- Internationalization (English, Spanish, French, German, Japanese)',
+      '- Internationalization (English, Spanish)',
       '- Drag-and-drop file support',
       '- Native menu bar with zoom, fullscreen, and stay-on-top',
       '- Auto-updater infrastructure',

@@ -23,7 +23,7 @@ export const availableLocales = Object.keys(locales);
 
 export const localeLabels: Record<string, string> = {
   en: 'English',
-  es: 'Espanol',
+  es: 'Español',
 };
 
 /**

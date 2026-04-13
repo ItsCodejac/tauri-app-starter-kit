@@ -112,6 +112,18 @@ Tauri has a built-in updater plugin. Brief setup:
 3. Host a JSON manifest with version info at that endpoint
 4. The app checks for updates on launch
 
+> **Important:** The updater will not work until you configure `plugins.updater.endpoints` in `tauri.conf.json` with at least one URL pointing to your update manifest. Without this, update checks will silently fail. Example:
+>
+> ```json
+> {
+>   "plugins": {
+>     "updater": {
+>       "endpoints": ["https://releases.yourapp.com/{{target}}/{{arch}}/{{current_version}}"]
+>     }
+>   }
+> }
+> ```
+
 Full guide: [Tauri Updater Plugin](https://v2.tauri.app/plugin/updater/)
 
 ## Replacing Template Docs

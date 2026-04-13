@@ -4,10 +4,16 @@ import { ToastProvider } from './contexts/ToastContext';
 import { I18nProvider } from './contexts/I18nContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import { installGlobalErrorHandlers } from './lib/crash';
+import { branding } from './lib/branding';
 import App from './App';
 
 // Catch unhandled JS errors and promise rejections globally
 installGlobalErrorHandlers();
+
+// Apply branding accent color to the CSS custom property
+if (branding.accentColor) {
+  document.documentElement.style.setProperty('--accent-blue', branding.accentColor);
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

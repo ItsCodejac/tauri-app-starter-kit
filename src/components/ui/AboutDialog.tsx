@@ -59,7 +59,7 @@ const linkBtn: CSSProperties = {
 };
 
 export default function AboutDialog({ open, onClose }: AboutDialogProps) {
-  const [appName, setAppName] = useState(branding.name || 'TASK App');
+  const [appName, setAppName] = useState(branding.name || 'App');
   const [version, setVersion] = useState('0.1.0');
 
   useEffect(() => {

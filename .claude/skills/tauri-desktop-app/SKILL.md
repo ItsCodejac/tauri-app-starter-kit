@@ -11,27 +11,52 @@ Template for production desktop apps: Tauri v2 (Rust) + React + TypeScript + Vit
 
 ```
 src-tauri/src/
-  lib.rs          # Entry, plugin registration, IPC handler wiring
-  menu.rs         # Data-driven native OS menu system
-  settings.rs     # Persistent settings (tauri-plugin-store)
-  autosave.rs     # Background autosave + crash recovery
-  commands.rs     # IPC: dialogs, app info, URL open
-  recent_files.rs # MRU file list (max 10)
+  lib.rs            # Entry, plugin registration, IPC handler wiring
+  menu.rs           # Data-driven native OS menu system
+  settings.rs       # Persistent settings (tauri-plugin-store)
+  autosave.rs       # Background autosave + crash recovery
+  commands.rs       # IPC: dialogs, app info, URL open
+  recent_files.rs   # MRU file list (max 10)
+  crash_reporter.rs # Panic handler, crash report storage, frontend error logging
+  tray.rs           # System tray setup, minimize-to-tray support
+  updater.rs        # Check for updates, download and install
+  notifications.rs  # Native OS notifications
+  diagnostics.rs    # System info collection for bug reports
 
 src/
-  App.tsx                           # Main component, menu listeners, shortcuts
-  components/layout/TabBar.tsx      # Workspace tab bar
-  components/layout/PanelLayout.tsx # Resizable 4-panel layout
-  components/layout/StatusBar.tsx   # Bottom status line
-  components/ui/Toast.tsx           # Notification display
-  components/ui/CommandPalette.tsx   # Cmd+Shift+P command menu
-  hooks/useKeyboardShortcuts.ts     # Global shortcut registry
-  hooks/useSettings.ts              # Settings IPC wrapper
-  hooks/useToast.ts                 # Toast hook
-  contexts/ToastContext.tsx         # Toast state management
-  styles/theme.css                  # CSS custom properties (dark theme)
-  styles/global.css                 # Resets, scrollbars, utilities
+  App.tsx                            # Main component, menu listeners, shortcuts
+  main.tsx                           # Entry point, providers, global error handlers
+  lib/branding.ts                    # Centralized app branding (name, logo, colors)
+  lib/crash.ts                       # Frontend error handlers, crash detection
+  lib/i18n.ts                        # i18n system, locale detection, translation
+  lib/ipc.ts                         # Typed IPC facade wrapping all backend calls
+  components/layout/TabBar.tsx       # Workspace tab bar
+  components/layout/PanelLayout.tsx  # Resizable 4-panel layout
+  components/layout/StatusBar.tsx    # Bottom status line
+  components/ui/Toast.tsx            # Notification display
+  components/ui/CommandPalette.tsx    # Cmd+Shift+P command menu
+  components/ui/SettingsPanel.tsx     # Settings dialog (6 sections)
+  components/ui/AboutDialog.tsx      # About dialog with branding
+  components/ui/UpdateDialog.tsx     # Auto-updater UI
+  components/ui/SplashScreen.tsx     # Animated splash screen on startup
+  components/ui/DropOverlay.tsx      # Drag-and-drop file overlay
+  components/ui/WhatsNewDialog.tsx   # Changelog shown after updates
+  components/ErrorBoundary.tsx       # React error boundary with crash reporting
+  hooks/useKeyboardShortcuts.ts      # Global shortcut registry
+  hooks/useSettings.ts               # Settings IPC wrapper
+  hooks/useToast.ts                  # Toast hook
+  hooks/useTranslation.ts            # i18n translation hook
+  hooks/useDragDrop.ts               # File drag-and-drop hook
+  contexts/ToastContext.tsx          # Toast state management
+  contexts/I18nContext.tsx           # Locale state management
+  locales/en.json                    # English translations
+  locales/es.json                    # Spanish translations
+  styles/theme.css                   # CSS custom properties (dark theme)
+  styles/global.css                  # Resets, scrollbars, utilities
 ```
+
+### Plugins Used
+dialog, fs, shell, opener, store, window-state, log, single-instance, notification, process, clipboard-manager, os, autostart, prevent-default, updater, keyring
 
 ## Adding OS Menu Items
 
