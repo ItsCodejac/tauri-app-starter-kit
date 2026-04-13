@@ -2,12 +2,17 @@ import { branding } from '../lib/branding.js';
 
 document.documentElement.style.setProperty('--accent-blue', branding.accentColor);
 
-/**
- * Shortcut definitions grouped by category.
- * Edit this list to match your app's shortcuts.
- * The `keys` array is displayed as individual <kbd> elements.
- */
+// ---------------------------------------------------------------------------
+// Shortcut definitions grouped by category
+// ---------------------------------------------------------------------------
 const shortcutGroups = [
+  {
+    title: 'Application',
+    shortcuts: [
+      { action: 'Settings', keys: ['\u2318', ','] },
+      { action: 'Quit', keys: ['\u2318', 'Q'] },
+    ],
+  },
   {
     title: 'File',
     shortcuts: [
@@ -41,18 +46,116 @@ const shortcutGroups = [
     ],
   },
   {
-    title: 'App',
+    title: 'Window',
     shortcuts: [
-      { action: 'Settings', keys: ['\u2318', ','] },
-      { action: 'Quit', keys: ['\u2318', 'Q'] },
+      { action: 'Minimize', keys: ['\u2318', 'M'] },
+      { action: 'Close', keys: ['\u2318', 'W'] },
     ],
   },
 ];
 
-const listEl = document.getElementById('shortcuts-list');
+// ---------------------------------------------------------------------------
+// Map from key label on keyboard -> command name (for highlighting keys)
+// We parse shortcutGroups to build this. Only single-letter keys get mapped.
+// ---------------------------------------------------------------------------
+
+// Unicode symbol -> keyboard key label mapping
+const symbolToKey = {
+  '\u2318': 'Cmd',
+  '\u21E7': 'Shift',
+  '\u2303': 'Ctrl',
+  '\u2325': 'Alt',
+};
+
+function buildKeyToCommandMap() {
+  const map = {};
+  for (const group of shortcutGroups) {
+    for (const s of group.shortcuts) {
+      // Find the non-modifier key(s) in the shortcut
+      for (const k of s.keys) {
+        const label = symbolToKey[k] || k;
+        // Map the key label (uppercase) to the command
+        const normalizedLabel = label.toUpperCase();
+        if (!map[normalizedLabel]) {
+          map[normalizedLabel] = s.action;
+        }
+      }
+    }
+  }
+  return map;
+}
+
+const keyCommandMap = buildKeyToCommandMap();
+
+// ---------------------------------------------------------------------------
+// Keyboard layout
+// ---------------------------------------------------------------------------
+const keyboardRows = [
+  ['`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 'Delete'],
+  ['Tab', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']', '\\'],
+  ['Caps', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', "'", 'Return'],
+  ['Shift', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', 'Shift'],
+  ['Fn', 'Ctrl', 'Alt', 'Cmd', 'Space', 'Cmd', 'Alt', 'Left', 'Up', 'Down', 'Right'],
+];
+
+const wideKeys = {
+  'Delete': 'key-w-1-5',
+  'Tab': 'key-w-1-5',
+  'Caps': 'key-w-1-8',
+  'Return': 'key-w-1-8',
+  'Shift': 'key-w-2-2',
+  'Space': 'key-w-5',
+  'Cmd': 'key-w-1-2',
+};
+
+const modifierKeys = new Set(['Shift', 'Ctrl', 'Alt', 'Cmd', 'Caps', 'Fn']);
+
+const arrowSymbols = {
+  'Left': '\u2190',
+  'Right': '\u2192',
+  'Up': '\u2191',
+  'Down': '\u2193',
+};
+
+function renderKeyboard() {
+  const container = document.getElementById('keyboard');
+  let html = '';
+
+  for (const row of keyboardRows) {
+    html += '<div class="keyboard-row">';
+    for (const key of row) {
+      const widthClass = wideKeys[key] || '';
+      const isModifier = modifierKeys.has(key);
+
+      // Check if this key has an assigned shortcut
+      const normalizedKey = key.toUpperCase();
+      const command = keyCommandMap[normalizedKey];
+      // Modifiers are always shown as modifier style, not assigned
+      const isAssigned = !isModifier && !!command;
+
+      let classes = 'key';
+      if (widthClass) classes += ' ' + widthClass;
+      if (isModifier) classes += ' modifier';
+      if (isAssigned) classes += ' assigned';
+
+      const tooltip = isAssigned ? ` data-tooltip="${command}"` : '';
+      const displayLabel = arrowSymbols[key] || key;
+
+      html += `<div class="${classes}"${tooltip}>${displayLabel}</div>`;
+    }
+    html += '</div>';
+  }
+
+  container.innerHTML = html;
+}
+
+// ---------------------------------------------------------------------------
+// Command list
+// ---------------------------------------------------------------------------
+const listEl = document.getElementById('command-list');
 const searchEl = document.getElementById('search');
 
-function render(filter = '') {
+function renderCommandList(filter = '') {
   const lowerFilter = filter.toLowerCase();
   let html = '';
   let hasResults = false;
@@ -65,17 +168,15 @@ function render(filter = '') {
     if (filtered.length === 0) continue;
     hasResults = true;
 
-    html += `<div class="group">`;
-    html += `<div class="group-title">${group.title}</div>`;
+    html += `<div class="category-header">${group.title}</div>`;
     for (const s of filtered) {
       const keysHtml = s.keys.map((k) => `<kbd>${k}</kbd>`).join('');
       html += `
-        <div class="shortcut-row">
-          <span class="shortcut-action">${s.action}</span>
-          <span class="shortcut-keys">${keysHtml}</span>
+        <div class="command-row">
+          <span class="command-name">${s.action}</span>
+          <span class="command-keys">${keysHtml}</span>
         </div>`;
     }
-    html += `</div>`;
   }
 
   if (!hasResults) {
@@ -85,7 +186,20 @@ function render(filter = '') {
   listEl.innerHTML = html;
 }
 
-searchEl.addEventListener('input', () => render(searchEl.value));
+searchEl.addEventListener('input', () => renderCommandList(searchEl.value));
 
-// Initial render
-render();
+// ---------------------------------------------------------------------------
+// Footer buttons
+// ---------------------------------------------------------------------------
+document.getElementById('cancel-btn').addEventListener('click', () => {
+  window.close();
+});
+document.getElementById('ok-btn').addEventListener('click', () => {
+  window.close();
+});
+
+// ---------------------------------------------------------------------------
+// Init
+// ---------------------------------------------------------------------------
+renderKeyboard();
+renderCommandList();
