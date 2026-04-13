@@ -19,6 +19,7 @@
     "@tauri-apps/plugin-store": "^2.4.2",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
+    "tauri-plugin-ai-api": "file:../tauri-plugin-ai",
     "tauri-plugin-keyring-api": "^0.1.1"
   },
   "devDependencies": {

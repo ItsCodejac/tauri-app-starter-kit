@@ -25,6 +25,7 @@
 - [Secure Storage](./guides/keyring.md)
 - [Theming](./guides/theming.md)
 - [Shipping Your App](./guides/shipping.md)
+- [AI Integration](./guides/ai.md)
 
 # Reference
 

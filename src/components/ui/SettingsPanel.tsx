@@ -10,7 +10,7 @@ interface SettingsPanelProps {
   onClose: () => void;
 }
 
-type Section = 'general' | 'appearance' | 'autosave' | 'cache' | 'tray' | 'security';
+type Section = 'general' | 'appearance' | 'autosave' | 'cache' | 'tray' | 'security' | 'ai';
 
 const sections: { id: Section; label: string }[] = [
   { id: 'general', label: 'General' },
@@ -19,6 +19,7 @@ const sections: { id: Section; label: string }[] = [
   { id: 'cache', label: 'Cache' },
   { id: 'tray', label: 'Tray' },
   { id: 'security', label: 'Security' },
+  { id: 'ai', label: 'AI' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -212,6 +213,13 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
   const [newValue, setNewValue] = useState('');
   const [keyringStatus, setKeyringStatus] = useState('');
 
+  // AI settings state
+  const [aiProviders, setAiProviders] = useState<string[]>([]);
+  const [aiSelectedProvider, setAiSelectedProvider] = useState('');
+  const [aiApiKeyInput, setAiApiKeyInput] = useState('');
+  const [aiApiKeyStatus, setAiApiKeyStatus] = useState('');
+  const [aiHasKey, setAiHasKey] = useState<Record<string, boolean>>({});
+
   // Load app info for cache dir display
   useEffect(() => {
     if (open) {
@@ -228,6 +236,35 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
       setKeyringKeys(stored);
     }
   }, [open, getSetting]);
+
+  // Load AI providers when panel opens
+  useEffect(() => {
+    if (open) {
+      ipc.aiGetProviders().then((providers) => {
+        setAiProviders(providers);
+        if (providers.length > 0 && !aiSelectedProvider) {
+          setAiSelectedProvider(providers[0]);
+        }
+        // Check which providers have keys loaded
+        Promise.all(
+          providers.map(async (p) => {
+            try {
+              const key = await ipc.aiGetApiKey(p);
+              return [p, key !== null] as const;
+            } catch {
+              return [p, false] as const;
+            }
+          })
+        ).then((results) => {
+          const map: Record<string, boolean> = {};
+          for (const [p, has] of results) map[p] = has;
+          setAiHasKey(map);
+        });
+      }).catch(() => {
+        // Plugin may not be available or no providers registered
+      });
+    }
+  }, [open]);
 
   const addKeyringEntry = useCallback(async () => {
     if (!newService || !newKey || !newValue) return;
@@ -499,6 +536,106 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
                 )}
               </div>
             </div>
+          </>
+        );
+
+      case 'ai':
+        return (
+          <>
+            <SectionHeader title="AI" />
+            <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginBottom: 8 }}>
+              Configure cloud LLM providers. API keys are stored in-memory for the current session. Use the Security section with keyring for persistent storage.
+            </div>
+
+            <SettingRow label="Provider" description="Select an AI provider to configure">
+              <select
+                style={selectStyle}
+                value={aiSelectedProvider}
+                onChange={(e) => {
+                  setAiSelectedProvider(e.target.value);
+                  setAiApiKeyInput('');
+                  setAiApiKeyStatus('');
+                }}
+              >
+                {aiProviders.length === 0 && <option value="">No providers</option>}
+                {aiProviders.map((p) => (
+                  <option key={p} value={p}>{p}{aiHasKey[p] ? ' (key set)' : ''}</option>
+                ))}
+              </select>
+            </SettingRow>
+
+            <SettingRow label="API Key" description={`Set API key for ${aiSelectedProvider || 'selected provider'}`}>
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                <input
+                  type="password"
+                  style={{ ...inputStyle, width: 180, textAlign: 'left' }}
+                  placeholder="sk-..."
+                  value={aiApiKeyInput}
+                  onChange={(e) => setAiApiKeyInput(e.target.value)}
+                  disabled={!aiSelectedProvider}
+                />
+                <button
+                  style={buttonStyle}
+                  disabled={!aiSelectedProvider || !aiApiKeyInput}
+                  onClick={async () => {
+                    try {
+                      await ipc.aiSetApiKey(aiSelectedProvider, aiApiKeyInput);
+                      setAiHasKey((prev) => ({ ...prev, [aiSelectedProvider]: true }));
+                      setAiApiKeyInput('');
+                      setAiApiKeyStatus('Saved');
+                      setTimeout(() => setAiApiKeyStatus(''), 2000);
+                    } catch (err) {
+                      setAiApiKeyStatus(`Error: ${err}`);
+                    }
+                  }}
+                >
+                  Set
+                </button>
+              </div>
+            </SettingRow>
+
+            {aiApiKeyStatus && (
+              <div style={{ fontSize: 11, color: aiApiKeyStatus.startsWith('Error') ? 'var(--accent-red)' : 'var(--accent-green)' }}>
+                {aiApiKeyStatus}
+              </div>
+            )}
+
+            {aiHasKey[aiSelectedProvider] && (
+              <SettingRow label="Remove Key" description={`Clear ${aiSelectedProvider} API key from memory`}>
+                <button
+                  style={dangerBtnStyle}
+                  onClick={async () => {
+                    try {
+                      await ipc.aiRemoveApiKey(aiSelectedProvider);
+                      setAiHasKey((prev) => ({ ...prev, [aiSelectedProvider]: false }));
+                      toast('API key removed', 'success');
+                    } catch (err) {
+                      toast(`Failed to remove key: ${err}`, 'error');
+                    }
+                  }}
+                >
+                  Remove
+                </button>
+              </SettingRow>
+            )}
+
+            <SettingRow label="Default Model" description="Model to use when none is specified">
+              <input
+                style={{ ...inputStyle, width: 180, textAlign: 'left' }}
+                placeholder="e.g. claude-sonnet-4-20250514"
+                value={getSetting<string>('ai.defaultModel', '')}
+                onChange={(e) => setSetting('ai.defaultModel', e.target.value)}
+              />
+            </SettingRow>
+
+            <SettingRow label="Ollama Endpoint" description="Custom Ollama server URL">
+              <input
+                style={{ ...inputStyle, width: 200, textAlign: 'left' }}
+                placeholder="http://localhost:11434"
+                value={getSetting<string>('ai.ollamaEndpoint', '')}
+                onChange={(e) => setSetting('ai.ollamaEndpoint', e.target.value)}
+              />
+            </SettingRow>
           </>
         );
 

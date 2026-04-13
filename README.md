@@ -21,6 +21,7 @@ Stop rebuilding the same boilerplate. TASK gives you every feature users expect 
 - Native notifications — OS-level notifications
 - Autostart — launch at login
 - Secure secret storage — OS keychain via keyring (API keys, tokens, passwords)
+- AI integration — cloud LLM providers (Anthropic, OpenAI, Ollama) and local model inference via tauri-plugin-ai
 - File dialogs — open, save with filters
 - Diagnostics — collect system info, crash logs, sanitized settings for bug reports
 - Browser shortcut prevention — blocks Cmd+L, F5, etc. in production
@@ -41,7 +42,7 @@ Stop rebuilding the same boilerplate. TASK gives you every feature users expect 
 - Localization — useTranslation hook, locale selector, EN/ES included
 
 **Panels & Dialogs:**
-- Settings panel — 6 sections (General, Appearance, Autosave, Cache, Tray, Security)
+- Settings panel — 7 sections (General, Appearance, Autosave, Cache, Tray, Security, AI)
 - About dialog — app icon, name, version, links
 - Keyboard shortcuts viewer — searchable, grouped by category
 - Update dialog — check, download, install with progress
@@ -49,8 +50,8 @@ Stop rebuilding the same boilerplate. TASK gives you every feature users expect 
 - What's New dialog — changelog shown after updates
 - Welcome overlay — first-run onboarding
 
-**16 Official Tauri Plugins Integrated:**
-dialog, fs, shell, opener, store, window-state, log, single-instance, notification, process, clipboard-manager, os, autostart, prevent-default, updater, keyring
+**17 Tauri Plugins Integrated:**
+dialog, fs, shell, opener, store, window-state, log, single-instance, notification, process, clipboard-manager, os, autostart, prevent-default, updater, keyring, ai
 
 ## Quick Start
 
@@ -86,6 +87,7 @@ The docs folder serves triple duty: developer documentation, in-app Help content
 | [Drag & Drop](docs/src/guides/drag-drop.md) | File drop with filtering and overlay |
 | [Theming](docs/src/guides/theming.md) | CSS variables, dark/light |
 | [Shipping](docs/src/guides/shipping.md) | Building, signing, branding checklist |
+| [AI](docs/src/guides/ai.md) | Cloud LLM providers, local model inference |
 
 ## Making It Yours
 
