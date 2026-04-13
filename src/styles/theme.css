@@ -20,7 +20,7 @@
   --text-tertiary: #666;
   --text-bright: #fff;
 
-  /* Accent */
+  /* Accent — Override this with your brand color, or set it dynamically from branding.ts */
   --accent-blue: #4a9eff;
   --accent-blue-dim: rgba(74, 158, 255, 0.15);
   --accent-green: #4caf50;

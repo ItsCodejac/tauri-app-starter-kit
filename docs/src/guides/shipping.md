@@ -140,6 +140,90 @@ Everything you need to change to make this template yours:
   ```
   This writes all required sizes to `src-tauri/icons/`.
 - [ ] **Docs book title** -- `docs/book.toml` field `book.title`
+- [ ] **Branding config** -- update `src/lib/branding.ts` (see below)
+
+## Branding Configuration (`src/lib/branding.ts`)
+
+All brand-aware components (splash screen, about dialog, status bar) read from a single configuration file at `src/lib/branding.ts`. This is the one place to set your app's visual identity.
+
+### Fields
+
+| Field | Description |
+|-------|-------------|
+| `name` | App display name shown on splash screen and about dialog |
+| `tagline` | Short tagline shown on the splash screen and about dialog |
+| `logo` | Path to logo image (SVG or PNG, relative to `public/`). When empty, a styled first-letter is shown instead. |
+| `splashBackground` | Path to a background image for the splash screen (optional, relative to `public/`). A dark overlay is applied so text remains readable. |
+| `accentColor` | Primary brand color used for the splash progress bar and logo gradient. |
+| `copyright` | Copyright line shown at the bottom of the splash screen and in the about dialog. |
+| `website` | URL shown as a link in the about dialog. Leave empty to hide. |
+| `github` | GitHub URL shown as a link in the about dialog. Leave empty to hide. |
+| `licenseInfo` | License URL or text shown in the about dialog. Leave empty to hide. |
+
+### Adding a Logo
+
+1. Drop your logo file (SVG or PNG) in `public/assets/`
+2. Set the path in `branding.ts`:
+   ```typescript
+   logo: "/assets/logo.svg",
+   ```
+
+### Adding a Splash Background Image
+
+1. Drop your background image in `public/assets/`
+2. Set the path in `branding.ts`:
+   ```typescript
+   splashBackground: "/assets/splash-bg.png",
+   ```
+   The image fills the splash screen with a darkened overlay so the text and logo remain readable.
+
+### Changing the Accent Color
+
+Set `accentColor` in `branding.ts` to change the splash screen progress bar and logo gradient:
+
+```typescript
+accentColor: "#e91e63",
+```
+
+Note: The `accentColor` in `branding.ts` is used by brand-aware components (splash screen, etc.). To change the accent color across the full UI (buttons, links, selections), also update `--accent-blue` in `src/styles/theme.css`.
+
+## Splash Screen
+
+The starter kit includes a splash screen that displays while the app initializes (loading settings, checking recovery, etc.). It shows the app name, version, and an animated progress bar, then fades out once everything is ready.
+
+### How It Works
+
+The splash is a React component (`SplashScreen.tsx`) that renders as a full-screen overlay on top of the app. It uses only inline styles so it appears instantly before any external CSS loads. Once all initialization completes, the `appReady` flag is set and the splash fades out over 300ms.
+
+### Customizing the Splash
+
+The `SplashScreen` component accepts these props:
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `appName` | `string` | Application name displayed prominently |
+| `version` | `string` | Version string (e.g. `v0.1.0`) |
+| `tagline` | `string?` | Optional tagline below the version |
+| `logoSrc` | `string?` | Path to a logo image; when omitted, a styled first-letter is shown |
+| `ready` | `boolean` | When true, the splash fades out |
+| `onExit` | `() => void` | Called after the fade-out completes |
+
+**To add your logo**, place an image in `src/assets/` and pass its path:
+
+```tsx
+<SplashScreen
+  appName="My App"
+  version="v1.0.0"
+  tagline="Professional Video Editor"
+  logoSrc="/src/assets/logo.png"
+  ready={appReady}
+  onExit={() => setSplashDismissed(true)}
+/>
+```
+
+**To add a tagline**, pass the `tagline` prop in `App.tsx` where the `SplashScreen` is rendered.
+
+**To remove the splash entirely**, delete the `SplashScreen` import and the `{!splashDismissed && <SplashScreen ... />}` block in `App.tsx`, then set `appReady`'s default to `true` or remove the state entirely.
 
 ## Pre-Ship Checklist
 

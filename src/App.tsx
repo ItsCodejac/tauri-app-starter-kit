@@ -19,12 +19,14 @@ import ShortcutsPanel from './components/ui/ShortcutsPanel';
 import UpdateDialog from './components/ui/UpdateDialog';
 import LogViewer from './components/ui/LogViewer';
 import WhatsNewDialog from './components/ui/WhatsNewDialog';
+import SplashScreen from './components/ui/SplashScreen';
 import { useToast } from './hooks/useToast';
 import { useKeyboardShortcuts, formatShortcut, type Shortcut } from './hooks/useKeyboardShortcuts';
 import { useContextMenu, type MenuItem } from './hooks/useContextMenu';
 import { useDragDrop } from './hooks/useDragDrop';
 import { useTranslation } from './hooks/useTranslation';
 import { useFirstRun } from './hooks/useFirstRun';
+import { branding } from './lib/branding';
 
 function PlaceholderContent({ label }: { label: string }) {
   return (
@@ -82,7 +84,11 @@ function AppInner() {
   const [whatsNewOpen, setWhatsNewOpen] = useState(false);
   const [statusText, setStatusText] = useState(() => t('status.ready'));
   const [appVersion, setAppVersion] = useState('v0.0.0');
+  const [appName, setAppName] = useState(branding.name || 'App');
   const [showStatusBar, setShowStatusBar] = useState(true);
+  const [appReady, setAppReady] = useState(false);
+  const [splashDismissed, setSplashDismissed] = useState(false);
+  const [splashStatus, setSplashStatus] = useState('Starting...');
   const { toast } = useToast();
   const { contextMenu, showContextMenu, hideContextMenu } = useContextMenu();
   const { isFirstRun, loaded: firstRunLoaded, dismissFirstRun } = useFirstRun();
@@ -128,15 +134,37 @@ function AppInner() {
     { label: t('menu.copyValue'), action: () => toast(t('toast.copied'), 'info') },
   ], [toast, t]);
 
-  // Load app version and status bar setting on mount
+  // Load app info, settings, and signal readiness once initialization completes
   useEffect(() => {
-    ipc.getAppInfo()
-      .then((info) => setAppVersion(`v${info.version}`))
-      .catch(() => { /* fall back to v0.0.0 */ });
+    const init = async () => {
+      setSplashStatus('Loading settings...');
+      try {
+        const info = await ipc.getAppInfo();
+        setAppVersion(`v${info.version}`);
+        setAppName(info.name || branding.name || 'App');
+      } catch {
+        // fall back to defaults
+      }
 
-    ipc.getSetting('view_status_bar')
-      .then((val) => { if (val === false) setShowStatusBar(false); })
-      .catch(() => {});
+      try {
+        const val = await ipc.getSetting('view_status_bar');
+        if (val === false) setShowStatusBar(false);
+      } catch {
+        // ignore
+      }
+
+      setSplashStatus('Checking for recovery...');
+      // Recovery check happens via hasRecentCrash in a separate effect
+
+      setSplashStatus('Checking for updates...');
+      // Update check happens in a separate effect after splash
+
+      setSplashStatus('Ready');
+      // Mark the app as ready -- the splash will fade out
+      setAppReady(true);
+    };
+
+    init();
   }, []);
 
   // Listen for View > Show Status Bar menu toggle
@@ -409,9 +437,23 @@ function AppInner() {
     },
   ], [toast, t]);
 
+  const handleSplashExit = useCallback(() => setSplashDismissed(true), []);
+
   return (
     <>
-      {firstRunLoaded && isFirstRun && (
+      {!splashDismissed && (
+        <SplashScreen
+          appName={appName}
+          version={appVersion}
+          tagline={branding.tagline}
+          logoSrc={branding.logo || undefined}
+          backgroundSrc={branding.splashBackground || undefined}
+          statusText={splashStatus}
+          ready={appReady}
+          onExit={handleSplashExit}
+        />
+      )}
+      {firstRunLoaded && isFirstRun && splashDismissed && (
         <WelcomeOverlay onDismiss={dismissFirstRun} />
       )}
       <TabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />

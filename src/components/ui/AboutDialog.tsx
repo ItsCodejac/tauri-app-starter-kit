@@ -1,5 +1,6 @@
 import { useState, useEffect, type CSSProperties } from 'react';
 import { ipc } from '../../lib/ipc';
+import { branding } from '../../lib/branding';
 
 interface AboutDialogProps {
   open: boolean;
@@ -38,6 +39,13 @@ const iconStyle: CSSProperties = {
   fontWeight: 700,
   color: 'var(--accent-blue)',
   marginBottom: 16,
+  overflow: 'hidden',
+};
+
+const logoImgStyle: CSSProperties = {
+  width: '100%',
+  height: '100%',
+  objectFit: 'contain',
 };
 
 const linkBtn: CSSProperties = {
@@ -51,13 +59,13 @@ const linkBtn: CSSProperties = {
 };
 
 export default function AboutDialog({ open, onClose }: AboutDialogProps) {
-  const [appName, setAppName] = useState('TASK App');
+  const [appName, setAppName] = useState(branding.name || 'TASK App');
   const [version, setVersion] = useState('0.1.0');
 
   useEffect(() => {
     if (open) {
       ipc.getAppInfo().then((info) => {
-        setAppName(info.name);
+        setAppName(info.name || branding.name);
         setVersion(info.version);
       }).catch(() => {});
     }
@@ -66,45 +74,72 @@ export default function AboutDialog({ open, onClose }: AboutDialogProps) {
   if (!open) return null;
 
   const initial = appName.charAt(0).toUpperCase();
+  const websiteUrl = branding.website;
+  const githubUrl = branding.github;
+  const hasLinks = websiteUrl || githubUrl || branding.licenseInfo;
 
   return (
     <div style={backdrop} onClick={onClose}>
       <div style={card} onClick={(e) => e.stopPropagation()}>
-        <div style={iconStyle}>{initial}</div>
+        <div style={iconStyle}>
+          {branding.logo ? (
+            <img src={branding.logo} alt={appName} style={logoImgStyle} draggable={false} />
+          ) : (
+            initial
+          )}
+        </div>
         <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-bright)', marginBottom: 4 }}>
           {appName}
         </div>
         <div style={{ fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'var(--font-mono)', marginBottom: 12 }}>
           Version {version}
         </div>
-        <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4, lineHeight: 1.5 }}>
-          Built with TASK — Tauri App Starter Kit
-        </div>
+        {branding.tagline && (
+          <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4, lineHeight: 1.5 }}>
+            {branding.tagline}
+          </div>
+        )}
         <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginBottom: 20 }}>
-          &copy; 2026 Your Name
+          {branding.copyright}
         </div>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 4 }}>
-          <button
-            style={linkBtn}
-            onClick={() => ipc.openExternalUrl('https://example.com').catch(() => {})}
-          >
-            Website
-          </button>
-          <span style={{ color: 'var(--text-tertiary)', fontSize: 12, lineHeight: '24px' }}>|</span>
-          <button
-            style={linkBtn}
-            onClick={() => ipc.openExternalUrl('https://github.com/your-org/your-repo').catch(() => {})}
-          >
-            GitHub
-          </button>
-          <span style={{ color: 'var(--text-tertiary)', fontSize: 12, lineHeight: '24px' }}>|</span>
-          <button
-            style={linkBtn}
-            onClick={() => ipc.openExternalUrl('https://github.com/your-org/your-repo/blob/main/LICENSE').catch(() => {})}
-          >
-            Licenses
-          </button>
-        </div>
+        {hasLinks && (
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 4 }}>
+            {websiteUrl && (
+              <button
+                style={linkBtn}
+                onClick={() => ipc.openExternalUrl(websiteUrl).catch(() => {})}
+              >
+                Website
+              </button>
+            )}
+            {websiteUrl && githubUrl && (
+              <span style={{ color: 'var(--text-tertiary)', fontSize: 12, lineHeight: '24px' }}>|</span>
+            )}
+            {githubUrl && (
+              <button
+                style={linkBtn}
+                onClick={() => ipc.openExternalUrl(githubUrl).catch(() => {})}
+              >
+                GitHub
+              </button>
+            )}
+            {(websiteUrl || githubUrl) && branding.licenseInfo && (
+              <span style={{ color: 'var(--text-tertiary)', fontSize: 12, lineHeight: '24px' }}>|</span>
+            )}
+            {branding.licenseInfo && (
+              <button
+                style={linkBtn}
+                onClick={() => {
+                  if (branding.licenseInfo.startsWith('http')) {
+                    ipc.openExternalUrl(branding.licenseInfo).catch(() => {});
+                  }
+                }}
+              >
+                Licenses
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
