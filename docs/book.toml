@@ -1,0 +1,23 @@
+[book]
+title = "TASK - Tauri App Starter Kit"
+authors = []
+language = "en"
+src = "src"
+
+[build]
+build-dir = "book"
+
+[output.html]
+default-theme = "coal"
+preferred-dark-theme = "coal"
+git-repository-url = ""
+site-url = "/"
+fold = { enable = true, level = 1 }
+
+[output.html.search]
+enable = true
+limit-results = 20
+boost-hierarchy = 2
+
+[output.html.print]
+enable = true

@@ -1,0 +1,79 @@
+{
+  "app.name": "App",
+  "app.welcome.title": "Welcome",
+  "app.welcome.message": "Thanks for trying out this app. Replace this onboarding experience with your own.",
+  "app.welcome.getStarted": "Get Started",
+
+  "status.ready": "Ready",
+  "status.newFile": "New file",
+  "status.openFile": "Open file...",
+  "status.saved": "Saved",
+  "status.saveAs": "Save as...",
+  "status.settings": "Settings",
+
+  "tabs.workspace": "Workspace {number}",
+
+  "panel.left": "Left Panel",
+  "panel.center": "Main",
+  "panel.right": "Right Panel",
+  "panel.bottom": "Bottom Panel",
+
+  "menu.cut": "Cut",
+  "menu.copy": "Copy",
+  "menu.paste": "Paste",
+  "menu.selectAll": "Select All",
+  "menu.open": "Open",
+  "menu.rename": "Rename",
+  "menu.delete": "Delete",
+  "menu.showInFinder": "Show in Finder",
+  "menu.resetToDefault": "Reset to Default",
+  "menu.copyValue": "Copy Value",
+
+  "command.newFile": "New File",
+  "command.openFile": "Open File",
+  "command.save": "Save",
+  "command.preferences": "Preferences",
+  "command.toggleLeftPanel": "Toggle Left Panel",
+  "command.toggleRightPanel": "Toggle Right Panel",
+  "command.searchPlaceholder": "Type a command...",
+  "command.noResults": "No matching commands",
+
+  "toast.newFile": "New file created",
+  "toast.openFile": "Open file dialog",
+  "toast.saved": "File saved",
+  "toast.saveAs": "Save as dialog",
+  "toast.settingsOpened": "Settings opened",
+  "toast.openDocs": "Opening documentation...",
+  "toast.reportIssue": "Opening issue tracker...",
+  "toast.cut": "Cut",
+  "toast.copy": "Copy",
+  "toast.paste": "Paste",
+  "toast.selectAll": "Select All",
+  "toast.openItem": "Open item",
+  "toast.rename": "Rename",
+  "toast.delete": "Delete",
+  "toast.revealInFinder": "Reveal in Finder",
+  "toast.reset": "Reset",
+  "toast.copied": "Copied",
+  "toast.togglePanel": "Toggle {panel} panel (implement via state)",
+  "toast.droppedFiles": "Dropped {count} file(s): {names}",
+
+  "drop.message": "Drop files here",
+
+  "error.title": "Something went wrong",
+  "error.reload": "Reload",
+  "error.copyError": "Copy Error",
+
+  "crash.message": "The app crashed during your last session. Report: {name}",
+
+  "quit.title": "Unsaved Changes",
+  "quit.message": "You have unsaved changes. Are you sure you want to quit?",
+  "quit.ok": "Quit",
+  "quit.cancel": "Cancel",
+
+  "locale.label": "Language",
+  "locale.en": "English",
+  "locale.es": "Spanish",
+
+  "files.count": "{count} file(s)"
+}

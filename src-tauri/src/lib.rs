@@ -1,0 +1,235 @@
+mod autosave;
+mod commands;
+mod crash_reporter;
+mod diagnostics;
+mod menu;
+mod notifications;
+mod recent_files;
+mod settings;
+mod tray;
+mod updater;
+
+use std::sync::atomic::{AtomicBool, Ordering};
+use tauri::{Emitter, Manager, State, Wry};
+
+/// Tracks whether the frontend has unsaved changes.
+pub struct DirtyState {
+    pub dirty: AtomicBool,
+}
+
+impl Default for DirtyState {
+    fn default() -> Self {
+        Self {
+            dirty: AtomicBool::new(false),
+        }
+    }
+}
+
+/// Called by the frontend to flag whether there are unsaved changes.
+#[tauri::command]
+fn set_has_unsaved_changes(state: State<'_, DirtyState>, dirty: bool) {
+    state.dirty.store(dirty, Ordering::SeqCst);
+}
+
+/// Called by the frontend after the user confirms they want to close.
+#[tauri::command]
+fn confirm_close(app: tauri::AppHandle) {
+    // Force-close: set dirty to false so the CloseRequested handler won't block again
+    let state = app.state::<DirtyState>();
+    state.dirty.store(false, Ordering::SeqCst);
+
+    if let Some(w) = app.get_webview_window("main") {
+        let _ = w.close();
+    }
+}
+
+/// Build the prevent-default plugin. In debug mode, allow devtools and reload
+/// shortcuts so developers can still use F12/Cmd+Alt+I and Ctrl+R/F5.
+#[cfg(debug_assertions)]
+fn prevent_default() -> tauri::plugin::TauriPlugin<Wry> {
+    use tauri_plugin_prevent_default::Flags;
+
+    tauri_plugin_prevent_default::Builder::new()
+        .with_flags(Flags::all().difference(Flags::DEV_TOOLS | Flags::RELOAD))
+        .build()
+}
+
+#[cfg(not(debug_assertions))]
+fn prevent_default() -> tauri::plugin::TauriPlugin<Wry> {
+    tauri_plugin_prevent_default::init()
+}
+
+#[cfg_attr(mobile, tauri::mobile_entry_point)]
+pub fn run() {
+    // Install custom panic hook BEFORE anything else so we capture all panics
+    crash_reporter::install_panic_hook();
+
+    tauri::Builder::default()
+        // -- Plugins --
+        .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
+            // Focus the existing window when a second instance tries to launch
+            if let Some(w) = app.get_webview_window("main") {
+                let _ = w.set_focus();
+                // If the window was minimized, restore it
+                let _ = w.unminimize();
+            }
+            // If the second instance was launched with file paths, emit them
+            // to the frontend so the app can open them.
+            // args[0] is typically the executable path, so skip it.
+            let file_args: Vec<&String> = args.iter().skip(1).filter(|a| !a.starts_with('-')).collect();
+            if !file_args.is_empty() {
+                let paths: Vec<String> = file_args.into_iter().cloned().collect();
+                let _ = app.emit("single-instance:open-files", paths);
+            }
+        }))
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_store::Builder::new().build())
+        .plugin(tauri_plugin_window_state::Builder::new().build())
+        .plugin(tauri_plugin_notification::init())
+        .plugin(prevent_default())
+        .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_clipboard_manager::init())
+        .plugin(tauri_plugin_autostart::init(
+            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+            None,
+        ))
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_keyring::init())
+        .plugin(
+            tauri_plugin_log::Builder::default()
+                .level(log::LevelFilter::Info)
+                .build(),
+        )
+        // -- Managed state --
+        .manage(autosave::AutosaveState::default())
+        .manage(DirtyState::default())
+        // -- IPC command handlers --
+        .invoke_handler(tauri::generate_handler![
+            // Settings
+            settings::get_setting,
+            settings::set_setting,
+            settings::get_all_settings,
+            settings::reset_settings,
+            // Recent files
+            recent_files::get_recent_files,
+            recent_files::add_recent_file,
+            recent_files::clear_recent_files,
+            // Autosave
+            autosave::start_autosave,
+            autosave::stop_autosave,
+            autosave::update_autosave_state,
+            autosave::check_recovery,
+            // General commands
+            commands::show_open_dialog,
+            commands::show_save_dialog,
+            commands::get_app_info,
+            commands::open_external_url,
+            commands::open_docs,
+            // Quit confirmation
+            set_has_unsaved_changes,
+            confirm_close,
+            // Dynamic menu state
+            menu::menu_set_enabled,
+            menu::menu_set_checked,
+            menu::menu_set_label,
+            // Crash reporting
+            crash_reporter::list_crash_reports,
+            crash_reporter::get_crash_report,
+            crash_reporter::clear_crash_reports,
+            crash_reporter::has_recent_crash,
+            crash_reporter::log_frontend_error,
+            // Diagnostics
+            diagnostics::collect_diagnostics,
+            diagnostics::collect_diagnostics_string,
+            // Notifications
+            notifications::send_notification,
+            // Log viewer
+            commands::get_log_contents,
+            // Updater
+            updater::check_for_updates,
+            updater::install_update,
+        ])
+        // -- Setup --
+        .setup(|app| {
+            // Set the proper crash reports directory now that we have an AppHandle
+            crash_reporter::set_app_crash_dir(app.handle());
+
+            // Record start time for uptime diagnostics
+            diagnostics::record_start_time();
+
+            // Set up system tray (optional -- remove this call if not needed)
+            if let Err(e) = tray::setup_tray(app.handle()) {
+                log::warn!("Failed to set up system tray: {}", e);
+            }
+
+            // Build and set the native menu bar
+            let menu = menu::build_menu(app.handle())?;
+            app.set_menu(menu)?;
+
+            // Handle menu events
+            let handle = app.handle().clone();
+            app.on_menu_event(move |_app, event| {
+                menu::handle_menu_event(&handle, &event);
+            });
+
+            // Initialize settings with defaults
+            if let Err(e) = settings::init_settings(app.handle()) {
+                log::error!("Failed to initialize settings: {}", e);
+            }
+
+            // Check for crash recovery and notify frontend after a short delay
+            let recovery_handle = app.handle().clone();
+            std::thread::spawn(move || {
+                std::thread::sleep(std::time::Duration::from_secs(1));
+                match autosave::check_recovery(recovery_handle.clone()) {
+                    Ok(info) => {
+                        if info.has_recovery {
+                            log::info!("Recovery file found from previous session");
+                            let _ = recovery_handle.emit("autosave:recovery-available", &info);
+                        }
+                    }
+                    Err(e) => log::error!("Failed to check recovery: {}", e),
+                }
+            });
+
+            Ok(())
+        })
+        // -- Window events: quit confirmation + cleanup --
+        .on_window_event(|window, event| {
+            match event {
+                tauri::WindowEvent::CloseRequested { api, .. } => {
+                    let app = window.app_handle();
+                    let dirty = app.state::<DirtyState>();
+
+                    // If "minimize to tray" is enabled, hide the window instead
+                    // of closing. The user can quit via the tray menu or Cmd+Q.
+                    if tray::should_minimize_to_tray(app) {
+                        api.prevent_close();
+                        let _ = window.hide();
+                        return;
+                    }
+
+                    if dirty.dirty.load(Ordering::SeqCst) {
+                        // Prevent the window from closing immediately
+                        api.prevent_close();
+                        // Ask the frontend to show a confirmation dialog
+                        let _ = app.emit("window:close-requested", ());
+                    }
+                }
+                tauri::WindowEvent::Destroyed => {
+                    // Stop autosave and clean up recovery file on normal exit
+                    let app = window.app_handle();
+                    let state = app.state::<autosave::AutosaveState>();
+                    let _ = autosave::stop_autosave(state);
+                    autosave::cleanup_recovery(app);
+                }
+                _ => {}
+            }
+        })
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
+}
