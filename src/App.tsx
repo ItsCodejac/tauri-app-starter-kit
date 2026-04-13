@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { events, ipc, ai } from './lib/ipc';
 import { hasRecentCrash } from './lib/crash';
-import { localeLabels } from './lib/i18n';
 import { confirm } from '@tauri-apps/plugin-dialog';
 import './styles/theme.css';
 import './styles/global.css';
@@ -44,33 +43,8 @@ function PlaceholderContent({ label }: { label: string }) {
   );
 }
 
-function LocaleSelector() {
-  const { locale, setLocale, availableLocales } = useTranslation();
-
-  return (
-    <select
-      value={locale}
-      onChange={(e) => setLocale(e.target.value)}
-      style={{
-        background: 'transparent',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: 3,
-        color: 'var(--text-secondary)',
-        fontSize: 10,
-        fontFamily: 'var(--font-mono)',
-        padding: '1px 4px',
-        cursor: 'pointer',
-        outline: 'none',
-      }}
-    >
-      {availableLocales.map((code) => (
-        <option key={code} value={code}>
-          {localeLabels[code] ?? code}
-        </option>
-      ))}
-    </select>
-  );
-}
+// Locale selection is in Settings > General > Language.
+// Removed from status bar to avoid duplication.
 
 function AppInner() {
   const { t } = useTranslation();
@@ -494,10 +468,7 @@ function AppInner() {
         <StatusBar
           statusText={statusText}
           rightContent={
-            <>
-              <LocaleSelector />
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10 }}>{appVersion}</span>
-            </>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10 }}>{appVersion}</span>
           }
         />
       )}
