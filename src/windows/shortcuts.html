@@ -12,20 +12,41 @@
       height: 100vh;
     }
 
-    .window-title {
-      text-align: center;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text-primary);
-      padding: 10px 0 8px;
+    /* ---- Header bar ---- */
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
       border-bottom: 1px solid var(--border-standard);
       background: var(--surface-tertiary);
       flex-shrink: 0;
     }
 
+    .header-bar .title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .preset-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .preset-group label {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .preset-group select {
+      min-width: 140px;
+    }
+
     /* ---- Keyboard Layout ---- */
     .keyboard-section {
-      padding: 16px 20px 12px;
+      padding: 14px 20px 10px;
       flex-shrink: 0;
       border-bottom: 1px solid var(--border-subtle);
     }
@@ -38,9 +59,9 @@
 
     .key {
       min-width: 38px;
-      min-height: 32px;
-      padding: 4px 6px;
-      font-size: 11px;
+      min-height: 30px;
+      padding: 3px 5px;
+      font-size: 10px;
       font-family: var(--font-ui);
       border-radius: 5px;
       background: var(--surface-tertiary);
@@ -49,7 +70,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: default;
+      cursor: pointer;
       position: relative;
       transition: border-color 0.12s, background 0.12s;
       flex-shrink: 0;
@@ -77,6 +98,17 @@
       font-weight: 500;
     }
 
+    .key.modifier.active {
+      background: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: #fff;
+    }
+
+    .key.selected {
+      outline: 2px solid var(--accent-blue);
+      outline-offset: -1px;
+    }
+
     /* Tooltip */
     .key[data-tooltip]:hover::after {
       content: attr(data-tooltip);
@@ -96,13 +128,85 @@
       border: 1px solid var(--border-standard);
     }
 
-    /* Key widths (base unit ~38px) */
+    /* Key widths */
     .key-w-1   { min-width: 38px; }
-    .key-w-1-2 { min-width: 49px; }   /* Cmd */
-    .key-w-1-5 { min-width: 60px; }   /* Tab, Delete */
-    .key-w-1-8 { min-width: 72px; }   /* Caps, Return */
-    .key-w-2-2 { min-width: 87px; }   /* Shift */
-    .key-w-5   { min-width: 198px; flex: 1; }  /* Space */
+    .key-w-1-2 { min-width: 49px; }
+    .key-w-1-5 { min-width: 60px; }
+    .key-w-1-8 { min-width: 72px; }
+    .key-w-2-2 { min-width: 87px; }
+    .key-w-5   { min-width: 198px; flex: 1; }
+
+    /* ---- Modifier toggle bar ---- */
+    .modifier-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      flex-shrink: 0;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .modifier-bar span.label {
+      margin-right: 4px;
+    }
+
+    .mod-toggle {
+      padding: 4px 10px;
+      font-size: 11px;
+      border-radius: 4px;
+      background: var(--surface-tertiary);
+      border: 1px solid var(--border-standard);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: background 0.12s, border-color 0.12s, color 0.12s;
+      font-family: var(--font-ui);
+    }
+
+    .mod-toggle:hover {
+      background: var(--surface-hover);
+      border-color: var(--border-emphasis);
+    }
+
+    .mod-toggle.active {
+      background: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: #fff;
+      font-weight: 500;
+    }
+
+    /* ---- Search bar ---- */
+    .search-section {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      flex-shrink: 0;
+    }
+
+    .search-section input[type="search"] {
+      flex: 1;
+    }
+
+    .record-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      font-size: 14px;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+
+    .record-btn.active {
+      background: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: #fff;
+    }
 
     /* ---- Command List ---- */
     .list-section {
@@ -111,12 +215,6 @@
       flex-direction: column;
       min-height: 0;
       padding: 0 20px;
-    }
-
-    .search-bar {
-      width: 100%;
-      margin: 12px 0 8px;
-      flex-shrink: 0;
     }
 
     .command-list {
@@ -133,12 +231,33 @@
       color: var(--text-secondary);
       padding: 10px 0 6px;
       border-bottom: 1px solid var(--border-subtle);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .category-header:hover {
+      color: var(--text-primary);
+    }
+
+    .category-header .chevron {
+      font-size: 9px;
+      transition: transform 0.15s;
+      display: inline-block;
+    }
+
+    .category-header.collapsed .chevron {
+      transform: rotate(-90deg);
+    }
+
+    .category-group.collapsed .command-row {
+      display: none;
     }
 
     .command-row {
       display: flex;
       align-items: center;
-      justify-content: space-between;
       padding: 5px 0;
       border-bottom: 1px solid var(--border-subtle);
       font-size: 12px;
@@ -150,6 +269,34 @@
 
     .command-name {
       color: var(--text-primary);
+      flex: 1;
+      min-width: 0;
+    }
+
+    .command-shortcut {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      min-width: 180px;
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 4px;
+      transition: background 0.12s;
+    }
+
+    .command-shortcut:hover {
+      background: var(--surface-hover);
+    }
+
+    .command-shortcut.recording {
+      background: var(--accent-blue-dim);
+      border: 1px solid var(--accent-blue);
+    }
+
+    .command-shortcut .recording-text {
+      font-style: italic;
+      color: var(--text-tertiary);
+      font-size: 11px;
     }
 
     .command-keys {
@@ -169,6 +316,62 @@
       text-align: center;
     }
 
+    .command-keys.empty {
+      color: var(--text-tertiary);
+      font-size: 11px;
+      font-style: italic;
+    }
+
+    .command-category {
+      color: var(--text-tertiary);
+      font-size: 11px;
+      min-width: 60px;
+      text-align: right;
+    }
+
+    .remove-btn {
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      font-size: 13px;
+      padding: 2px 6px;
+      border-radius: 3px;
+      line-height: 1;
+      margin-left: 4px;
+      opacity: 0;
+      transition: opacity 0.12s, color 0.12s;
+    }
+
+    .command-row:hover .remove-btn {
+      opacity: 1;
+    }
+
+    .remove-btn:hover {
+      color: var(--accent-red);
+      background: rgba(244, 67, 54, 0.1);
+    }
+
+    /* Conflict warning */
+    .conflict-warning {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 0 4px 20px;
+      font-size: 11px;
+      color: var(--accent-orange);
+    }
+
+    .conflict-warning .conflict-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .conflict-warning .conflict-actions button {
+      font-size: 11px;
+      padding: 2px 8px;
+    }
+
     .no-results {
       padding: 24px;
       text-align: center;
@@ -176,32 +379,99 @@
       font-size: 12px;
     }
 
+    /* Context menu */
+    .context-menu {
+      position: fixed;
+      background: var(--surface-elevated);
+      border: 1px solid var(--border-standard);
+      border-radius: 6px;
+      padding: 4px 0;
+      min-width: 160px;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .context-menu-item {
+      padding: 6px 12px;
+      font-size: 12px;
+      color: var(--text-primary);
+      cursor: pointer;
+    }
+
+    .context-menu-item:hover {
+      background: var(--accent-blue);
+      color: #fff;
+    }
+
     /* ---- Footer ---- */
     .footer {
       display: flex;
-      justify-content: flex-end;
+      justify-content: space-between;
       align-items: center;
-      gap: 8px;
       padding: 10px 16px;
       border-top: 1px solid var(--border-standard);
       background: var(--surface-secondary);
       flex-shrink: 0;
     }
+
+    .footer-left {
+      display: flex;
+      gap: 8px;
+    }
+
+    .footer-right {
+      display: flex;
+      gap: 8px;
+    }
   </style>
 </head>
 <body>
-  <div class="window-title">Keyboard Shortcuts</div>
+  <!-- Header with preset dropdown -->
+  <div class="header-bar">
+    <span class="title">Keyboard Shortcuts</span>
+    <div class="preset-group">
+      <label>Preset:</label>
+      <select id="preset-select"></select>
+    </div>
+  </div>
 
+  <!-- Visual keyboard -->
   <div class="keyboard-section" id="keyboard"></div>
 
+  <!-- Modifier toggles -->
+  <div class="modifier-bar">
+    <span class="label">Modifiers:</span>
+    <button class="mod-toggle" data-mod="CmdOrCtrl" id="mod-cmd"></button>
+    <button class="mod-toggle" data-mod="Shift" id="mod-shift"></button>
+    <button class="mod-toggle" data-mod="Alt" id="mod-alt"></button>
+    <button class="mod-toggle" data-mod="Ctrl" id="mod-ctrl"></button>
+  </div>
+
+  <!-- Search + record keys -->
+  <div class="search-section">
+    <input type="search" id="search" placeholder="Search commands..." />
+    <button class="record-btn" id="record-search-btn" title="Record keys to search">&#9000;</button>
+  </div>
+
+  <!-- Command list -->
   <div class="list-section">
-    <input type="search" class="search-bar" id="search" placeholder="Search shortcuts..." />
     <div class="command-list" id="command-list"></div>
   </div>
 
+  <!-- Footer -->
   <div class="footer">
-    <button id="cancel-btn">Cancel</button>
-    <button class="primary" id="ok-btn">OK</button>
+    <div class="footer-left">
+      <button id="reset-all-btn">Reset All</button>
+    </div>
+    <div class="footer-right">
+      <button id="cancel-btn">Cancel</button>
+      <button class="primary" id="ok-btn">OK</button>
+    </div>
+  </div>
+
+  <!-- Context menu (hidden) -->
+  <div class="context-menu hidden" id="context-menu">
+    <div class="context-menu-item" id="ctx-reset">Reset to Default</div>
   </div>
 
   <script type="module" src="shortcuts.js"></script>

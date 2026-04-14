@@ -6,6 +6,7 @@ mod menu;
 mod notifications;
 mod recent_files;
 mod settings;
+mod shortcuts;
 mod tray;
 mod updater;
 mod windows;
@@ -110,6 +111,7 @@ pub fn run() {
         // -- Managed state --
         .manage(autosave::AutosaveState::default())
         .manage(DirtyState::default())
+        // ShortcutState is initialized in .setup() after the app handle is available
         // -- IPC command handlers --
         .invoke_handler(tauri::generate_handler![
             // Settings
@@ -157,6 +159,17 @@ pub fn run() {
             updater::install_update,
             // Window management
             windows::open_window,
+            // Shortcuts
+            shortcuts::get_shortcuts,
+            shortcuts::set_shortcut,
+            shortcuts::remove_shortcut,
+            shortcuts::reset_shortcut,
+            shortcuts::reset_all_shortcuts,
+            shortcuts::check_conflict,
+            shortcuts::get_presets,
+            shortcuts::save_preset,
+            shortcuts::load_preset,
+            shortcuts::delete_preset,
         ])
         // -- Setup --
         // Splash screen is the first window in tauri.conf.json (visible: true).
@@ -170,6 +183,10 @@ pub fn run() {
             if let Err(e) = tray::setup_tray(app.handle()) {
                 log::warn!("Failed to set up system tray: {}", e);
             }
+
+            // Initialize keyboard shortcut registry (load from disk or defaults)
+            let shortcut_state = shortcuts::init_shortcuts(app.handle());
+            app.manage(shortcut_state);
 
             let menu = menu::build_menu(app.handle())?;
             app.set_menu(menu)?;

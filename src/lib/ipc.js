@@ -93,6 +93,23 @@ export const ipc = {
   // -- Updater ---------------------------------------------------------------
   checkForUpdates: () => invoke('check_for_updates'),
   installUpdate: () => invoke('install_update'),
+
+  // -- Shortcuts --------------------------------------------------------------
+  getShortcuts: () => invoke('get_shortcuts'),
+  setShortcut: (commandId, keys) =>
+    invoke('set_shortcut', { commandId, keys }),
+  removeShortcut: (commandId) => invoke('remove_shortcut', { commandId }),
+  resetShortcut: (commandId) => invoke('reset_shortcut', { commandId }),
+  resetAllShortcuts: () => invoke('reset_all_shortcuts'),
+  checkConflict: (keys, excludeCommand) =>
+    invoke('check_conflict', {
+      keys,
+      excludeCommand: excludeCommand ?? null,
+    }),
+  getPresets: () => invoke('get_presets'),
+  savePreset: (name) => invoke('save_preset', { name }),
+  loadPreset: (presetId) => invoke('load_preset', { presetId }),
+  deletePreset: (presetId) => invoke('delete_preset', { presetId }),
 };
 
 // ---------------------------------------------------------------------------
