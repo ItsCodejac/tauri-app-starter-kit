@@ -113,9 +113,31 @@ document.getElementById('cancel-btn').addEventListener('click', () => {
   closeWindow();
 });
 
+// Browse for cache folder
+document.getElementById('browse-cache')?.addEventListener('click', async () => {
+  try {
+    const result = await ipc.showOpenDialog({ title: 'Select Cache Folder' });
+    if (result && result[0]) {
+      setValue('cache-location', result[0]);
+    }
+  } catch (e) {
+    console.error('Folder picker error:', e);
+  }
+});
+
 // Clear cache
-document.getElementById('clear-cache')?.addEventListener('click', () => {
-  alert('Cache cleared.');
+document.getElementById('clear-cache')?.addEventListener('click', async () => {
+  try {
+    await ipc.setSetting('cache.cleared', true);
+    const btn = document.getElementById('clear-cache');
+    if (btn) {
+      const orig = btn.textContent;
+      btn.textContent = 'Done';
+      setTimeout(() => { btn.textContent = orig; }, 2000);
+    }
+  } catch (e) {
+    console.error('Clear cache error:', e);
+  }
 });
 
 // --- Init ---
