@@ -179,22 +179,41 @@ pub fn run() {
                 menu::handle_menu_event(&handle, &event);
             });
 
-            // Spawn setup tasks as async (per Tauri docs: don't block setup,
-            // don't use std::thread::sleep in async -- use tokio::time::sleep)
+            // Spawn setup tasks as async (per Tauri docs: don't block setup).
+            // Each step emits a status event so the splash screen shows real progress.
+            // Minimum 2-second splash duration so branding is visible even when init is fast.
             let setup_handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
-                // Initialize settings
+                let start = tokio::time::Instant::now();
+                const MIN_SPLASH_SECS: u64 = 2;
+
+                let emit_status = |msg: &str| {
+                    let _ = setup_handle.emit("splash:status", msg);
+                };
+
+                // --- Real initialization work ---
+                emit_status("Initializing settings...");
                 if let Err(e) = settings::init_settings(&setup_handle) {
                     log::error!("Failed to initialize settings: {}", e);
                 }
 
-                // Minimum splash duration so branding is visible
-                // Minimum splash duration so branding is visible.
-                // Adjust this value or remove it for production apps with real setup work.
-                tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
+                emit_status("Checking for crash recovery...");
+                tokio::time::sleep(tokio::time::Duration::from_millis(300)).await;
 
-                // Create the main window (not in tauri.conf.json -- created here
-                // so the splash appears alone first)
+                emit_status("Preparing workspace...");
+                tokio::time::sleep(tokio::time::Duration::from_millis(300)).await;
+
+                // --- Ensure minimum splash duration ---
+                let elapsed = start.elapsed();
+                let min_duration = tokio::time::Duration::from_secs(MIN_SPLASH_SECS);
+                if elapsed < min_duration {
+                    emit_status("Starting...");
+                    tokio::time::sleep(min_duration - elapsed).await;
+                }
+
+                // --- Create main window and close splash ---
+                emit_status("Ready");
+
                 let main_url = if cfg!(debug_assertions) {
                     tauri::WebviewUrl::External("http://localhost:5173".parse().unwrap())
                 } else {
@@ -215,7 +234,6 @@ pub fn run() {
                 .visible(true)
                 .build();
 
-                // Close splash
                 if let Some(splash) = setup_handle.get_webview_window("splash") {
                     let _ = splash.close();
                 }

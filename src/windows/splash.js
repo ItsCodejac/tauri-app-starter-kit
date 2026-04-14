@@ -1,9 +1,10 @@
 import { branding } from '../lib/branding.js';
-import { ipc, events } from '../lib/ipc.js';
+import { listen } from '@tauri-apps/api/event';
+import { invoke } from '@tauri-apps/api/core';
 
 // Apply branding
 document.getElementById('name').textContent = branding.name;
-document.getElementById('tagline').textContent = branding.tagline;
+document.getElementById('tagline').textContent = branding.tagline || '';
 document.getElementById('copyright').textContent = branding.copyright;
 
 if (branding.logo) {
@@ -17,11 +18,14 @@ document.querySelector('.logo').style.background = branding.accentColor;
 document.getElementById('progress-bar').style.background = branding.accentColor;
 
 // Get version from backend
-ipc.getAppInfo().then((info) => {
+invoke('get_app_info').then((info) => {
   document.getElementById('version').textContent = `v${info.version}`;
 }).catch(() => {});
 
-// Listen for status updates
-events.onMenuEvent('splash:status', (event) => {
-  document.getElementById('status').textContent = event.payload;
+// Listen for status updates from Rust initialization
+listen('splash:status', (event) => {
+  const status = document.getElementById('status');
+  if (status && event.payload) {
+    status.textContent = event.payload;
+  }
 });
