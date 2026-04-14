@@ -1,5 +1,6 @@
 /* ==========================================================================
    Shared Theme — Dark mode variables + base styles
+   Professional desktop application styling (Premiere/Resolve quality).
    Import this from every window for visual consistency.
    ========================================================================== */
 
@@ -108,14 +109,15 @@ body {
 button {
   font-family: var(--font-ui);
   font-size: 13px;
-  padding: 6px 16px;
+  padding: 0 14px;
   height: 28px;
   border: 1px solid var(--border-standard);
   border-radius: 3px;
   background: var(--surface-tertiary);
   color: var(--text-primary);
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background 0.12s, border-color 0.12s;
+  line-height: 26px;
 }
 
 button:hover {
@@ -128,10 +130,12 @@ button:active {
 }
 
 button.primary {
+  height: 32px;
   background: var(--accent-blue);
   border-color: var(--accent-blue);
   color: #fff;
   font-weight: 600;
+  line-height: 30px;
 }
 
 button.primary:hover {
@@ -156,14 +160,19 @@ input[type="url"],
 input[type="email"],
 textarea {
   font-family: var(--font-ui);
-  font-size: 12px;
-  padding: 6px 10px;
+  font-size: 13px;
+  padding: 4px 10px;
+  height: 28px;
   border: 1px solid var(--border-standard);
-  border-radius: 6px;
+  border-radius: 3px;
   background: var(--surface-primary);
   color: var(--text-primary);
   outline: none;
-  transition: border-color 0.15s;
+  transition: border-color 0.12s;
+}
+
+textarea {
+  height: auto;
 }
 
 input:focus,
@@ -180,10 +189,12 @@ textarea::placeholder {
 
 select {
   font-family: var(--font-ui);
-  font-size: 12px;
-  padding: 6px 10px;
+  font-size: 13px;
+  padding: 4px 10px;
+  height: 28px;
+  min-width: 160px;
   border: 1px solid var(--border-standard);
-  border-radius: 6px;
+  border-radius: 3px;
   background: var(--surface-primary);
   color: var(--text-primary);
   outline: none;
@@ -194,54 +205,39 @@ select {
   background-repeat: no-repeat;
   background-position: right 10px center;
   padding-right: 28px;
+  transition: border-color 0.12s;
 }
 
 select:focus {
   border-color: var(--accent-blue);
 }
 
-/* ---------- Checkbox / Toggle ---------- */
+/* ---------- Checkbox (native, desktop style) ---------- */
 
-.toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--accent-blue);
   cursor: pointer;
+}
+
+/* ---------- Group Box ---------- */
+
+.group-box {
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+
+.group-box-title {
   font-size: 12px;
-  color: var(--text-primary);
-}
-
-.toggle input[type="checkbox"] {
-  width: 36px;
-  height: 20px;
-  appearance: none;
-  -webkit-appearance: none;
-  background: var(--surface-hover);
-  border-radius: 10px;
-  position: relative;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.toggle input[type="checkbox"]::after {
-  content: '';
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--text-secondary);
-  transition: transform 0.2s, background 0.2s;
-}
-
-.toggle input[type="checkbox"]:checked {
-  background: var(--accent-blue);
-}
-
-.toggle input[type="checkbox"]:checked::after {
-  transform: translateX(16px);
-  background: #fff;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 14px;
 }
 
 /* ---------- Utility classes ---------- */
@@ -303,7 +299,7 @@ select:focus {
 }
 
 .setting-label {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-primary);
 }
 
@@ -319,8 +315,9 @@ a {
   color: var(--accent-blue);
   text-decoration: none;
   cursor: pointer;
+  transition: color 0.12s;
 }
 
 a:hover {
-  text-decoration: underline;
+  color: var(--text-bright);
 }

@@ -32,7 +32,7 @@ fn get_window_config(name: &str) -> Option<WindowConfig> {
             title: "Preferences",
             url: "src/windows/settings.html",
             width: 780.0,
-            height: 560.0,
+            height: 580.0,
             resizable: true,
             decorations: true,
             always_on_top: false,
