@@ -1,25 +1,25 @@
 # CSS Variables Reference
 
-All custom properties are defined in `src/styles/theme.css` on `:root`. Utility classes are in `src/styles/global.css`.
+All custom properties are defined in `src/styles/shared.css` on `:root`. Utility classes are also in `shared.css`.
 
 ## Surfaces
 
 | Variable | Value | Use |
 |----------|-------|-----|
 | `--surface-base` | `#0d0d0d` | App background, deepest layer |
-| `--surface-primary` | `#1a1a1a` | Side panels, secondary regions |
-| `--surface-secondary` | `#222` | Dialogs, popovers, dropdowns |
-| `--surface-tertiary` | `#2a2a2a` | Tab bars, status bar, panel headers |
+| `--surface-primary` | `#1a1a1a` | Side panels, inputs |
+| `--surface-secondary` | `#222` | Group boxes, secondary regions |
+| `--surface-tertiary` | `#2a2a2a` | Buttons, nested panels |
 | `--surface-hover` | `#333` | Hover state for interactive items |
 | `--surface-active` | `#3a3a3a` | Active/pressed state |
-| `--surface-elevated` | `#444` | Toasts, floating elements with high prominence |
+| `--surface-elevated` | `#444` | Floating elements with high prominence |
 
 ## Borders
 
 | Variable | Value | Use |
 |----------|-------|-----|
 | `--border-subtle` | `#2a2a2a` | Panel dividers, section separators |
-| `--border-standard` | `#3a3a3a` | Dialog borders, input borders |
+| `--border-standard` | `#3a3a3a` | Input borders, dialog borders |
 | `--border-emphasis` | `#555` | Scrollbar thumbs, stronger dividers |
 | `--border-bright` | `#666` | Scrollbar thumb hover, high-contrast borders |
 
@@ -28,37 +28,55 @@ All custom properties are defined in `src/styles/theme.css` on `:root`. Utility 
 | Variable | Value | Use |
 |----------|-------|-----|
 | `--text-primary` | `#e0e0e0` | Default body text |
-| `--text-secondary` | `#999` | Labels, secondary info, tab text |
-| `--text-tertiary` | `#666` | Placeholders, disabled text, shortcuts |
-| `--text-bright` | `#fff` | Active tabs, selected items, headings |
+| `--text-secondary` | `#999` | Labels, secondary info |
+| `--text-tertiary` | `#666` | Placeholders, disabled text |
+| `--text-bright` | `#fff` | Active items, headings |
 
 ## Accents
 
 | Variable | Value | Use |
 |----------|-------|-----|
-| `--accent-blue` | `#4a9eff` | Active tab indicator, focus rings, links |
-| `--accent-blue-dim` | `rgba(74, 158, 255, 0.15)` | Selection background, resize handle hover |
-| `--accent-green` | `#4caf50` | Success toasts |
-| `--accent-orange` | `#ff9800` | Warning toasts |
-| `--accent-red` | `#f44336` | Error toasts |
+| `--accent-blue` | `#4a9eff` | Primary action, focus rings, links |
+| `--accent-blue-dim` | `rgba(74, 158, 255, 0.15)` | Selection background |
+| `--accent-green` | `#4caf50` | Success indicators |
+| `--accent-orange` | `#ff9800` | Warning indicators |
+| `--accent-red` | `#f44336` | Error, destructive actions |
 
 ## Fonts
 
 | Variable | Value | Use |
 |----------|-------|-----|
 | `--font-ui` | `-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif` | All UI text |
-| `--font-mono` | `'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace` | Code, shortcuts, keyboard hints |
+| `--font-mono` | `'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace` | Code, shortcuts |
 
-## Base Styles (theme.css)
+## Base Styles
 
-Applied globally via `theme.css`:
+Applied globally via `shared.css`:
 
 - `* { margin: 0; padding: 0; box-sizing: border-box; }`
-- `body` font size: `12px`
+- `body` font size: `13px`
 - `body` user-select: `none` (drag prevention)
-- `#root` is a full-viewport flex column
+- `#app` is a full-viewport flex column
+- Styled scrollbars: 6px wide, rounded, `--border-emphasis` / `--border-bright` thumb colors, transparent track
+- Focus ring: 2px `--accent-blue` outline with `-2px` offset
+- Selection: `--accent-blue-dim` background with `--text-bright` text
+- Buttons: standard and `.primary` variants with hover/active/disabled states
+- Inputs/textareas/selects: styled with border, focus states, placeholder color
+- Checkboxes: 14px with accent color
 
-## Utility Classes (global.css)
+## Component Styles
+
+| Class | Use |
+|-------|-----|
+| `.group-box` | Bordered section container |
+| `.group-box-title` | Uppercase section title in group box |
+| `.section` | Padded section with bottom border |
+| `.section-title` | Uppercase section title |
+| `.setting-row` | Flex row for label + control |
+| `.setting-label` | Label text in setting row |
+| `.setting-hint` | Small hint text below a setting |
+
+## Utility Classes
 
 ### Text
 
@@ -80,8 +98,11 @@ Applied globally via `theme.css`:
 | `.flex-1` | `flex: 1` |
 | `.items-center` | `align-items: center` |
 | `.justify-between` | `justify-content: space-between` |
+| `.justify-center` | `justify-content: center` |
 | `.gap-4` | `gap: 4px` |
 | `.gap-8` | `gap: 8px` |
+| `.gap-12` | `gap: 12px` |
+| `.gap-16` | `gap: 16px` |
 
 ### Behavior
 
@@ -89,15 +110,8 @@ Applied globally via `theme.css`:
 |-------|--------|
 | `.truncate` | Single-line text with ellipsis overflow |
 | `.selectable` | Enables text selection (overrides global `user-select: none`) |
+| `.hidden` | `display: none !important` |
 
-### Scrollbars
+### Links
 
-Styled globally in `global.css`: 6px wide, rounded, uses `--border-emphasis` / `--border-bright` for thumb colors. Track is transparent.
-
-### Focus
-
-`:focus-visible` applies a 2px `--accent-blue` outline with `-2px` offset.
-
-### Selection
-
-`::selection` uses `--accent-blue-dim` background with `--text-bright` text.
+Links (`<a>`) are styled with `--accent-blue` color, no underline, and transition to `--text-bright` on hover.

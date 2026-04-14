@@ -8,15 +8,22 @@
     body {
       display: flex;
       flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .update-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 100vh;
       padding: 32px;
       text-align: center;
     }
     .icon {
       font-size: 36px;
       margin-bottom: 16px;
+      color: var(--text-secondary);
     }
     .title {
       font-size: 16px;
@@ -25,29 +32,28 @@
       margin-bottom: 8px;
     }
     .message {
-      font-size: 12px;
+      font-size: 13px;
       color: var(--text-secondary);
       margin-bottom: 20px;
       max-width: 320px;
       line-height: 1.5;
     }
     .release-notes {
-      font-size: 11px;
+      font-size: 12px;
       color: var(--text-tertiary);
       max-width: 320px;
       max-height: 120px;
       overflow-y: auto;
       text-align: left;
-      padding: 8px 12px;
+      padding: 10px 14px;
       background: var(--surface-primary);
       border: 1px solid var(--border-subtle);
-      border-radius: 6px;
+      border-radius: 3px;
       margin-bottom: 20px;
       line-height: 1.5;
       user-select: text;
       -webkit-user-select: text;
     }
-    .actions { display: flex; gap: 8px; }
     .spinner {
       width: 24px; height: 24px;
       border: 2px solid var(--border-standard);
@@ -58,42 +64,61 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     .hidden { display: none !important; }
+
+    /* ── Footer ── */
+    .footer {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+      height: 44px;
+      padding: 0 16px;
+      border-top: 1px solid var(--border-standard);
+      background: var(--surface-primary);
+      flex-shrink: 0;
+    }
+    .footer .spacer { margin-right: auto; }
+    .footer button { min-width: 72px; }
   </style>
 </head>
 <body>
-  <!-- Checking state -->
-  <div id="checking">
-    <div class="spinner"></div>
-    <div class="title">Checking for updates...</div>
-  </div>
+  <div class="update-content">
+    <!-- Checking state -->
+    <div id="checking">
+      <div class="spinner"></div>
+      <div class="title">Checking for updates...</div>
+    </div>
 
-  <!-- Up to date state -->
-  <div id="up-to-date" class="hidden">
-    <div class="icon">&#10003;</div>
-    <div class="title">You're up to date!</div>
-    <div class="message" id="current-version"></div>
-  </div>
+    <!-- Up to date state -->
+    <div id="up-to-date" class="hidden">
+      <div class="icon">&#10003;</div>
+      <div class="title">You're up to date!</div>
+      <div class="message" id="current-version"></div>
+    </div>
 
-  <!-- Update available state -->
-  <div id="update-available" class="hidden">
-    <div class="icon">&#8593;</div>
-    <div class="title" id="update-title">Update Available</div>
-    <div class="message" id="update-message"></div>
-    <div class="release-notes hidden" id="release-notes"></div>
-    <div class="actions">
-      <button id="skip-btn">Skip</button>
-      <button class="primary" id="install-btn">Download & Install</button>
+    <!-- Update available state -->
+    <div id="update-available" class="hidden">
+      <div class="icon">&#8593;</div>
+      <div class="title" id="update-title">Update Available</div>
+      <div class="message" id="update-message"></div>
+      <div class="release-notes hidden" id="release-notes"></div>
+    </div>
+
+    <!-- Error state -->
+    <div id="error-state" class="hidden">
+      <div class="icon">!</div>
+      <div class="title">Update check failed</div>
+      <div class="message" id="error-message"></div>
     </div>
   </div>
 
-  <!-- Error state -->
-  <div id="error-state" class="hidden">
-    <div class="icon">!</div>
-    <div class="title">Update check failed</div>
-    <div class="message" id="error-message"></div>
-    <div class="actions">
-      <button id="retry-btn">Retry</button>
-    </div>
+  <!-- Footer with action buttons (shown per state via JS) -->
+  <div class="footer" id="footer">
+    <span class="spacer"></span>
+    <button id="close-btn">Close</button>
+    <button id="skip-btn" class="hidden">Skip</button>
+    <button id="retry-btn" class="hidden">Retry</button>
+    <button class="primary hidden" id="install-btn">Download & Install</button>
   </div>
 
   <script type="module" src="update.js"></script>

@@ -10,10 +10,22 @@ const views = {
   errorState: document.getElementById('error-state'),
 };
 
+const footerBtns = {
+  close: document.getElementById('close-btn'),
+  skip: document.getElementById('skip-btn'),
+  retry: document.getElementById('retry-btn'),
+  install: document.getElementById('install-btn'),
+};
+
 function showView(name) {
   for (const [key, el] of Object.entries(views)) {
     el.classList.toggle('hidden', key !== name);
   }
+  // Show/hide footer buttons per state
+  footerBtns.close.classList.toggle('hidden', name === 'checking');
+  footerBtns.skip.classList.toggle('hidden', name !== 'updateAvailable');
+  footerBtns.retry.classList.toggle('hidden', name !== 'errorState');
+  footerBtns.install.classList.toggle('hidden', name !== 'updateAvailable');
 }
 
 async function checkForUpdates() {
@@ -61,6 +73,8 @@ document.getElementById('install-btn')?.addEventListener('click', async () => {
 document.getElementById('skip-btn')?.addEventListener('click', closeWindow);
 
 document.getElementById('retry-btn')?.addEventListener('click', checkForUpdates);
+
+document.getElementById('close-btn')?.addEventListener('click', closeWindow);
 
 // Start check
 checkForUpdates();

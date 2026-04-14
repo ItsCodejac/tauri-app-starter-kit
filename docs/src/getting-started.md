@@ -16,7 +16,15 @@ npm install
 cargo tauri dev
 ```
 
-The app opens with three workspace tabs, a 4-panel layout, a status bar, and full native menus.
+On first launch, a branded splash screen appears for 3 seconds while settings initialize. Then the main window opens showing a welcome page with interactive buttons that let you try every utility window.
+
+## What happens on first launch
+
+1. The **splash window** (`src/windows/splash.html`) appears immediately -- it is the only window defined in `tauri.conf.json`.
+2. Rust initialization runs asynchronously: settings are loaded, crash recovery is checked, the keyboard shortcut registry is initialized, and the system tray is set up.
+3. Progress messages are emitted to the splash screen via the `splash:status` event.
+4. After a minimum 3-second splash duration, the **main window** is created programmatically in Rust (`lib.rs` setup) and the splash closes.
+5. The main window loads `index.html`, which includes the template's welcome page with interactive demos. Replace this with your own UI.
 
 ## First customizations
 
@@ -61,15 +69,21 @@ fn main() {
 }
 ```
 
-### 3. Edit workspace tabs
+### 3. Set branding
 
-In `src/App.tsx`, replace the default tabs:
+Edit `src/lib/branding.js` -- this single file drives the name, tagline, logo, accent color, and copyright across all utility windows:
 
-```tsx
-const tabs: Tab[] = [
-  { id: 'editor', label: 'Editor' },
-  { id: 'preview', label: 'Preview' },
-];
+```javascript
+export const branding = {
+  name: "My App",
+  tagline: "Does something great",
+  logo: "",                    // path relative to public/, or empty for first-letter fallback
+  accentColor: "#4a9eff",
+  copyright: "\u00A9 2026 Your Company",
+  website: "https://yourapp.com",
+  github: "https://github.com/you/my-app",
+  licenseInfo: "MIT License",
+};
 ```
 
 ### 4. Add custom menus
@@ -92,9 +106,9 @@ fn custom_menus() -> Vec<MenuConfig> {
 }
 ```
 
-Menu events are auto-forwarded to the frontend. The ID `project_build` emits the event `menu:project:build`. Listen in React:
+Menu events are auto-forwarded to the frontend. The ID `project_build` emits the event `menu:project:build`. Listen in your frontend:
 
-```tsx
+```javascript
 import { listen } from '@tauri-apps/api/event';
 
 listen('menu:project:build', () => {
@@ -102,9 +116,19 @@ listen('menu:project:build', () => {
 });
 ```
 
+Or use the IPC facade:
+
+```javascript
+import { events } from './lib/ipc.js';
+
+events.onMenuEvent('menu:project:build', () => {
+  // handle build
+});
+```
+
 ### 5. Customize theme colors
 
-Edit `src/styles/theme.css`. All colors are CSS custom properties:
+Edit `src/styles/shared.css`. All colors are CSS custom properties:
 
 ```css
 :root {
@@ -114,47 +138,21 @@ Edit `src/styles/theme.css`. All colors are CSS custom properties:
 }
 ```
 
-## Layout presets
+### 6. Add your frontend framework
 
-The `PanelLayout` component accepts optional panel props. Omit a panel to remove it.
+The template ships with no framework. `index.html` loads `src/main.js` and `src/styles/shared.css`. Replace the page content with your own UI:
 
-### Minimal -- no panels, just center content
+```bash
+# React
+npm install react react-dom @vitejs/plugin-react
 
-```tsx
-<PanelLayout
-  centerLabel="Main"
-  centerPanel={<MyContent />}
-/>
+# Svelte
+npm install svelte @sveltejs/vite-plugin-svelte
+
+# Vue
+npm install vue @vitejs/plugin-vue
+
+# Or just write vanilla HTML/JS in index.html
 ```
 
-### Sidebar + Main -- 2 panels
-
-```tsx
-<PanelLayout
-  leftLabel="Explorer"
-  centerLabel="Editor"
-  leftPanel={<Sidebar />}
-  centerPanel={<Editor />}
-  leftWidth={260}
-/>
-```
-
-### Full workspace -- 4 panels (the default)
-
-```tsx
-<PanelLayout
-  leftLabel="Navigator"
-  centerLabel="Canvas"
-  rightLabel="Inspector"
-  bottomLabel="Console"
-  leftPanel={<Navigator />}
-  centerPanel={<Canvas />}
-  rightPanel={<Inspector />}
-  bottomPanel={<Console />}
-  leftWidth={240}
-  rightWidth={240}
-  bottomHeight={180}
-/>
-```
-
-All panel sizes are draggable at runtime and persisted to `localStorage`. Double-click a panel header to collapse it.
+The Rust backbone and utility windows work regardless of which framework you choose. Utility windows are always plain HTML + JS and are not affected by your framework choice.

@@ -14,7 +14,7 @@ In `src-tauri/tauri.conf.json`:
 
 ```json
 {
-  "productName": "tauri-app-starter",
+  "productName": "tauri-app-starter-kit",
   "version": "0.1.0",
   "identifier": "com.tauri.dev",
   "bundle": {
@@ -107,10 +107,10 @@ See [Tauri Windows code signing docs](https://v2.tauri.app/distribute/sign/windo
 
 Tauri has a built-in updater plugin. Brief setup:
 
-1. Add `tauri-plugin-updater` to `Cargo.toml`
-2. Configure an update endpoint in `tauri.conf.json`
-3. Host a JSON manifest with version info at that endpoint
-4. The app checks for updates on launch
+1. Uncomment `.plugin(tauri_plugin_updater::Builder::new().build())` in `src-tauri/src/lib.rs`
+2. Add `updater::mark_enabled()` after the plugin registration
+3. Configure an update endpoint in `tauri.conf.json`
+4. Host a JSON manifest with version info at that endpoint
 
 > **Important:** The updater will not work until you configure `plugins.updater.endpoints` in `tauri.conf.json` with at least one URL pointing to your update manifest. Without this, update checks will silently fail. Example:
 >
@@ -132,10 +132,11 @@ This starter includes mdBook documentation wired to the Help menu. Before shippi
 
 1. Replace content in `docs/src/` with your app's user-facing docs
 2. Update `docs/src/SUMMARY.md` with your table of contents
-3. Update the window title and book title in `docs/book.toml`
-4. The Help > Documentation menu item opens the built docs in the user's browser
+3. Update the book title in `docs/book.toml`
+4. Build docs: `mdbook build docs`
+5. The Help > Documentation menu item opens the built docs in the user's browser
 
-If you don't want built-in docs, remove the docs-related menu item from your menu setup and delete the `docs/` directory.
+If you don't want built-in docs, remove the `help_docs` handler from `menu.rs` and delete the `docs/` directory.
 
 ## Branding Checklist
 
@@ -143,8 +144,8 @@ Everything you need to change to make this template yours:
 
 - [ ] **App name (`productName`)** -- `src-tauri/tauri.conf.json` field `productName`
 - [ ] **Bundle identifier** -- `src-tauri/tauri.conf.json` field `identifier` (reverse-domain format, e.g. `com.yourcompany.yourapp`)
-- [ ] **Window title** -- `src-tauri/tauri.conf.json` under `app.windows[0].title`
 - [ ] **Rust package name** -- `src-tauri/Cargo.toml` field `package.name` (use kebab-case)
+- [ ] **Rust lib name** -- `src-tauri/Cargo.toml` field `lib.name` and update `main.rs` import
 - [ ] **Node package name** -- `package.json` field `name`
 - [ ] **App icon** -- generate all sizes from a single 1024x1024 PNG:
   ```bash
@@ -152,98 +153,63 @@ Everything you need to change to make this template yours:
   ```
   This writes all required sizes to `src-tauri/icons/`.
 - [ ] **Docs book title** -- `docs/book.toml` field `book.title`
-- [ ] **Branding config** -- update `src/lib/branding.ts` (see below)
+- [ ] **Branding config** -- update `src/lib/branding.js` (see below)
 
-## Branding Configuration (`src/lib/branding.ts`)
+## Branding Configuration (`src/lib/branding.js`)
 
-All brand-aware components (splash screen, about dialog, status bar) read from a single configuration file at `src/lib/branding.ts`. This is the one place to set your app's visual identity.
+All brand-aware windows (splash screen, about dialog, welcome screen, etc.) read from a single configuration file at `src/lib/branding.js`. This is the one place to set your app's visual identity.
 
 ### Fields
 
 | Field | Description |
 |-------|-------------|
 | `name` | App display name shown on splash screen and about dialog |
-| `tagline` | Short tagline shown on the splash screen and about dialog |
+| `tagline` | Short tagline shown on the splash screen |
 | `logo` | Path to logo image (SVG or PNG, relative to `public/`). When empty, a styled first-letter is shown instead. |
-| `splashBackground` | Path to a background image for the splash screen (optional, relative to `public/`). A dark overlay is applied so text remains readable. |
-| `accentColor` | Primary brand color used for the splash progress bar and logo gradient. |
-| `copyright` | Copyright line shown at the bottom of the splash screen and in the about dialog. |
+| `splashBackground` | Path to a background image for the splash screen (optional, relative to `public/`). |
+| `accentColor` | Primary brand color used for the splash progress bar, logo gradient, and CSS accent override. |
+| `copyright` | Copyright line shown in the splash screen and about dialog. |
 | `website` | URL shown as a link in the about dialog. Leave empty to hide. |
-| `github` | GitHub URL shown as a link in the about dialog. Leave empty to hide. |
-| `licenseInfo` | License URL or text shown in the about dialog. Leave empty to hide. |
+| `github` | GitHub URL shown as a link in the about dialog. Also used by the "Report Issue" menu handler. Leave empty to hide. |
+| `licenseInfo` | License text shown in the about dialog. Leave empty to hide. |
 
 ### Adding a Logo
 
 1. Drop your logo file (SVG or PNG) in `public/assets/`
-2. Set the path in `branding.ts`:
-   ```typescript
+2. Set the path in `branding.js`:
+   ```javascript
    logo: "/assets/logo.svg",
    ```
 
-### Adding a Splash Background Image
-
-1. Drop your background image in `public/assets/`
-2. Set the path in `branding.ts`:
-   ```typescript
-   splashBackground: "/assets/splash-bg.png",
-   ```
-   The image fills the splash screen with a darkened overlay so the text and logo remain readable.
-
-### Changing the Accent Color
-
-Set `accentColor` in `branding.ts` to change the splash screen progress bar and logo gradient:
-
-```typescript
-accentColor: "#e91e63",
-```
-
-Note: The `accentColor` in `branding.ts` is used by brand-aware components (splash screen, etc.). To change the accent color across the full UI (buttons, links, selections), also update `--accent-blue` in `src/styles/theme.css`.
-
 ## Splash Screen
 
-The starter kit includes a splash screen that displays while the app initializes (loading settings, checking recovery, etc.). It shows the app name, version, and an animated progress bar, then fades out once everything is ready.
+The splash screen is a separate HTML window (`src/windows/splash.html`) defined as the only window in `tauri.conf.json`. It appears immediately on launch while Rust runs async initialization.
 
 ### How It Works
 
-The splash is a React component (`SplashScreen.tsx`) that renders as a full-screen overlay on top of the app. It uses only inline styles so it appears instantly before any external CSS loads. Once all initialization completes, the `appReady` flag is set and the splash fades out over 300ms.
+1. Tauri creates the splash window on startup (it's the only `visible: true` window in `tauri.conf.json`)
+2. The Rust setup spawns an async task that emits `splash:status` events with progress messages
+3. The splash JS listens for these events and updates the status text
+4. After initialization completes (minimum 3 seconds), Rust creates the main window programmatically and closes the splash
 
 ### Customizing the Splash
 
-The `SplashScreen` component accepts these props:
+Edit `src/windows/splash.html` and `src/windows/splash.js`. The splash uses `applyBranding()` from `window-utils.js` to show the app name, logo, and accent color.
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `appName` | `string` | Application name displayed prominently |
-| `version` | `string` | Version string (e.g. `v0.1.0`) |
-| `tagline` | `string?` | Optional tagline below the version |
-| `logoSrc` | `string?` | Path to a logo image; when omitted, a styled first-letter is shown |
-| `ready` | `boolean` | When true, the splash fades out |
-| `onExit` | `() => void` | Called after the fade-out completes |
+### Removing the Splash
 
-**To add your logo**, place an image in `src/assets/` and pass its path:
-
-```tsx
-<SplashScreen
-  appName="My App"
-  version="v1.0.0"
-  tagline="Professional Video Editor"
-  logoSrc="/src/assets/logo.png"
-  ready={appReady}
-  onExit={() => setSplashDismissed(true)}
-/>
-```
-
-**To add a tagline**, pass the `tagline` prop in `App.tsx` where the `SplashScreen` is rendered.
-
-**To remove the splash entirely**, delete the `SplashScreen` import and the `{!splashDismissed && <SplashScreen ... />}` block in `App.tsx`, then set `appReady`'s default to `true` or remove the state entirely.
+1. Remove the splash window entry from `tauri.conf.json`
+2. Add a main window entry to `tauri.conf.json` instead
+3. Remove the splash-related code from the setup closure in `lib.rs`
 
 ## Pre-Ship Checklist
 
 - [ ] Update `productName`, `version`, and `identifier` in `tauri.conf.json`
 - [ ] Update `name`, `version`, `description` in `Cargo.toml`
+- [ ] Update branding in `src/lib/branding.js`
 - [ ] Generate app icons with `cargo tauri icon`
 - [ ] Replace template docs or remove the docs directory
-- [ ] Remove any placeholder/demo components
+- [ ] Replace the `index.html` welcome page with your app's UI
 - [ ] Set up code signing for your target platforms
 - [ ] Test the production build: `cargo tauri build`
 - [ ] Test on a clean machine (no dev tools installed)

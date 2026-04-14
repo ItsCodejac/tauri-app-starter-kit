@@ -2,6 +2,8 @@
 
 Store secrets in the OS-native keychain using [tauri-plugin-keyring](https://github.com/nicepkg/tauri-plugin-keyring). Secrets never touch the filesystem -- they are managed by the operating system's credential manager.
 
+The plugin is registered in `lib.rs` and available via the Tauri plugin's JavaScript API.
+
 ## Where Secrets Are Stored
 
 | Platform | Backend |
@@ -12,34 +14,39 @@ Store secrets in the OS-native keychain using [tauri-plugin-keyring](https://git
 
 ## API
 
-All keyring operations go through the IPC facade in `src/lib/ipc.ts`. Each secret is addressed by a `service` + `key` pair.
+Use the `tauri-plugin-keyring-api` JavaScript package directly, or wrap it in your IPC facade. Each secret is addressed by a `service` + `key` pair.
 
 ### Store a secret
 
-```ts
-import { ipc } from '../lib/ipc';
+```javascript
+import { setPassword } from 'tauri-plugin-keyring-api';
 
-await ipc.keyringSet('com.myapp', 'api_key', 'sk-abc123...');
+await setPassword('com.myapp', 'api_key', 'sk-abc123...');
 ```
 
 ### Retrieve a secret
 
-```ts
-const secret = await ipc.keyringGet('com.myapp', 'api_key');
+```javascript
+import { getPassword } from 'tauri-plugin-keyring-api';
+
+const secret = await getPassword('com.myapp', 'api_key');
 // secret is string | null
 ```
 
 ### Delete a secret
 
-```ts
-await ipc.keyringDelete('com.myapp', 'api_key');
+```javascript
+import { deletePassword } from 'tauri-plugin-keyring-api';
+
+await deletePassword('com.myapp', 'api_key');
 ```
 
 ### Check existence
 
-```ts
-const exists = await ipc.keyringHas('com.myapp', 'api_key');
-// true | false
+```javascript
+import { getPassword } from 'tauri-plugin-keyring-api';
+
+const exists = (await getPassword('com.myapp', 'api_key')) !== null;
 ```
 
 ## Keyring vs Settings
@@ -56,12 +63,14 @@ const exists = await ipc.keyringHas('com.myapp', 'api_key');
 
 ### API key storage
 
-```ts
+```javascript
+import { setPassword, getPassword } from 'tauri-plugin-keyring-api';
+
 // Save
-await ipc.keyringSet('com.myapp', 'openai_key', userInput);
+await setPassword('com.myapp', 'openai_key', userInput);
 
 // Use
-const key = await ipc.keyringGet('com.myapp', 'openai_key');
+const key = await getPassword('com.myapp', 'openai_key');
 if (!key) {
   // Prompt user to enter their key
 }
@@ -69,41 +78,24 @@ if (!key) {
 
 ### License key validation
 
-```ts
-async function storeLicense(license: string) {
-  await ipc.keyringSet('com.myapp', 'license', license);
+```javascript
+import { setPassword, getPassword } from 'tauri-plugin-keyring-api';
+
+async function storeLicense(license) {
+  await setPassword('com.myapp', 'license', license);
 }
 
-async function isLicensed(): Promise<boolean> {
-  return ipc.keyringHas('com.myapp', 'license');
+async function isLicensed() {
+  return (await getPassword('com.myapp', 'license')) !== null;
 }
 ```
 
-## Settings Panel (Security Section)
+## Implementation Notes
 
-The built-in Settings panel includes a **Security** section that lets users manage stored secrets. It displays the service/key pairs (never the values) and allows adding or removing entries.
+The keyring plugin operates entirely through its JavaScript API -- no custom Rust `#[tauri::command]` functions are involved. The plugin is registered in `lib.rs`:
 
-The panel tracks which keys exist via a `keyring_keys` setting (stored in `settings.json` as metadata only -- actual secret values remain in the OS keychain):
-
-```ts
-// The settings panel stores key metadata for display
-const stored = getSetting<{ service: string; key: string }[]>('keyring_keys', []);
+```rust
+.plugin(tauri_plugin_keyring::init())
 ```
 
-When adding a secret through the panel, it calls `ipc.keyringSet()` and appends the service/key pair to `keyring_keys`. When removing, it calls `ipc.keyringDelete()` and removes the pair.
-
-## Implementation Details
-
-The IPC facade wraps the `tauri-plugin-keyring-api` JS bindings directly -- no Rust command is involved:
-
-```ts
-import { getPassword, setPassword, deletePassword } from 'tauri-plugin-keyring-api';
-
-keyringSet: (service, key, value) => setPassword(service, key, value),
-keyringGet: (service, key) => getPassword(service, key),
-keyringDelete: (service, key) => deletePassword(service, key),
-keyringHas: async (service, key) => {
-  const value = await getPassword(service, key);
-  return value !== null;
-},
-```
+If you need to add keyring management to your Settings window, you can call the plugin API from the settings window's JavaScript.

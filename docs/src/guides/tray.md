@@ -21,15 +21,15 @@ The tray ships with two items:
 
 When the `tray.minimize_to_tray` setting is `true`, closing the window hides it instead of quitting. The user can quit via the tray menu or Cmd+Q.
 
-The setting defaults to `false` and is stored in `settings.json`. Toggle it from React:
+The setting defaults to `false` and is stored in `settings.json`. Toggle it from the frontend:
 
-```ts
-import { ipc } from '../lib/ipc';
+```javascript
+import { ipc } from './lib/ipc.js';
 
 await ipc.setSetting('tray.minimize_to_tray', true);
 ```
 
-The `CloseRequested` handler in `lib.rs` checks this setting:
+The `CloseRequested` handler in `lib.rs` checks this setting via `tray::should_minimize_to_tray()`:
 
 ```rust
 tauri::WindowEvent::CloseRequested { api, .. } => {
@@ -44,7 +44,7 @@ tauri::WindowEvent::CloseRequested { api, .. } => {
 
 ## Customizing the Tray Icon
 
-The tray uses the app's default icon. To change it, replace `src-tauri/icons/icon.png` or set a custom icon:
+The tray uses the app's default icon. To change it, replace `src-tauri/icons/icon.png` or set a custom icon in `setup_tray()`:
 
 ```rust
 let _tray = TrayIconBuilder::new()
@@ -83,4 +83,6 @@ Then handle the event:
 
 ## Disabling the Tray
 
-Remove the `tray::setup_tray(&app_handle)` call in `lib.rs`. No other systems depend on it. The `minimize_to_tray` setting will simply have no effect.
+Remove the `tray::setup_tray(app.handle())` call in `lib.rs`. No other systems depend on it. The `minimize_to_tray` setting will simply have no effect.
+
+Note: The `tray-icon` feature in `Cargo.toml` is required for the tray to compile. You can remove it from the `tauri` features if you remove the tray entirely.

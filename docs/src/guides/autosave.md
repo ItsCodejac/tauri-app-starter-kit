@@ -1,6 +1,6 @@
 # Autosave & Crash Recovery
 
-A background timer periodically saves application state to a recovery file. If the app crashes, the state is available on next launch.
+A background timer periodically saves application state to a recovery file. If the app crashes, the state is available on next launch. Defined in `src-tauri/src/autosave.rs`.
 
 ## How It Works
 
@@ -12,57 +12,56 @@ A background timer periodically saves application state to a recovery file. If t
 
 ## Starting Autosave
 
-Call `start_autosave` once at app startup. Typically done in your root component:
+Call `start_autosave` once at app startup:
 
-```ts
-import { invoke } from '@tauri-apps/api/core';
+```javascript
+import { ipc } from './lib/ipc.js';
 
 // Start with default 60s interval
-await invoke('start_autosave', {});
+await ipc.startAutosave();
 
 // Or with a custom interval
-await invoke('start_autosave', { intervalSecs: 30 });
+await ipc.startAutosave(30);
 ```
 
 Calling `start_autosave` when already running is a no-op.
 
-## Sending State from Frontend
+## Sending State from the Frontend
 
 Push your serializable app state whenever it changes meaningfully:
 
-```ts
+```javascript
 const appState = {
   openFile: '/path/to/project.json',
   unsavedChanges: { /* ... */ },
 };
 
-await invoke('update_autosave_state', {
-  data: JSON.stringify(appState),
-});
+await ipc.updateAutosaveState(JSON.stringify(appState));
 ```
 
 This only updates the pending buffer. The actual disk write happens on the next timer tick.
 
 ## Recovery Flow on Startup
 
-Check for recovery data before initializing your app:
+The app automatically checks for recovery data on launch. About 1 second after startup, if a recovery file exists, Rust emits the `autosave:recovery-available` event. Listen for it in your frontend:
 
-```ts
-import { invoke } from '@tauri-apps/api/core';
+```javascript
+import { events } from './lib/ipc.js';
 
-interface RecoveryInfo {
-  has_recovery: boolean;
-  timestamp: string | null;
-  data: unknown | null;
-}
-
-const recovery = await invoke<RecoveryInfo>('check_recovery');
-
-if (recovery.has_recovery) {
-  // Show a dialog: "Recover unsaved work from <timestamp>?"
-  if (userAccepted) {
-    restoreState(recovery.data);
+events.onRecoveryAvailable((info) => {
+  // info.has_recovery, info.timestamp, info.data
+  if (confirm('Recover unsaved work?')) {
+    restoreState(info.data);
   }
+});
+```
+
+You can also check manually:
+
+```javascript
+const recovery = await ipc.checkRecovery();
+if (recovery.has_recovery) {
+  // Show recovery UI
 }
 ```
 
@@ -79,38 +78,36 @@ The recovery file contains:
 
 The backend emits `autosave:saved` after each successful write:
 
-```ts
-import { listen } from '@tauri-apps/api/event';
-
-const unlisten = await listen('autosave:saved', () => {
+```javascript
+events.onAutosaveSaved(() => {
   // Update UI indicator, etc.
 });
 ```
 
 ## Stopping Autosave
 
-```ts
-await invoke('stop_autosave');
+```javascript
+await ipc.stopAutosave();
 ```
 
 Sets a flag that causes the background thread to exit on its next wake.
 
 ## Cleanup on Normal Exit
 
-`cleanup_recovery` is called automatically by the Rust backend on graceful shutdown. It deletes `recovery.json` so no false recovery prompt appears on next launch.
+`cleanup_recovery` is called automatically by the Rust backend when the main window is destroyed (the `Destroyed` event handler in `lib.rs`). It deletes `recovery.json` so no false recovery prompt appears on next launch.
 
 ## Configuring the Interval
 
 The interval comes from two places:
 
 - **`start_autosave` argument** -- the `intervalSecs` parameter (default 60)
-- **Settings** -- `autosave_interval_secs` in `AppSettings` for persisting the user's preference
+- **Settings** -- `autosave_interval_secs` setting for persisting the user's preference
 
 Read the setting, then pass it when starting:
 
-```ts
-const interval = await invoke<number>('get_setting', { key: 'autosave_interval_secs' });
-await invoke('start_autosave', { intervalSecs: interval });
+```javascript
+const interval = await ipc.getSetting('autosave_interval_secs');
+await ipc.startAutosave(interval);
 ```
 
 ## What to Store in Autosave State

@@ -1,89 +1,102 @@
 # Drag & Drop
 
-The template includes file drop support with visual feedback.
+Tauri v2 provides native file drag-and-drop events. TASK does not include a drag-drop abstraction -- implement it directly using Tauri's webview window API.
 
-## Using the Hook
+## Listening for Drag-Drop Events
 
-```typescript
-import { useDragDrop } from '../hooks/useDragDrop';
+Use Tauri's `onDragDropEvent` API from the frontend:
 
-function MyComponent() {
-  const { isDragging } = useDragDrop({
-    accept: ['.json', '.png', '.jpg'],  // optional file filter
-    onFilesDropped: (paths) => {
-      console.log('Dropped files:', paths);
-      // Load the files, import them, etc.
-    },
-  });
-
-  return <div>{isDragging && <DropOverlay />}</div>;
-}
-```
-
-## Drop Overlay
-
-The `DropOverlay` component shows a full-screen visual indicator when files are being dragged over the window:
-- Semi-transparent dark background
-- Dashed border
-- "Drop files here" text
-- Disappears when the drag leaves or files are dropped
-
-```tsx
-import DropOverlay from '../components/ui/DropOverlay';
-
-{isDragging && <DropOverlay />}
-```
-
-## File Filtering
-
-Pass an `accept` array to filter by extension:
-
-```typescript
-useDragDrop({
-  accept: ['.mp4', '.mov', '.avi'],  // video files only
-  onFilesDropped: handleVideoDrop,
-});
-```
-
-Files that don't match the filter are silently ignored.
-
-## Without the Hook
-
-For custom implementations, listen to Tauri's drag-drop events directly:
-
-```typescript
+```javascript
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 
 const appWindow = getCurrentWebviewWindow();
 const unlisten = await appWindow.onDragDropEvent((event) => {
   if (event.payload.type === 'over') {
-    // Files being dragged over window
+    // Files being dragged over the window
+    showDropOverlay();
   } else if (event.payload.type === 'drop') {
-    // Files dropped: event.payload.paths
+    // Files dropped
+    const paths = event.payload.paths;
+    handleFiles(paths);
+    hideDropOverlay();
   } else if (event.payload.type === 'leave') {
     // Drag left the window
+    hideDropOverlay();
   }
 });
+```
+
+## File Filtering
+
+Filter by extension after receiving the drop:
+
+```javascript
+const validExtensions = ['.mp4', '.mov', '.avi'];
+
+function handleDrop(paths) {
+  const filtered = paths.filter(p =>
+    validExtensions.some(ext => p.toLowerCase().endsWith(ext))
+  );
+  if (filtered.length > 0) {
+    openFiles(filtered);
+  }
+}
+```
+
+## Visual Feedback
+
+Add a drop overlay to your HTML that shows when files are being dragged over the window:
+
+```html
+<div id="drop-overlay" class="hidden">
+  <p>Drop files here</p>
+</div>
+```
+
+```css
+#drop-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  border: 2px dashed var(--accent-blue);
+  color: var(--text-bright);
+  font-size: 16px;
+}
+```
+
+```javascript
+function showDropOverlay() {
+  document.getElementById('drop-overlay').classList.remove('hidden');
+}
+function hideDropOverlay() {
+  document.getElementById('drop-overlay').classList.add('hidden');
+}
 ```
 
 ## Common Patterns
 
 ### Open file on drop
-```typescript
-useDragDrop({
-  accept: ['.myapp'],
-  onFilesDropped: ([path]) => {
+
+```javascript
+appWindow.onDragDropEvent((event) => {
+  if (event.payload.type === 'drop') {
+    const path = event.payload.paths[0];
     if (path) openProject(path);
-  },
+  }
 });
 ```
 
 ### Import multiple files
-```typescript
-useDragDrop({
-  onFilesDropped: (paths) => {
+
+```javascript
+appWindow.onDragDropEvent((event) => {
+  if (event.payload.type === 'drop') {
+    const paths = event.payload.paths;
     paths.forEach(path => importFile(path));
-    toast(`Imported ${paths.length} files`, 'success');
-  },
+  }
 });
 ```

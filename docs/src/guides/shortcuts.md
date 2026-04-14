@@ -1,171 +1,134 @@
-# Keyboard Shortcuts & Command Palette
+# Keyboard Shortcuts
 
-## useKeyboardShortcuts Hook
+TASK includes a full keyboard shortcut registry with persistence, conflict detection, an interactive editor window, and preset support. Defined in `src-tauri/src/shortcuts.rs` with the UI in `src/windows/shortcuts.html`.
 
-Register keyboard shortcuts with the `useKeyboardShortcuts` hook:
+## How It Works
 
-```tsx
-import { useKeyboardShortcuts, Shortcut } from '../hooks/useKeyboardShortcuts';
+The shortcut system is a Rust-side registry that stores bindings in `shortcuts.json` (via `tauri-plugin-store`). Each binding maps a `command_id` to a key combination, along with metadata like label and category.
 
-const shortcuts: Shortcut[] = [
-  {
-    key: 's',
-    modifiers: ['meta'],
-    action: () => saveFile(),
-    description: 'Save file',
-  },
-  {
-    key: 'z',
-    modifiers: ['meta', 'shift'],
-    action: () => redo(),
-    description: 'Redo',
-  },
-  {
-    key: 'Escape',
-    action: () => deselect(),
-    description: 'Deselect',
-  },
-];
+On app startup, `init_shortcuts()` loads the registry from disk (or creates defaults). New default bindings added in future versions are automatically merged in -- existing user customizations are preserved.
 
-function MyComponent() {
-  useKeyboardShortcuts(shortcuts);
-  return <div>...</div>;
+## Data Model
+
+```rust
+struct ShortcutBinding {
+    command_id: String,     // e.g. "file.new"
+    label: String,          // e.g. "New"
+    category: String,       // e.g. "File"
+    keys: Vec<String>,      // e.g. ["CmdOrCtrl", "N"]
+    default_keys: Vec<String>, // original defaults for reset
 }
 ```
 
-### Shortcut Interface
+## Default Bindings
 
-```ts
-interface Shortcut {
-  key: string;                              // KeyboardEvent.key value
-  modifiers?: ('meta' | 'ctrl' | 'shift' | 'alt')[];
-  action: () => void;
-  description: string;
-}
+| Command ID | Label | Category | Default Keys |
+|-----------|-------|----------|-------------|
+| `file.new` | New | File | CmdOrCtrl+N |
+| `file.open` | Open... | File | CmdOrCtrl+O |
+| `file.save` | Save | File | CmdOrCtrl+S |
+| `file.save_as` | Save As... | File | CmdOrCtrl+Shift+S |
+| `edit.find` | Find... | Edit | CmdOrCtrl+F |
+| `edit.find_replace` | Find and Replace... | Edit | CmdOrCtrl+Shift+F |
+| `view.fullscreen` | Toggle Fullscreen | View | Ctrl+CmdOrCtrl+F |
+| `view.zoom_in` | Zoom In | View | CmdOrCtrl+= |
+| `view.zoom_out` | Zoom Out | View | CmdOrCtrl+- |
+| `view.actual_size` | Actual Size | View | CmdOrCtrl+0 |
+| `view.devtools` | Developer Tools | View | CmdOrCtrl+Alt+I |
+| `app.preferences` | Settings... | App | CmdOrCtrl+, |
+| `app.command_palette` | Command Palette | App | CmdOrCtrl+Shift+P |
+
+## Interactive Editor
+
+The Shortcuts window (`Help > Keyboard Shortcuts` or `ipc.openWindow('shortcuts')`) provides:
+
+- List of all shortcuts grouped by category
+- Click a shortcut to record a new key combination
+- Conflict detection -- warns if the combo is already in use
+- Reset individual shortcuts to defaults
+- Reset all shortcuts to defaults
+- Save and load named presets
+
+## IPC Commands
+
+### Reading shortcuts
+
+```javascript
+import { ipc } from './lib/ipc.js';
+
+// Get all bindings from the active preset
+const shortcuts = await ipc.getShortcuts();
+// Returns: ShortcutBinding[]
 ```
 
-## Cross-Platform Modifier Handling
+### Modifying shortcuts
 
-The `meta` modifier maps to the correct platform key automatically:
+```javascript
+// Set a new key combination
+await ipc.setShortcut('file.new', ['CmdOrCtrl', 'Shift', 'N']);
 
-| Modifier | macOS | Windows/Linux |
-|----------|-------|---------------|
-| `meta` | Cmd | Ctrl |
-| `ctrl` | Ctrl | Ctrl |
-| `shift` | Shift | Shift |
-| `alt` | Option | Alt |
+// Remove a shortcut (set to empty keys)
+await ipc.removeShortcut('file.new');
 
-Use `meta` for standard app shortcuts (save, undo, copy). Use `ctrl` only when you specifically need the Ctrl key on all platforms.
+// Reset one shortcut to its default
+await ipc.resetShortcut('file.new');
 
-## Formatting for Display
-
-Use `formatShortcut()` to render shortcut hints in the UI:
-
-```ts
-import { formatShortcut, Shortcut } from '../hooks/useKeyboardShortcuts';
-
-const shortcut: Shortcut = {
-  key: 's',
-  modifiers: ['meta', 'shift'],
-  action: () => {},
-  description: 'Save as',
-};
-
-formatShortcut(shortcut);
-// macOS:    "⌘⇧S"
-// Windows:  "Ctrl+Shift+S"
+// Reset all shortcuts to defaults
+await ipc.resetAllShortcuts();
 ```
 
-## Command Palette
+### Conflict detection
 
-The command palette provides a fuzzy-search command launcher (like VS Code's `Cmd+Shift+P`).
-
-### Command Interface
-
-```ts
-interface Command {
-  id: string;        // Unique identifier
-  label: string;     // Display text
-  shortcut?: string; // Shortcut hint string (display only)
-  action: () => void;
-}
-```
-
-### Registering Commands
-
-```tsx
-import CommandPalette, { Command } from '../components/ui/CommandPalette';
-
-const [paletteOpen, setPaletteOpen] = useState(false);
-
-const commands: Command[] = [
-  { id: 'save', label: 'Save File', shortcut: '⌘S', action: saveFile },
-  { id: 'open', label: 'Open File', shortcut: '⌘O', action: openFile },
-  { id: 'theme', label: 'Toggle Theme', action: toggleTheme },
-];
-
-return (
-  <>
-    <CommandPalette
-      commands={commands}
-      open={paletteOpen}
-      onClose={() => setPaletteOpen(false)}
-    />
-  </>
+```javascript
+// Check if a key combo conflicts with an existing binding
+// Exclude the command being edited from the check
+const conflict = await ipc.checkConflict(
+  ['CmdOrCtrl', 'S'],
+  'file.save'  // don't flag conflict with itself
 );
+
+if (conflict) {
+  console.log(`Conflicts with: ${conflict.label} (${conflict.command_id})`);
+}
 ```
 
-### Opening the Palette
+### Presets
 
-Register a shortcut to toggle it:
+```javascript
+// List all presets (id, name, is_builtin)
+const presets = await ipc.getPresets();
 
-```ts
-const shortcuts: Shortcut[] = [
-  {
-    key: 'p',
-    modifiers: ['meta', 'shift'],
-    action: () => setPaletteOpen(true),
-    description: 'Command palette',
-  },
-];
+// Save current bindings as a new preset
+const newId = await ipc.savePreset('My Custom Layout');
+
+// Switch to a different preset (returns the new bindings)
+const bindings = await ipc.loadPreset(presetId);
+
+// Delete a custom preset (cannot delete built-in)
+await ipc.deletePreset(presetId);
 ```
 
-### Palette Navigation
+## Adding a New Shortcut
 
-| Key | Action |
-|-----|--------|
-| Type | Fuzzy filter commands |
-| Arrow Up/Down | Move selection |
-| Enter | Execute selected command |
-| Escape | Close palette |
+Add a new `ShortcutBinding` to the `default_bindings()` function in `shortcuts.rs`:
 
-## Connecting Shortcuts to Commands
-
-Keep a single source of truth for actions, then wire them into both systems:
-
-```tsx
-const actions = {
-  save: () => invoke('save_file'),
-  open: () => invoke('open_file'),
-  redo: () => invoke('redo'),
-};
-
-const shortcuts: Shortcut[] = [
-  { key: 's', modifiers: ['meta'], action: actions.save, description: 'Save' },
-  { key: 'o', modifiers: ['meta'], action: actions.open, description: 'Open' },
-];
-
-const commands: Command[] = [
-  { id: 'save', label: 'Save File', shortcut: '⌘S', action: actions.save },
-  { id: 'open', label: 'Open File', shortcut: '⌘O', action: actions.open },
-  { id: 'redo', label: 'Redo', shortcut: '⌘⇧Z', action: actions.redo },
-];
+```rust
+ShortcutBinding {
+    command_id: "project.build".into(),
+    label: "Build Project".into(),
+    category: "Project".into(),
+    keys: vec!["CmdOrCtrl".into(), "B".into()],
+    default_keys: vec!["CmdOrCtrl".into(), "B".into()],
+},
 ```
 
-## Best Practices
+The new binding is automatically merged into existing user registries on next load -- users who have customized their shortcuts will get the new binding added without losing their changes.
 
-- **Avoid OS conflicts**: Don't bind `Cmd+Q`, `Cmd+H`, `Cmd+Tab`, `Cmd+W` -- the OS or Tauri handles these.
-- **Avoid browser conflicts**: Don't bind `Cmd+L`, `Cmd+R`, `F5`, `F12` in development.
-- **Use `meta` not `ctrl`**: For app shortcuts, always use `meta` so it maps correctly per platform.
-- **Single-key shortcuts**: Only use unmodified keys (like `Space`, `Delete`) when a specific panel or mode has focus, not globally.
-- **`description` is required**: It powers the command palette and future shortcut reference UI.
+## Persistence
+
+Shortcuts are stored in `shortcuts.json` in the app data directory (alongside `settings.json`). The file contains a `ShortcutRegistry` with:
+
+- `active_preset_id` -- which preset is currently active
+- `presets` -- array of presets, each containing the full set of bindings
+
+The built-in "Default" preset (`id: "default"`) is always present and cannot be deleted.

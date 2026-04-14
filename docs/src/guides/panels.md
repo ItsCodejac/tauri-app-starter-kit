@@ -1,179 +1,181 @@
-# Panel Layouts
+# Utility Windows
 
-`PanelLayout` provides a 4-zone resizable layout: left, center, right, and bottom. It lives at `src/components/layout/PanelLayout.tsx`.
+TASK uses a utility window architecture instead of in-app panels. Each secondary UI (About, Settings, Shortcuts, etc.) is a standalone HTML file with its own JavaScript, served as a separate Tauri webview window. This keeps utility windows simple, framework-agnostic, and independent of the main window.
 
-## Basic Usage
+## How It Works
 
-```tsx
-import PanelLayout from './components/layout/PanelLayout';
+Utility windows are configured in `src-tauri/src/windows.rs`. Each window has a `WindowConfig` struct that defines its label, title, URL, dimensions, and window behavior (resizable, decorations, always-on-top, etc.).
 
-<PanelLayout
-  leftLabel="Explorer"
-  centerLabel="Editor"
-  rightLabel="Inspector"
-  bottomLabel="Console"
-  leftPanel={<Explorer />}
-  centerPanel={<Editor />}
-  rightPanel={<Inspector />}
-  bottomPanel={<Console />}
-/>
+When a window is requested:
+1. If a window with that label already exists, it is shown and focused.
+2. Otherwise, a new window is created from the config.
+
+## Current Utility Windows
+
+| Name | Size | Resizable | Always on Top | Purpose |
+|------|------|-----------|---------------|---------|
+| `splash` | 480x300 | No | Yes | Splash screen during initialization |
+| `settings` | 780x580 | Yes | No | Preferences panel |
+| `about` | 360x400 | No | Yes | App info, version, links |
+| `shortcuts` | 800x650 | Yes | No | Interactive keyboard shortcut editor |
+| `logs` | 700x500 | Yes | No | Log viewer with filtering |
+| `update` | 420x340 | No | Yes | Update checker and installer |
+| `whatsnew` | 500x520 | Yes | No | Changelog / What's New |
+| `welcome` | 540x480 | No | Yes | First-run onboarding |
+
+## Opening a Window
+
+### From the frontend (IPC)
+
+```javascript
+import { ipc } from './lib/ipc.js';
+
+await ipc.openWindow('about');
+await ipc.openWindow('settings');
 ```
 
-## Props Reference
+### From Rust (menu handlers, etc.)
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `leftPanel` | `ReactNode` | `undefined` | Content for left panel. Omit to hide. |
-| `centerPanel` | `ReactNode` | `undefined` | Content for center panel (always visible). |
-| `rightPanel` | `ReactNode` | `undefined` | Content for right panel. Omit to hide. |
-| `bottomPanel` | `ReactNode` | `undefined` | Content for bottom panel. Omit to hide. |
-| `leftLabel` | `string` | `"Left"` | Header text for left panel. |
-| `centerLabel` | `string` | `"Center"` | Header text for center panel. |
-| `rightLabel` | `string` | `"Right"` | Header text for right panel. |
-| `bottomLabel` | `string` | `"Bottom"` | Header text for bottom panel. |
-| `leftWidth` | `number` | `240` | Initial width in pixels. |
-| `rightWidth` | `number` | `240` | Initial width in pixels. |
-| `bottomHeight` | `number` | `200` | Initial height in pixels. |
-
-## Zone Layout
-
-```
-┌──────────┬─────────────────────┬──────────┐
-│          │                     │          │
-│   Left   │      Center         │  Right   │
-│  Panel   │      Panel          │  Panel   │
-│          │                     │          │
-├──────────┴─────────────────────┴──────────┤
-│              Bottom Panel                  │
-└────────────────────────────────────────────┘
+```rust
+crate::windows::open_window_internal(app, "about");
 ```
 
-The center panel fills all remaining horizontal space. Panels that are omitted (prop not passed) do not render at all -- no empty space, no drag handle.
+This is used by the menu system -- when the user clicks "About" or "Settings" in the menu, the native handler calls `open_window_internal`.
 
-## Resizing
+### From menu items
 
-Drag the 4px handles between panels to resize. Minimum size is 80px for all panels.
+Many utility windows are opened from the menu. These are handled natively in `menu.rs`:
 
-Sizes persist to `localStorage` under the key `panel-layout-sizes` as `{ left, right, bottom }`. On reload, the last sizes are restored.
+- **About**: macOS App menu > About
+- **Settings**: App menu > Settings (Cmd+,), or Window > Settings
+- **Shortcuts**: Help > Keyboard Shortcuts
+- **Logs**: Help > View Logs
+- **Update**: Help > Check for Updates
+- **What's New**: Help > What's New
 
-## Collapsing Panels
+## Creating a New Utility Window
 
-Double-click any panel header to collapse it. The panel shrinks to just its header (28px). Double-click again to restore.
+### 1. Create the HTML file
 
-The center panel cannot be collapsed.
+Create `src/windows/mywindow.html`:
 
-## Layout Presets
-
-### Minimal -- center only
-
-```tsx
-<PanelLayout
-  centerLabel="Main"
-  centerPanel={<MainContent />}
-/>
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>My Window</title>
+  <link rel="stylesheet" href="/src/styles/shared.css" />
+</head>
+<body>
+  <div id="app">
+    <h1 id="name"></h1>
+    <p>My custom window content.</p>
+    <button id="close-btn">Close</button>
+  </div>
+  <script type="module" src="/src/windows/mywindow.js"></script>
+</body>
+</html>
 ```
 
-### Sidebar + Main
+### 2. Create the JavaScript file
 
-```tsx
-<PanelLayout
-  leftLabel="Sidebar"
-  centerLabel="Main"
-  leftPanel={<Sidebar />}
-  centerPanel={<MainContent />}
-  leftWidth={280}
-/>
+Create `src/windows/mywindow.js`:
+
+```javascript
+import { applyBranding, setupCloseButton, invoke } from '../lib/window-utils.js';
+
+applyBranding();
+setupCloseButton('close-btn');
+
+// Your window logic here
+const info = await invoke('get_app_info');
+console.log(info.name);
 ```
 
-### Three-Column
+### 3. Add the window config in Rust
 
-```tsx
-<PanelLayout
-  leftLabel="Navigator"
-  centerLabel="Editor"
-  rightLabel="Properties"
-  leftPanel={<Navigator />}
-  centerPanel={<Editor />}
-  rightPanel={<Properties />}
-  leftWidth={220}
-  rightWidth={300}
-/>
+In `src-tauri/src/windows.rs`, add a case to `get_window_config()`:
+
+```rust
+"mywindow" => Some(WindowConfig {
+    label: "mywindow",
+    title: "My Window",
+    url: "src/windows/mywindow.html",
+    width: 500.0,
+    height: 400.0,
+    resizable: true,
+    decorations: true,
+    always_on_top: false,
+    center: true,
+}),
 ```
 
-### Full Workspace (default)
+### 4. Add to Vite build inputs
 
-```tsx
-<PanelLayout
-  leftLabel="Explorer"
-  centerLabel="Editor"
-  rightLabel="Inspector"
-  bottomLabel="Terminal"
-  leftPanel={<Explorer />}
-  centerPanel={<Editor />}
-  rightPanel={<Inspector />}
-  bottomPanel={<Terminal />}
-  leftWidth={240}
-  rightWidth={240}
-  bottomHeight={180}
-/>
+In `vite.config.js`, add the entry:
+
+```javascript
+rollupOptions: {
+  input: {
+    // ...existing entries...
+    mywindow: resolve(__dirname, 'src/windows/mywindow.html'),
+  },
+},
 ```
 
-## Customizing Panel Headers
+### 5. Open it
 
-The `PanelHeader` component is internal to `PanelLayout.tsx`. To customize it (add buttons, badges, etc.), edit the `PanelHeader` function in `PanelLayout.tsx`:
+```javascript
+await ipc.openWindow('mywindow');
+```
 
-```tsx
-function PanelHeader({ label, collapsed, onDoubleClick }: {
-  label: string;
-  collapsed: boolean;
-  onDoubleClick: () => void;
-}) {
-  return (
-    <div onDoubleClick={onDoubleClick} style={{ /* ... */ }}>
-      <span style={{ /* collapse arrow */ }}>&#9660;</span>
-      {label}
-      {/* Add custom elements here */}
-      <button style={{ marginLeft: 'auto' }} onClick={() => console.log('action')}>
-        +
-      </button>
-    </div>
-  );
+Or from a menu item by adding a native handler in `menu.rs`:
+
+```rust
+"help_mywindow" => {
+    crate::windows::open_window_internal(app, "mywindow");
+    return true;
 }
 ```
 
-## Conditional Panels
+## Window Utilities (`src/lib/window-utils.js`)
 
-Show or hide panels based on state (e.g., active tab):
+All utility windows share common patterns through `window-utils.js`:
 
-```tsx
-function App() {
-  const [activeTab, setActiveTab] = useState('editor');
-  const [showInspector, setShowInspector] = useState(true);
+### `applyBranding(options?)`
 
-  return (
-    <PanelLayout
-      leftLabel="Files"
-      centerLabel="Editor"
-      rightLabel="Inspector"
-      bottomLabel="Output"
-      leftPanel={<FileTree />}
-      centerPanel={<Editor />}
-      rightPanel={showInspector ? <Inspector /> : undefined}
-      bottomPanel={activeTab === 'editor' ? <Output /> : undefined}
-    />
-  );
-}
+Applies branding from `branding.js` to the current window: sets the accent color CSS variable, populates name/tagline/copyright/license/logo elements by ID, and fetches the app version from the backend.
+
+```javascript
+import { applyBranding } from '../lib/window-utils.js';
+applyBranding();
+applyBranding({ showVersion: false }); // skip version fetch
 ```
 
-Pass `undefined` (or simply omit the prop) to hide a panel. The layout reflows automatically -- the center panel expands to fill the space.
+### `setupCloseButton(elementId)`
 
-Toggle from a command palette or menu event:
+Wires a button to close the current window.
 
-```tsx
-useEffect(() => {
-  const unlisten = listen('menu:view:toggle-inspector', () => {
-    setShowInspector((v) => !v);
-  });
-  return () => { unlisten.then((fn) => fn()); };
-}, []);
-```
+### `setupCloseOnFocusLoss()`
+
+Closes the window when it loses focus (used by splash screen).
+
+### `showButtonFeedback(elementId, feedbackText, durationMs?)`
+
+Temporarily changes a button's text (e.g. "Copy" to "Copied!") then reverts after the given duration (default 2000ms).
+
+### `setupExternalLink(elementId, url)`
+
+Wires a clickable element to open a URL in the external browser via `open_external_url`.
+
+### Form helpers
+
+- `setChecked(id, val)` -- set a checkbox's checked state
+- `getChecked(id)` -- get a checkbox's checked state
+- `setValue(id, val)` -- set an input's value
+- `getValue(id)` -- get an input's value
+
+### Re-exports
+
+`window-utils.js` re-exports `invoke`, `listen`, and `branding` so utility windows can import everything from one module.

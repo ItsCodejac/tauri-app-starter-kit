@@ -10,8 +10,10 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 8px 12px;
-      border-bottom: 1px solid var(--border-subtle);
+      height: 36px;
+      padding: 0 12px;
+      border-bottom: 1px solid var(--border-standard);
+      background: var(--surface-primary);
       flex-shrink: 0;
     }
     .toolbar h1 {
@@ -23,7 +25,8 @@
     .log-container {
       flex: 1;
       overflow-y: auto;
-      padding: 8px 12px;
+      padding: 10px 14px;
+      background: var(--surface-secondary);
     }
     .log-content {
       font-family: var(--font-mono);
@@ -48,9 +51,13 @@
     }
     .filter-input { width: 180px; }
     .status-bar {
-      padding: 4px 12px;
-      border-top: 1px solid var(--border-subtle);
-      font-size: 10px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      border-top: 1px solid var(--border-standard);
+      background: var(--surface-primary);
+      font-size: 11px;
       color: var(--text-tertiary);
       flex-shrink: 0;
     }

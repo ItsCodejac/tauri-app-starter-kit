@@ -4,90 +4,77 @@ Persistent key-value settings backed by [tauri-plugin-store](https://v2.tauri.ap
 
 ## Default Settings
 
-The `AppSettings` struct in `src-tauri/src/settings.rs` defines all keys and their defaults:
+All settings and their defaults are centralized in the `all_defaults()` function in `src-tauri/src/settings.rs`:
 
-```rust
-pub struct AppSettings {
-    pub theme: String,              // "dark"
-    pub recent_files: Vec<String>,  // []
-    pub autosave_enabled: bool,     // true
-    pub autosave_interval_secs: u64, // 60
-}
-```
+| Key | Type | Default | Category |
+|-----|------|---------|----------|
+| `theme` | `string` | `"dark"` | General |
+| `locale` | `string` | `"en"` | General |
+| `autostart` | `boolean` | `false` | General |
+| `first_run` | `boolean` | `true` | General |
+| `updates.checkOnStartup` | `boolean` | `true` | General |
+| `updates.lastCheck` | `number` | `0` | General |
+| `app.lastSeenVersion` | `string` | `""` | General |
+| `view_zoom_level` | `number` | `100` | Appearance |
+| `show_statusbar` | `boolean` | `true` | Appearance |
+| `show_tooltips` | `boolean` | `true` | Appearance |
+| `autosave_enabled` | `boolean` | `true` | Autosave |
+| `autosave_interval_secs` | `number` | `60` | Autosave |
+| `performance.mode` | `string` | `"balanced"` | Performance |
+| `performance.hardwareAcceleration` | `boolean` | `true` | Performance |
+| `performance.gpuEnabled` | `boolean` | `true` | Performance |
+| `cache.maxCacheSize` | `number` | `10` | Cache |
+| `cache.cleanupOldCache` | `boolean` | `true` | Cache |
+| `startup_behavior` | `string` | `"empty"` | Startup |
+| `tray.minimize_to_tray` | `boolean` | `false` | Tray |
+| `tray.show_icon` | `boolean` | `true` | Tray |
+| `recent_files` | `string[]` | `[]` | Internal |
 
 ## Adding a New Setting
 
-### 1. Add the field to `AppSettings`
+Add a single entry to `all_defaults()` in `settings.rs`:
 
 ```rust
-pub struct AppSettings {
-    // ... existing fields
-    pub sidebar_width: u32,
-}
-
-impl Default for AppSettings {
-    fn default() -> Self {
-        Self {
-            // ... existing defaults
-            sidebar_width: 260,
-        }
-    }
+fn all_defaults() -> Vec<(&'static str, serde_json::Value)> {
+    vec![
+        // ...existing entries...
+        ("sidebar_width", serde_json::json!(260u32)),
+    ]
 }
 ```
 
-### 2. Add the key to `init_settings`
+That is the only change needed. The new setting automatically works with `init_settings` (populated on first run), `get_all_settings` (included in the response), and `reset_settings` (reset to the default value).
 
-```rust
-if !store.has("sidebar_width") {
-    store.set("sidebar_width", serde_json::json!(defaults.sidebar_width));
-}
+## Reading & Writing from the Frontend
+
+Use the IPC facade:
+
+```javascript
+import { ipc } from './lib/ipc.js';
+
+// Read one key
+const theme = await ipc.getSetting('theme');
+
+// Write one key (value is any JSON-serializable type)
+await ipc.setSetting('theme', 'light');
+
+// Read all settings as an object
+const all = await ipc.getAllSettings();
+
+// Reset everything to defaults
+await ipc.resetSettings();
 ```
 
-### 3. Add the key to `get_all_settings` and `reset_settings`
-
-Both functions enumerate every key explicitly. Add your new key to both.
-
-## Reading & Writing from React
-
-Use the `useSettings` hook:
-
-```tsx
-import { useSettings } from '../hooks/useSettings';
-
-function MyComponent() {
-  const { getSetting, setSetting, loading } = useSettings();
-
-  if (loading) return null;
-
-  const width = getSetting<number>('sidebar_width', 260);
-
-  return (
-    <button onClick={() => setSetting('sidebar_width', 300)}>
-      Widen sidebar
-    </button>
-  );
-}
-```
-
-`setSetting` updates React state immediately (optimistic), then persists to disk via IPC.
-
-## Direct IPC Calls
+## Direct invoke Calls
 
 You can also call the commands directly with `invoke`:
 
-```ts
+```javascript
 import { invoke } from '@tauri-apps/api/core';
 
-// Read one key
-const theme = await invoke<string>('get_setting', { key: 'theme' });
-
-// Write one key (value is any JSON-serializable type)
+const theme = await invoke('get_setting', { key: 'theme' });
 await invoke('set_setting', { key: 'theme', value: 'light' });
-
-// Read all settings as an object
-const all = await invoke<Record<string, unknown>>('get_all_settings');
-
-// Reset everything to defaults
+const all = await invoke('get_all_settings');
 await invoke('reset_settings');
 ```
 

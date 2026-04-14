@@ -3,9 +3,9 @@
  * Every window imports from here instead of duplicating patterns.
  */
 
-import { getCurrentWindow } from '@tauri-apps/api/window';
-import { invoke } from '@tauri-apps/api/core';
-import { listen } from '@tauri-apps/api/event';
+const { getCurrentWindow } = window.__TAURI__.window;
+const { invoke } = window.__TAURI__.core;
+const { listen } = window.__TAURI__.event;
 import { branding } from './branding.js';
 
 // ---------------------------------------------------------------------------

@@ -2,11 +2,27 @@
 
 Tauri v2 uses a command-based IPC model. The frontend calls `invoke()` to run Rust functions. Rust can also emit events back to the frontend.
 
+## The IPC Facade (`src/lib/ipc.js`)
+
+Every backend command is wrapped in `src/lib/ipc.js` so frontend code never calls `invoke()` directly. This gives a single place to update command names, argument shapes, and return types.
+
+```javascript
+import { ipc, events } from './lib/ipc.js';
+
+// Call backend commands
+const info = await ipc.getAppInfo();
+const theme = await ipc.getSetting('theme');
+await ipc.setSetting('theme', 'dark');
+
+// Listen for events
+events.onAutosaveSaved(() => console.log('Saved'));
+```
+
 ## How It Works
 
 1. Define a Rust function with `#[tauri::command]`
 2. Register it in `lib.rs` via `tauri::generate_handler![]`
-3. Call it from React with `invoke()`
+3. Call it from the frontend via the `ipc` facade (or `invoke()` directly)
 
 ## Step-by-Step: Creating a New Command
 
@@ -32,12 +48,23 @@ Add it to the `invoke_handler` in `src-tauri/src/lib.rs`:
 ])
 ```
 
-### 3. Call from React
+### 3. Add to the IPC facade
 
-```tsx
-import { invoke } from '@tauri-apps/api/core';
+In `src/lib/ipc.js`, add a wrapper:
 
-const message = await invoke<string>('greet', { name: 'World' });
+```javascript
+export const ipc = {
+  // ...existing commands...
+  greet: (name) => invoke('greet', { name }),
+};
+```
+
+### 4. Call from your frontend
+
+```javascript
+import { ipc } from './lib/ipc.js';
+
+const message = await ipc.greet('World');
 console.log(message); // "Hello, World!"
 ```
 
@@ -54,8 +81,8 @@ pub fn add(a: i32, b: i32) -> i32 {
 }
 ```
 
-```tsx
-const sum = await invoke<number>('add', { a: 5, b: 3 });
+```javascript
+const sum = await invoke('add', { a: 5, b: 3 });
 ```
 
 ### Structs with Serde
@@ -77,8 +104,8 @@ pub fn process_filters(filters: Vec<DialogFilter>) -> usize {
 }
 ```
 
-```tsx
-const count = await invoke<number>('process_filters', {
+```javascript
+const count = await invoke('process_filters', {
   filters: [
     { name: 'Images', extensions: ['png', 'jpg'] },
     { name: 'Videos', extensions: ['mp4', 'mov'] },
@@ -88,7 +115,7 @@ const count = await invoke<number>('process_filters', {
 
 ### Optional arguments
 
-Use `Option<T>` in Rust. Omit the field from the JS object to pass `None`.
+Use `Option<T>` in Rust. Pass `null` from JS to send `None`.
 
 ```rust
 #[tauri::command]
@@ -100,12 +127,12 @@ pub async fn show_open_dialog(
 ) -> Result<Option<Vec<String>>, String> { ... }
 ```
 
-```tsx
-// All optional fields omitted
-const files = await invoke('show_open_dialog', {});
+```javascript
+// All optional fields as null
+const files = await ipc.showOpenDialog({});
 
 // Some fields provided
-const files = await invoke('show_open_dialog', {
+const files = await ipc.showOpenDialog({
   title: 'Select Image',
   filters: [{ name: 'Images', extensions: ['png', 'jpg'] }],
 });
@@ -118,16 +145,14 @@ Use `Result<T, String>` for commands that can fail. The error string becomes a r
 ```rust
 #[tauri::command]
 pub fn get_app_info(app: AppHandle) -> Result<AppInfo, String> {
-    let config = app.config();
-    let name = config.product_name.clone().unwrap_or_else(|| "App".to_string());
     // ...
     Ok(AppInfo { name, version, app_data_dir, app_config_dir, app_cache_dir })
 }
 ```
 
-```tsx
+```javascript
 try {
-  const info = await invoke<AppInfo>('get_app_info');
+  const info = await ipc.getAppInfo();
   console.log(info.name, info.version);
 } catch (error) {
   console.error('Failed:', error); // error is the String from Err()
@@ -148,7 +173,7 @@ pub fn my_command(app: AppHandle, user_arg: String) -> Result<(), String> {
 }
 ```
 
-```tsx
+```javascript
 // Only pass user_arg, not app
 await invoke('my_command', { userArg: 'value' });
 ```
@@ -187,11 +212,7 @@ pub async fn open_external_url(app: AppHandle, url: String) -> Result<(), String
 }
 ```
 
-```tsx
-await invoke('open_external_url', { url: 'https://example.com' });
-```
-
-## Emitting Events from Rust to React
+## Emitting Events from Rust
 
 Use `app.emit()` to send events to the frontend:
 
@@ -205,87 +226,28 @@ let _ = app.emit("autosave:saved", ());
 let _ = app.emit("autosave:recovery-available", &recovery_info);
 ```
 
-## Listening for Events in React
+## Listening for Events in the Frontend
 
-Use `listen()` from `@tauri-apps/api/event`. Always clean up listeners.
+Use the `events` object from the IPC facade:
 
-```tsx
-import { useEffect } from 'react';
+```javascript
+import { events } from './lib/ipc.js';
+
+events.onAutosaveSaved(() => console.log('Saved'));
+events.onRecoveryAvailable((info) => console.log('Recovery:', info));
+events.onCloseRequested(() => showConfirmDialog());
+events.onMenuEvent('menu:file:new', () => handleNew());
+```
+
+Or use `listen()` directly for custom events:
+
+```javascript
 import { listen } from '@tauri-apps/api/event';
 
-function MyComponent() {
-  useEffect(() => {
-    const unlisten = listen<RecoveryInfo>('autosave:recovery-available', (event) => {
-      console.log('Recovery data:', event.payload);
-    });
+const unlisten = await listen('my-custom-event', (event) => {
+  console.log(event.payload);
+});
 
-    return () => {
-      unlisten.then((fn) => fn());
-    };
-  }, []);
-}
+// Clean up when done
+unlisten();
 ```
-
-### Multiple listeners with cleanup
-
-```tsx
-useEffect(() => {
-  const unlisteners: (() => void)[] = [];
-
-  const events = [
-    { event: 'autosave:saved', handler: () => console.log('Saved') },
-    { event: 'autosave:recovery-available', handler: (e: any) => console.log(e.payload) },
-  ];
-
-  events.forEach(({ event, handler }) => {
-    listen(event, handler).then((unlisten) => unlisteners.push(unlisten));
-  });
-
-  return () => { unlisteners.forEach((u) => u()); };
-}, []);
-```
-
-## Existing Commands Reference
-
-### commands.rs
-
-| Command | Args | Returns | Description |
-|---------|------|---------|-------------|
-| `show_open_dialog` | `title?`, `filters?`, `multiple?` | `Option<Vec<String>>` | Native file open dialog |
-| `show_save_dialog` | `title?`, `default_name?`, `filters?` | `Option<String>` | Native file save dialog |
-| `get_app_info` | none | `AppInfo` | App name, version, data dirs |
-| `open_external_url` | `url` | `()` | Open URL in default browser |
-
-### settings.rs
-
-| Command | Args | Returns | Description |
-|---------|------|---------|-------------|
-| `get_setting` | `key` | `Value` | Read a single setting |
-| `set_setting` | `key`, `value` | `()` | Write a single setting |
-| `get_all_settings` | none | `Value` | Read all settings as JSON |
-| `reset_settings` | none | `()` | Reset all settings to defaults |
-
-### recent_files.rs
-
-| Command | Args | Returns | Description |
-|---------|------|---------|-------------|
-| `get_recent_files` | none | `Vec<String>` | List recent file paths |
-| `add_recent_file` | `path` | `()` | Add a file to recents |
-| `clear_recent_files` | none | `()` | Clear recent files list |
-
-### autosave.rs
-
-| Command | Args | Returns | Description |
-|---------|------|---------|-------------|
-| `start_autosave` | `interval_secs?` | `()` | Start autosave loop |
-| `stop_autosave` | none | `()` | Stop autosave loop |
-| `update_autosave_state` | `data` (JSON string) | `()` | Set data for next autosave tick |
-| `check_recovery` | none | `RecoveryInfo` | Check for crash recovery file |
-
-### Events emitted by Rust
-
-| Event | Payload | Source |
-|-------|---------|--------|
-| `autosave:saved` | none | Autosave loop after writing |
-| `autosave:recovery-available` | `RecoveryInfo` | Startup if recovery file found |
-| `menu:*` | none | Menu item clicks (see [Menus](./menus.md)) |

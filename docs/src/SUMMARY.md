@@ -11,7 +11,7 @@
 
 - [Menus](./guides/menus.md)
 - [IPC Commands](./guides/ipc-commands.md)
-- [Panel Layouts](./guides/panels.md)
+- [Utility Windows](./guides/panels.md)
 - [Settings](./guides/settings.md)
 - [Autosave & Recovery](./guides/autosave.md)
 - [Keyboard Shortcuts](./guides/shortcuts.md)
@@ -30,6 +30,6 @@
 # Reference
 
 - [Rust API](./reference/rust-api.md)
-- [React API](./reference/react-api.md)
+- [Frontend API](./reference/react-api.md)
 - [Events](./reference/events.md)
 - [CSS Variables](./reference/css-variables.md)

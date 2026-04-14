@@ -8,12 +8,18 @@
     body {
       display: flex;
       flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .about-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 100vh;
       text-align: center;
-      padding: 24px;
-      gap: 4px;
+      padding: 24px 32px;
+      gap: 2px;
     }
     .logo {
       width: 64px; height: 64px;
@@ -21,36 +27,76 @@
       background: var(--accent-blue);
       display: flex; align-items: center; justify-content: center;
       font-size: 28px; font-weight: 700; color: white;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
     .logo img { width: 48px; height: 48px; object-fit: contain; }
-    .app-name { font-size: 18px; font-weight: 600; color: var(--text-bright); }
-    .version { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; }
-    .tagline { font-size: 12px; color: var(--text-tertiary); margin-bottom: 16px; }
-    .links { display: flex; gap: 16px; margin-bottom: 16px; }
+    .app-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-bright);
+      margin-bottom: 2px;
+    }
+    .version {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+    }
+    .tagline {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-bottom: 18px;
+    }
+    .links {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
     .links a { font-size: 12px; }
-    .copyright { font-size: 11px; color: var(--text-tertiary); }
-    .license { font-size: 11px; color: var(--text-tertiary); margin-top: 4px; }
+    .copyright {
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+    .license {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      margin-top: 4px;
+    }
     .diagnostics {
-      margin-top: 16px;
+      margin-top: 14px;
       font-size: 11px;
       color: var(--text-tertiary);
       cursor: pointer;
     }
     .diagnostics:hover { color: var(--accent-blue); }
+
+    /* ── Footer ── */
+    .footer {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+      height: 44px;
+      padding: 0 16px;
+      border-top: 1px solid var(--border-standard);
+      background: var(--surface-primary);
+      flex-shrink: 0;
+    }
+    .footer button { min-width: 72px; }
   </style>
 </head>
 <body>
-  <div class="logo" id="logo">M</div>
-  <div class="app-name" id="name">My App</div>
-  <div class="version" id="version"></div>
-  <div class="tagline" id="tagline"></div>
-  <div class="links" id="links"></div>
-  <div class="copyright" id="copyright"></div>
-  <div class="license" id="license"></div>
-  <div class="diagnostics" id="diagnostics">Copy Diagnostics</div>
-  <div style="margin-top: 16px;">
-    <button class="primary" id="close-btn" style="min-width: 72px;">OK</button>
+  <div class="about-content">
+    <div class="logo" id="logo">M</div>
+    <div class="app-name" id="name">My App</div>
+    <div class="version" id="version"></div>
+    <div class="tagline" id="tagline"></div>
+    <div class="links" id="links"></div>
+    <div class="copyright" id="copyright"></div>
+    <div class="license" id="license"></div>
+    <div class="diagnostics" id="diagnostics">Copy Diagnostics</div>
+  </div>
+  <div class="footer">
+    <button class="primary" id="close-btn">OK</button>
   </div>
   <script type="module" src="about.js"></script>
 </body>

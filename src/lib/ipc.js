@@ -6,8 +6,8 @@
  * argument shapes, and return types.
  */
 
-import { invoke } from '@tauri-apps/api/core';
-import { listen } from '@tauri-apps/api/event';
+const { invoke } = window.__TAURI__.core;
+const { listen } = window.__TAURI__.event;
 
 // ---------------------------------------------------------------------------
 // IPC commands

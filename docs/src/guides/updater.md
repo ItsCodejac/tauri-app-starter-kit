@@ -1,13 +1,29 @@
 # Auto-Updater
 
-In-app update checking and installation using [tauri-plugin-updater](https://v2.tauri.app/plugin/updater/). Backend in `src-tauri/src/updater.rs`, UI in `src/components/ui/UpdateDialog.tsx`.
+In-app update checking and installation using [tauri-plugin-updater](https://v2.tauri.app/plugin/updater/). Backend in `src-tauri/src/updater.rs`, UI in `src/windows/update.html`.
 
-## How It Works
+## Current State
 
-1. The app calls `check_for_updates` which queries the update endpoint configured in `tauri.conf.json`
-2. If an update is available, the dialog shows version info and release notes
-3. The user can install, skip, or dismiss
-4. `install_update` downloads, installs, and restarts the app
+The updater plugin is **commented out** in `lib.rs`. It is included as a dependency in `Cargo.toml` but not registered as a plugin. The `check_for_updates` and `install_update` IPC commands exist but will return an error until you enable the plugin.
+
+## Enabling the Updater
+
+1. Uncomment the plugin in `src-tauri/src/lib.rs`:
+   ```rust
+   .plugin(tauri_plugin_updater::Builder::new().build())
+   ```
+2. Add `updater::mark_enabled()` immediately after the plugin registration.
+3. Configure endpoints and a public key in `tauri.conf.json`:
+   ```json
+   {
+     "plugins": {
+       "updater": {
+         "endpoints": ["https://releases.yourapp.com/{{target}}/{{arch}}/{{current_version}}"],
+         "pubkey": "YOUR_PUBLIC_KEY_HERE"
+       }
+     }
+   }
+   ```
 
 ## Rust Commands
 
@@ -31,9 +47,13 @@ pub struct UpdateInfo {
 }
 ```
 
+Both commands check `UPDATER_ENABLED` (an atomic bool) and return an error if the plugin is not registered.
+
 ## IPC Facade
 
-```ts
+```javascript
+import { ipc } from './lib/ipc.js';
+
 // Check for updates -- returns info or null
 const info = await ipc.checkForUpdates();
 
@@ -41,59 +61,29 @@ const info = await ipc.checkForUpdates();
 await ipc.installUpdate();
 ```
 
-## Update Dialog States
+## Update Window
 
-The `UpdateDialog` component cycles through these states:
-
-| State | Shows |
-|-------|-------|
-| `checking` | Spinner + "Checking for available updates..." |
-| `up-to-date` | Current version is latest |
-| `update-available` | Version diff, release notes, Install/Skip/Later buttons |
-| `downloading` | Progress bar + "The app will restart automatically" |
-| `error` | Error message |
+The Update window (`Help > Check for Updates` or `ipc.openWindow('update')`) provides the UI for checking and installing updates.
 
 ## Check on Startup
 
 Controlled by the `updates.checkOnStartup` setting (defaults to `true`). Disable it:
 
-```ts
+```javascript
 await ipc.setSetting('updates.checkOnStartup', false);
 ```
 
-## Manual Check
+## What's New Window
 
-Triggered from the Help menu ("Check for Updates..."), which opens the `UpdateDialog`.
+After an update, the What's New window shows release notes. Compare the current version against `app.lastSeenVersion`:
 
-## Skip Version
-
-When the user clicks "Skip This Version", the skipped version is saved:
-
-```ts
-await ipc.setSetting('updates.skippedVersion', updateInfo.version);
-```
-
-Your startup check logic should compare against this setting and suppress the dialog if the available version matches the skipped version.
-
-## What's New Dialog
-
-After an update completes, the app can show a "What's New" dialog by comparing the current version against `app.lastSeenVersion`:
-
-```ts
+```javascript
 const lastSeen = await ipc.getSetting('app.lastSeenVersion');
 const current = (await ipc.getAppInfo()).version;
 
 if (lastSeen !== current) {
-  // Show what's new
+  await ipc.openWindow('whatsnew');
   await ipc.setSetting('app.lastSeenVersion', current);
-}
-```
-
-Both settings are initialized in `settings.rs`:
-
-```rust
-if !store.has("app.lastSeenVersion") {
-    store.set("app.lastSeenVersion", serde_json::json!(""));
 }
 ```
 

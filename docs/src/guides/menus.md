@@ -51,19 +51,14 @@ MenuDef::Check { id: "view_status_bar", label: "Show Status Bar", checked: true,
 MenuDef::Check { id: "window_stay-on-top", label: "Stay on Top", checked: false, accel: None },
 ```
 
-The `view_menu()` in the starter kit uses this for the "Show Status Bar" item, and `window_menu()` uses it for "Stay on Top".
-
 #### Updating Check State from the Frontend
 
-Use `ipc.menuSetChecked()` to toggle the checkmark from React:
+Use `ipc.menuSetChecked()`:
 
-```typescript
-import { ipc } from '../lib/ipc';
+```javascript
+import { ipc } from './lib/ipc.js';
 
-// Set "Show Status Bar" to unchecked
 await ipc.menuSetChecked('view_status_bar', false);
-
-// Set "Stay on Top" to checked
 await ipc.menuSetChecked('window_stay-on-top', true);
 ```
 
@@ -121,7 +116,6 @@ MenuDef::Submenu {
 | `ShowAll` | macOS show all |
 | `Quit` | Quit application |
 | `Services` | macOS Services submenu |
-| `About` | About dialog |
 | `CloseWindow` | Close current window |
 
 These are handled entirely by the OS. No event is emitted.
@@ -130,31 +124,16 @@ These are handled entirely by the OS. No event is emitted.
 
 Edit the corresponding function in `menu.rs`. Each standard menu is defined by a function returning `MenuConfig`:
 
-- `file_menu()` -- File menu
-- `edit_menu()` -- Edit menu
-- `view_menu()` -- View menu
-- `window_menu()` -- Window menu
-- `help_menu()` -- Help menu
+- `file_menu()` -- File menu (includes Open Recent submenu, Save/Save As, and Settings on non-macOS)
+- `edit_menu()` -- Edit menu (native undo/redo/cut/copy/paste/select-all, plus Find and Find & Replace)
+- `view_menu()` -- View menu (fullscreen, zoom in/out/actual size, show status bar, devtools in debug)
+- `window_menu()` -- Window menu (minimize, zoom, stay on top, settings, bring all to front)
+- `help_menu()` -- Help menu (docs, report issue, shortcuts, logs, check for updates, what's new)
 
 Example -- add "Export" to the File menu:
 
 ```rust
-fn file_menu() -> MenuConfig {
-    MenuConfig {
-        label: "File",
-        items: vec![
-            MenuDef::Item { id: "file_new", label: "New", accel: Some("CmdOrCtrl+N") },
-            MenuDef::Item { id: "file_open", label: "Open...", accel: Some("CmdOrCtrl+O") },
-            MenuDef::Separator,
-            MenuDef::Item { id: "file_save", label: "Save", accel: Some("CmdOrCtrl+S") },
-            MenuDef::Item { id: "file_save_as", label: "Save As...", accel: Some("CmdOrCtrl+Shift+S") },
-            MenuDef::Separator,
-            MenuDef::Item { id: "file_export", label: "Export...", accel: Some("CmdOrCtrl+E") }, // new
-            MenuDef::Separator,
-            MenuDef::Native(NativeItem::CloseWindow),
-        ],
-    }
-}
+MenuDef::Item { id: "file_export", label: "Export...", accel: Some("CmdOrCtrl+E") },
 ```
 
 ## Adding Custom Top-Level Menus
@@ -170,7 +149,7 @@ fn custom_menus() -> Vec<MenuConfig> {
                 MenuDef::Item { id: "image_resize", label: "Resize...", accel: Some("CmdOrCtrl+Alt+I") },
                 MenuDef::Item { id: "image_crop", label: "Crop", accel: Some("CmdOrCtrl+Shift+X") },
                 MenuDef::Separator,
-                MenuDef::Item { id: "image_rotate_cw", label: "Rotate 90° CW", accel: None },
+                MenuDef::Item { id: "image_rotate_cw", label: "Rotate 90 CW", accel: None },
             ],
         },
         MenuConfig {
@@ -219,13 +198,6 @@ fn handle_native(app: &AppHandle, id: &str) -> bool {
             }
             true
         }
-        "view_fullscreen" => {
-            if let Some(w) = app.get_webview_window("main") {
-                let is_full = w.is_fullscreen().unwrap_or(false);
-                let _ = w.set_fullscreen(!is_full);
-            }
-            true
-        }
         // Add your native handlers here...
         _ => false, // return false to forward to frontend
     }
@@ -234,68 +206,76 @@ fn handle_native(app: &AppHandle, id: &str) -> bool {
 
 Return `true` to consume the event (stops forwarding). Return `false` to let it forward to the frontend.
 
-## Listening for Menu Events in React
+### Current native handlers
 
-Use `listen()` from `@tauri-apps/api/event`:
+The following menu items are handled natively and are **not** forwarded to the frontend:
 
-```tsx
-import { useEffect } from 'react';
+| Menu Item ID | Action |
+|-------------|--------|
+| `app_about` | Opens the About window |
+| `app_preferences` / `window_settings` | Opens the Settings window |
+| `help_shortcuts` | Opens the Keyboard Shortcuts window |
+| `help_view-logs` | Opens the Log Viewer window |
+| `help_check-for-updates` | Opens the Update window |
+| `help_whats-new` | Opens the What's New window |
+| `help_docs` | Opens bundled docs in the default browser |
+| `file_close` | Closes the main window |
+| `view_devtools` | Toggles developer tools (debug builds only) |
+| `view_fullscreen` | Toggles fullscreen on the main window |
+| `view_zoom_in` | Zooms in by 10% (persists to settings) |
+| `view_zoom_out` | Zooms out by 10% (persists to settings) |
+| `view_actual_size` | Resets zoom to 100% (persists to settings) |
+| `window_zoom` | Toggles maximize/restore |
+| `window_stay-on-top` | Toggles always-on-top and updates the check menu item |
+| `window_bring_all` | Unminimizes, shows, and focuses the main window |
+
+## Listening for Menu Events in the Frontend
+
+Use the IPC facade:
+
+```javascript
+import { events } from './lib/ipc.js';
+
+events.onMenuEvent('menu:file:new', () => console.log('New file'));
+events.onMenuEvent('menu:file:save', () => console.log('Save'));
+events.onMenuEvent('menu:image:resize', () => console.log('Resize image'));
+```
+
+Or use `listen()` directly from `@tauri-apps/api/event`:
+
+```javascript
 import { listen } from '@tauri-apps/api/event';
 
-function App() {
-  useEffect(() => {
-    const unlisteners: (() => void)[] = [];
+listen('menu:file:new', () => console.log('New file'));
+```
 
-    const menuEvents = [
-      { event: 'menu:file:new', handler: () => console.log('New file') },
-      { event: 'menu:file:open', handler: () => console.log('Open file') },
-      { event: 'menu:file:save', handler: () => console.log('Save') },
-      { event: 'menu:file:export', handler: () => console.log('Export') },
-      { event: 'menu:image:resize', handler: () => console.log('Resize image') },
-    ];
+## Dynamic Menu State
 
-    menuEvents.forEach(({ event, handler }) => {
-      listen(event, handler).then((unlisten) => unlisteners.push(unlisten));
-    });
+Three IPC commands let you modify menu items at runtime from the frontend:
 
-    return () => { unlisteners.forEach((u) => u()); };
-  }, []);
+```javascript
+import { ipc } from './lib/ipc.js';
 
-  return <div>...</div>;
-}
+// Enable or disable a menu item
+await ipc.menuSetEnabled('file_save', false);
+
+// Set checked state of a Check item
+await ipc.menuSetChecked('view_status_bar', true);
+
+// Change label text
+await ipc.menuSetLabel('file_save', 'Save Project');
 ```
 
 ## macOS App Menu
 
 On macOS, the leftmost menu shows the app name and is defined by `macos_app_menu()`. It includes About, Settings, Services, Hide/Show, and Quit. The `"__APP__"` label is automatically replaced with your app's `productName` from `tauri.conf.json`.
 
-```rust
-#[cfg(target_os = "macos")]
-fn macos_app_menu() -> MenuConfig {
-    MenuConfig {
-        label: "__APP__",
-        items: vec![
-            MenuDef::Native(NativeItem::About),
-            MenuDef::Separator,
-            MenuDef::Item { id: "app_preferences", label: "Settings...", accel: Some("CmdOrCtrl+,") },
-            MenuDef::Separator,
-            MenuDef::Native(NativeItem::Services),
-            MenuDef::Separator,
-            MenuDef::Native(NativeItem::Hide),
-            MenuDef::Native(NativeItem::HideOthers),
-            MenuDef::Native(NativeItem::ShowAll),
-            MenuDef::Separator,
-            MenuDef::Native(NativeItem::Quit),
-        ],
-    }
-}
-```
-
-This menu only compiles on macOS (`#[cfg(target_os = "macos")]`). On Windows and Linux, there is no app-name menu.
+This menu only compiles on macOS (`#[cfg(target_os = "macos")]`). On Windows and Linux, Settings is placed in the File menu instead.
 
 ## Cross-Platform Notes
 
 - `CmdOrCtrl` resolves to Cmd on macOS, Ctrl on Windows/Linux
 - The macOS app menu is automatically excluded on other platforms via `#[cfg(target_os = "macos")]`
+- On non-macOS platforms, Settings is added to the File menu automatically
 - `NativeItem::Hide`, `HideOthers`, `ShowAll`, and `Services` are macOS-only concepts but won't cause errors on other platforms -- they simply won't appear
 - `CloseWindow` uses the platform's native close behavior

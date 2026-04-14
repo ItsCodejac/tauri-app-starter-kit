@@ -31,7 +31,7 @@ events.onCloseRequested(async () => {
   // The Rust CloseRequested handler emits this event when dirty state is true.
   // Use a native dialog via Tauri's dialog plugin (invoke directly to avoid
   // an extra JS package dependency).
-  const { invoke } = await import('@tauri-apps/api/core');
+  const { invoke } = window.__TAURI__.core;
   const confirmed = await invoke('plugin:dialog|ask', {
     message: 'You have unsaved changes. Close anyway?',
     title: 'Unsaved Changes',
