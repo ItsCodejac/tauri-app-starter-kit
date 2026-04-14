@@ -12,16 +12,16 @@
   "app": {
     "windows": [
       {
-        "label": "main",
-        "title": "App",
-        "width": 1280,
-        "height": 800,
-        "minWidth": 900,
-        "minHeight": 600,
-        "visible": false,
-        "resizable": true,
-        "fullscreen": false,
-        "decorations": true
+        "label": "splash",
+        "url": "src/windows/splash.html",
+        "title": "",
+        "width": 480,
+        "height": 300,
+        "resizable": false,
+        "decorations": false,
+        "alwaysOnTop": true,
+        "center": true,
+        "visible": true
       }
     ],
     "security": {

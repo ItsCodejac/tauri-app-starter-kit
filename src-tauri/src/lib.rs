@@ -159,51 +159,64 @@ pub fn run() {
             windows::open_window,
         ])
         // -- Setup --
+        // Splash screen is the first window in tauri.conf.json (visible: true).
+        // Main window is second (visible: false). Tauri creates both at startup --
+        // splash appears immediately, main stays hidden until setup completes.
         .setup(|app| {
-            // Set the proper crash reports directory now that we have an AppHandle
+            // Synchronous init that must happen before anything else
             crash_reporter::set_app_crash_dir(app.handle());
-
-            // Record start time for uptime diagnostics
             diagnostics::record_start_time();
 
-            // Set up system tray (optional -- remove this call if not needed)
             if let Err(e) = tray::setup_tray(app.handle()) {
                 log::warn!("Failed to set up system tray: {}", e);
             }
 
-            // Build and set the native menu bar
             let menu = menu::build_menu(app.handle())?;
             app.set_menu(menu)?;
 
-            // Handle menu events
             let handle = app.handle().clone();
             app.on_menu_event(move |_app, event| {
                 menu::handle_menu_event(&handle, &event);
             });
 
-            // Open splash screen immediately (before any init work)
-            windows::open_window_internal(app.handle(), "splash");
-
-            // Initialize settings with defaults
-            if let Err(e) = settings::init_settings(app.handle()) {
-                log::error!("Failed to initialize settings: {}", e);
-            }
-
-            // Show main window and close splash after a short delay
-            // This gives the splash time to display while init completes
-            let startup_handle = app.handle().clone();
-            std::thread::spawn(move || {
-                // Minimum splash duration so branding is visible
-                std::thread::sleep(std::time::Duration::from_secs(2));
-
-                // Show main window
-                if let Some(main_window) = startup_handle.get_webview_window("main") {
-                    let _ = main_window.show();
-                    let _ = main_window.set_focus();
+            // Spawn setup tasks as async (per Tauri docs: don't block setup,
+            // don't use std::thread::sleep in async -- use tokio::time::sleep)
+            let setup_handle = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                // Initialize settings
+                if let Err(e) = settings::init_settings(&setup_handle) {
+                    log::error!("Failed to initialize settings: {}", e);
                 }
 
+                // Minimum splash duration so branding is visible
+                // Minimum splash duration so branding is visible.
+                // Adjust this value or remove it for production apps with real setup work.
+                tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
+
+                // Create the main window (not in tauri.conf.json -- created here
+                // so the splash appears alone first)
+                let main_url = if cfg!(debug_assertions) {
+                    tauri::WebviewUrl::External("http://localhost:5173".parse().unwrap())
+                } else {
+                    tauri::WebviewUrl::App("index.html".into())
+                };
+
+                let _ = tauri::WebviewWindowBuilder::new(
+                    &setup_handle,
+                    "main",
+                    main_url,
+                )
+                .title("App")
+                .inner_size(1280.0, 800.0)
+                .min_inner_size(900.0, 600.0)
+                .resizable(true)
+                .decorations(true)
+                .center()
+                .visible(true)
+                .build();
+
                 // Close splash
-                if let Some(splash) = startup_handle.get_webview_window("splash") {
+                if let Some(splash) = setup_handle.get_webview_window("splash") {
                     let _ = splash.close();
                 }
             });
