@@ -7,18 +7,109 @@
     <title>App</title>
     <link rel="stylesheet" href="/src/styles/shared.css" />
     <style>
-      /* Main workspace overrides -- allow scrolling (shared.css sets overflow:hidden for utility windows) */
-      body { overflow-y: auto; }
+      body { overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
 
+      /* ── Top bar with demo buttons ── */
+      .top-bar {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 12px;
+        background: var(--surface-primary);
+        border-bottom: 1px solid var(--border-standard);
+        flex-shrink: 0;
+        flex-wrap: wrap;
+      }
+      .top-bar-label {
+        font-size: 11px;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-right: 4px;
+      }
+      .demo-btn {
+        font-size: 12px;
+        padding: 4px 10px;
+        height: 24px;
+        background: var(--surface-tertiary);
+        border: 1px solid var(--border-subtle);
+        border-radius: 3px;
+        color: var(--text-secondary);
+        cursor: pointer;
+        font-family: var(--font-ui);
+        transition: background 0.1s, color 0.1s;
+      }
+      .demo-btn:hover {
+        background: var(--surface-hover);
+        color: var(--text-primary);
+        border-color: var(--border-standard);
+      }
+
+      /* ── Main layout: sidebar + content ── */
+      .main-layout {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+      }
+
+      /* ── Docs sidebar ── */
+      .sidebar {
+        width: 220px;
+        min-width: 220px;
+        background: var(--surface-primary);
+        border-right: 1px solid var(--border-standard);
+        overflow-y: auto;
+        padding: 12px 0;
+        flex-shrink: 0;
+      }
+      .sidebar-section {
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        padding: 12px 16px 6px;
+      }
+      .sidebar-section:first-child { padding-top: 4px; }
+      .sidebar-link {
+        display: block;
+        padding: 4px 16px;
+        font-size: 13px;
+        color: var(--text-secondary);
+        text-decoration: none;
+        cursor: pointer;
+        transition: background 0.08s, color 0.08s;
+      }
+      .sidebar-link:hover {
+        color: var(--text-primary);
+      }
+      .sidebar-link.active {
+        background: var(--surface-active);
+        color: var(--text-bright);
+      }
+
+      /* ── Content area ── */
+      .content {
+        flex: 1;
+        overflow-y: auto;
+        background: var(--surface-secondary);
+      }
+      .content iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        background: var(--surface-secondary);
+      }
+
+      /* ── Welcome page (shown before docs are loaded) ── */
       .welcome {
-        max-width: 760px;
-        margin: 0 auto;
-        padding: 40px 32px;
+        padding: 32px 40px;
+        max-width: 700px;
         color: var(--text-secondary);
         line-height: 1.6;
       }
       .welcome h1 {
-        font-size: 22px;
+        font-size: 20px;
         font-weight: 600;
         color: var(--text-bright);
         margin-bottom: 4px;
@@ -26,7 +117,7 @@
       .welcome .tagline {
         font-size: 13px;
         color: var(--text-tertiary);
-        margin-bottom: 28px;
+        margin-bottom: 24px;
       }
       .welcome h2 {
         font-size: 12px;
@@ -34,162 +125,132 @@
         color: var(--text-primary);
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        margin: 28px 0 12px;
+        margin: 24px 0 10px;
         padding-bottom: 6px;
         border-bottom: 1px solid var(--border-subtle);
       }
-
-      /* Interactive feature buttons */
-      .demo-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 6px;
-        margin-bottom: 16px;
-      }
-      .demo-btn {
-        font-size: 12px;
-        padding: 10px 12px;
-        background: var(--surface-secondary);
-        border: 1px solid var(--border-subtle);
-        border-radius: 4px;
-        color: var(--text-secondary);
-        cursor: pointer;
-        text-align: left;
-        font-family: var(--font-ui);
-        transition: border-color 0.1s, background 0.1s;
-      }
-      .demo-btn:hover {
-        background: var(--surface-hover);
-        border-color: var(--border-standard);
-        color: var(--text-primary);
-      }
-      .demo-btn:active {
-        background: var(--surface-active);
-      }
-      .demo-btn .shortcut {
-        font-family: var(--font-mono);
-        font-size: 10px;
-        color: var(--text-tertiary);
-        display: block;
-        margin-top: 2px;
-      }
-
-      /* Non-interactive features (no window to open) */
-      .feature-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 6px;
-        margin-bottom: 16px;
-      }
-      .feature-item {
-        font-size: 11px;
-        padding: 8px 12px;
-        color: var(--text-tertiary);
-      }
-      .feature-item::before {
-        content: "✓ ";
-        color: var(--accent-green);
-      }
-
-      /* Steps */
-      .step {
+      .welcome .step {
         display: flex;
-        gap: 12px;
-        margin-bottom: 10px;
+        gap: 10px;
+        margin-bottom: 8px;
         align-items: baseline;
       }
-      .step-num {
+      .welcome .step-num {
         font-family: var(--font-mono);
         font-size: 11px;
         font-weight: 600;
         color: var(--accent-blue);
         background: rgba(74, 158, 255, 0.1);
-        width: 22px;
-        height: 22px;
-        border-radius: 11px;
+        width: 20px;
+        height: 20px;
+        border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
       }
-      .step-text { font-size: 13px; }
-      code {
+      .welcome .step-text { font-size: 13px; }
+      .welcome code {
         font-family: var(--font-mono);
         font-size: 12px;
         background: var(--surface-tertiary);
-        padding: 2px 6px;
-        border-radius: 3px;
+        padding: 1px 5px;
+        border-radius: 2px;
         color: var(--accent-blue);
       }
-      pre {
-        background: var(--surface-tertiary);
-        border: 1px solid var(--border-standard);
-        border-radius: 4px;
-        padding: 12px 16px;
+      .welcome pre {
+        background: var(--surface-primary);
+        border: 1px solid var(--border-subtle);
+        border-radius: 3px;
+        padding: 10px 14px;
         font-family: var(--font-mono);
         font-size: 12px;
         line-height: 1.5;
         overflow-x: auto;
-        margin-bottom: 16px;
+        margin-bottom: 12px;
         color: var(--text-primary);
       }
-      .hint {
+      .welcome .hint {
         font-size: 11px;
         color: var(--text-tertiary);
-        margin-top: 28px;
-        padding-top: 16px;
+        margin-top: 24px;
+        padding-top: 12px;
         border-top: 1px solid var(--border-subtle);
       }
-      .doc-link {
-        color: var(--accent-blue);
-        cursor: pointer;
-        text-decoration: none;
+
+      /* ── Status bar ── */
+      .status-bar {
+        height: 22px;
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+        font-size: 11px;
+        color: var(--text-tertiary);
+        background: var(--surface-primary);
+        border-top: 1px solid var(--border-standard);
+        flex-shrink: 0;
+        justify-content: space-between;
       }
-      .doc-link:hover { text-decoration: underline; }
+      .status-bar .version {
+        font-family: var(--font-mono);
+        font-size: 10px;
+      }
     </style>
   </head>
   <body>
-    <div id="app">
-      <div class="welcome">
-        <h1>TASK — Tauri App Starter Kit</h1>
-        <p class="tagline">Your app's workspace starts here. Everything below is replaceable.</p>
+    <!-- Top bar: demo buttons to open utility windows -->
+    <div class="top-bar">
+      <span class="top-bar-label">Open:</span>
+      <button class="demo-btn" data-window="settings">Settings</button>
+      <button class="demo-btn" data-window="about">About</button>
+      <button class="demo-btn" data-window="shortcuts">Shortcuts</button>
+      <button class="demo-btn" data-window="logs">Logs</button>
+      <button class="demo-btn" data-window="update">Updates</button>
+      <button class="demo-btn" data-window="whatsnew">What's New</button>
+      <button class="demo-btn" data-window="welcome">Welcome</button>
+      <button class="demo-btn" data-window="splash">Splash</button>
+    </div>
 
-        <h2>Try it — click to open each window</h2>
-        <div class="demo-grid">
-          <button class="demo-btn" data-window="settings">Settings / Preferences<span class="shortcut">⌘ ,</span></button>
-          <button class="demo-btn" data-window="about">About</button>
-          <button class="demo-btn" data-window="shortcuts">Keyboard Shortcuts</button>
-          <button class="demo-btn" data-window="logs">Log Viewer</button>
-          <button class="demo-btn" data-window="update">Check for Updates</button>
-          <button class="demo-btn" data-window="whatsnew">What's New</button>
-          <button class="demo-btn" data-window="welcome">Welcome / Onboarding</button>
-          <button class="demo-btn" data-window="splash">Splash Screen</button>
-          <button class="demo-btn" id="btn-docs">Documentation<span class="shortcut">mdBook</span></button>
-        </div>
+    <div class="main-layout">
+      <!-- Docs sidebar -->
+      <nav class="sidebar" id="sidebar">
+        <div class="sidebar-section">Getting Started</div>
+        <a class="sidebar-link active" data-page="welcome">Welcome</a>
+        <a class="sidebar-link" data-page="getting-started">Quick Start</a>
+        <a class="sidebar-link" data-page="structure">Project Structure</a>
 
-        <h2>Also included (no window to open)</h2>
-        <div class="feature-grid">
-          <span class="feature-item">Native OS menus</span>
-          <span class="feature-item">System tray</span>
-          <span class="feature-item">Autosave + recovery</span>
-          <span class="feature-item">Crash reporting</span>
-          <span class="feature-item">Window state persistence</span>
-          <span class="feature-item">Single instance lock</span>
-          <span class="feature-item">Drag and drop</span>
-          <span class="feature-item">Native notifications</span>
-          <span class="feature-item">Secure keyring</span>
-          <span class="feature-item">Localization (i18n)</span>
-          <span class="feature-item">Quit confirmation</span>
-          <span class="feature-item">Browser shortcut prevention</span>
-        </div>
+        <div class="sidebar-section">Guides</div>
+        <a class="sidebar-link" data-page="guides/menus">Menus</a>
+        <a class="sidebar-link" data-page="guides/ipc-commands">IPC Commands</a>
+        <a class="sidebar-link" data-page="guides/panels">Utility Windows</a>
+        <a class="sidebar-link" data-page="guides/settings">Settings</a>
+        <a class="sidebar-link" data-page="guides/shortcuts">Shortcuts</a>
+        <a class="sidebar-link" data-page="guides/autosave">Autosave</a>
+        <a class="sidebar-link" data-page="guides/crash-reporting">Crash Reporting</a>
+        <a class="sidebar-link" data-page="guides/theming">Theming</a>
+        <a class="sidebar-link" data-page="guides/tray">System Tray</a>
+        <a class="sidebar-link" data-page="guides/shipping">Shipping</a>
 
-        <h2>Make it yours</h2>
-        <div class="step"><span class="step-num">1</span><span class="step-text">Change app name → <code>src-tauri/tauri.conf.json</code> productName</span></div>
-        <div class="step"><span class="step-num">2</span><span class="step-text">Edit menus → <code>src-tauri/src/menu.rs</code> custom_menus()</span></div>
-        <div class="step"><span class="step-num">3</span><span class="step-text">Set branding → <code>src/lib/branding.js</code></span></div>
-        <div class="step"><span class="step-num">4</span><span class="step-text">Add your frontend framework and replace this page</span></div>
+        <div class="sidebar-section">Reference</div>
+        <a class="sidebar-link" data-page="reference/rust-api">Rust API</a>
+        <a class="sidebar-link" data-page="reference/react-api">Frontend API</a>
+        <a class="sidebar-link" data-page="reference/events">Events</a>
+        <a class="sidebar-link" data-page="reference/css-variables">CSS Variables</a>
+      </nav>
 
-        <h2>Add your frontend</h2>
+      <!-- Content: welcome page or docs iframe -->
+      <div class="content" id="content">
+        <div class="welcome" id="welcome-content">
+          <h1>TASK — Tauri App Starter Kit</h1>
+          <p class="tagline">Your desktop app's foundation. Replace this page with your frontend.</p>
+
+          <h2>Make It Yours</h2>
+          <div class="step"><span class="step-num">1</span><span class="step-text">App name → <code>tauri.conf.json</code> productName</span></div>
+          <div class="step"><span class="step-num">2</span><span class="step-text">Branding → <code>src/lib/branding.js</code></span></div>
+          <div class="step"><span class="step-num">3</span><span class="step-text">Menus → <code>src-tauri/src/menu.rs</code> custom_menus()</span></div>
+          <div class="step"><span class="step-num">4</span><span class="step-text">Add your framework and replace this page</span></div>
+
+          <h2>Add Your Frontend</h2>
 <pre># React
 npm install react react-dom @vitejs/plugin-react
 
@@ -199,42 +260,63 @@ npm install svelte @sveltejs/vite-plugin-svelte
 # Vue
 npm install vue @vitejs/plugin-vue
 
-# Or just write vanilla HTML/JS in this file</pre>
+# Or write vanilla JS directly</pre>
 
-        <h2>Documentation</h2>
-        <p>Full guides in <code>docs/</code>. Run <code>mdbook serve docs</code> or click <a class="doc-link" id="link-docs">Help → Documentation</a> in the menu bar.</p>
+          <h2>What's Working</h2>
+          <p>Use the buttons above to open each utility window. Browse the documentation in the sidebar. Everything is functional — settings save, shortcuts persist, crash reports log, the tray works.</p>
 
-        <p class="hint">This is the template's default workspace. Replace the body of <code>index.html</code> with your app's UI. The Rust backbone and utility windows work regardless of framework.</p>
+          <p class="hint">This page is <code>index.html</code>. Replace its contents with your app's UI. The sidebar, top bar, and status bar are part of the template — remove them too when you're ready. The Rust backbone and utility windows keep working regardless.</p>
+        </div>
+        <iframe id="docs-frame" style="display:none;" sandbox="allow-same-origin allow-scripts"></iframe>
       </div>
     </div>
+
+    <!-- Status bar -->
+    <div class="status-bar">
+      <span id="status-text">Ready</span>
+      <span class="version" id="version-text"></span>
+    </div>
+
     <script type="module" src="/src/main.js"></script>
     <script type="module">
-      import { ipc } from '/src/lib/ipc.js';
+      const { invoke } = window.__TAURI__.core;
 
-      // Wire up demo buttons to open their windows
+      // Demo buttons
       document.querySelectorAll('.demo-btn[data-window]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          ipc.openWindow(btn.dataset.window);
-        });
+        btn.addEventListener('click', () => invoke('open_window', { name: btn.dataset.window }));
       });
 
-      // Documentation link with failure feedback
-      function handleDocsClick(btn) {
-        ipc.openDocs().catch(() => {
-          if (btn) {
-            const orig = btn.textContent;
-            btn.textContent = "Run 'mdbook build docs' first";
-            setTimeout(() => { btn.textContent = orig; }, 3000);
-          }
-        });
-      }
-      document.getElementById('btn-docs')?.addEventListener('click', (e) => {
-        handleDocsClick(e.currentTarget);
+      // Sidebar navigation — load doc pages in iframe
+      const sidebar = document.getElementById('sidebar');
+      const welcomeEl = document.getElementById('welcome-content');
+      const docsFrame = document.getElementById('docs-frame');
+
+      sidebar.addEventListener('click', (e) => {
+        const link = e.target.closest('.sidebar-link');
+        if (!link) return;
+        const page = link.dataset.page;
+
+        // Highlight active link
+        sidebar.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+
+        if (page === 'welcome') {
+          // Show welcome content, hide iframe
+          welcomeEl.style.display = 'block';
+          docsFrame.style.display = 'none';
+        } else {
+          // Load doc page in iframe
+          welcomeEl.style.display = 'none';
+          docsFrame.style.display = 'block';
+          // In dev mode, serve from built docs. In prod, from bundled.
+          docsFrame.src = `/docs/book/${page}.html`;
+        }
       });
-      document.getElementById('link-docs')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        handleDocsClick(e.currentTarget);
-      });
+
+      // Version in status bar
+      invoke('get_app_info').then(info => {
+        document.getElementById('version-text').textContent = `v${info.version}`;
+      }).catch(() => {});
     </script>
   </body>
 </html>
