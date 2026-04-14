@@ -34,8 +34,8 @@ src/
   components/layout/PanelLayout.tsx  # Resizable 4-panel layout
   components/layout/StatusBar.tsx    # Bottom status line
   components/ui/Toast.tsx            # Notification display
-  components/ui/CommandPalette.tsx    # Cmd+Shift+P command menu
-  components/ui/SettingsPanel.tsx     # Settings dialog (6 sections)
+  components/ui/CommandPalette.tsx   # Cmd+Shift+P command menu
+  components/ui/SettingsPanel.tsx    # Settings dialog (6 sections)
   components/ui/AboutDialog.tsx      # About dialog with branding
   components/ui/UpdateDialog.tsx     # Auto-updater UI
   components/ui/SplashScreen.tsx     # Animated splash screen on startup

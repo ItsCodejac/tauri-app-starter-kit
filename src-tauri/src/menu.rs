@@ -56,7 +56,6 @@ pub enum NativeItem {
     ShowAll,
     Quit,
     Services,
-    About,
     CloseWindow,
 }
 
@@ -440,7 +439,6 @@ fn append_item<'a>(
             NativeItem::ShowAll => builder.show_all(),
             NativeItem::Quit => builder.quit(),
             NativeItem::Services => builder.services(),
-            NativeItem::About => builder.about(None),
             NativeItem::CloseWindow => builder.close_window(),
         },
         MenuDef::Submenu { id, label, items } => {

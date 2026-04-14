@@ -5,6 +5,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 static UPDATER_ENABLED: AtomicBool = AtomicBool::new(false);
 
 /// Call this after registering the updater plugin.
+#[allow(dead_code)]
 pub fn mark_enabled() {
     UPDATER_ENABLED.store(true, Ordering::SeqCst);
 }
