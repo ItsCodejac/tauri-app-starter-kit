@@ -113,19 +113,6 @@ document.getElementById('cancel-btn').addEventListener('click', () => {
   closeWindow();
 });
 
-// Reset: restore defaults
-document.getElementById('reset-btn').addEventListener('click', async () => {
-  if (confirm('Reset all settings to defaults? This will take effect after clicking OK.')) {
-    await ipc.resetSettings();
-    await loadSettings();
-  }
-});
-
-// Help: open docs
-document.getElementById('help-btn').addEventListener('click', () => {
-  ipc.openDocs().catch(() => {});
-});
-
 // Clear cache
 document.getElementById('clear-cache')?.addEventListener('click', () => {
   alert('Cache cleared.');
