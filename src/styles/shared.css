@@ -107,10 +107,11 @@ body {
 
 button {
   font-family: var(--font-ui);
-  font-size: 12px;
-  padding: 6px 14px;
+  font-size: 13px;
+  padding: 6px 16px;
+  height: 28px;
   border: 1px solid var(--border-standard);
-  border-radius: 6px;
+  border-radius: 3px;
   background: var(--surface-tertiary);
   color: var(--text-primary);
   cursor: pointer;
