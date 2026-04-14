@@ -4,7 +4,10 @@ use std::sync::atomic::{AtomicBool, Ordering};
 /// Set to true when the updater plugin is registered in lib.rs.
 static UPDATER_ENABLED: AtomicBool = AtomicBool::new(false);
 
-/// Call this after registering the updater plugin.
+/// Call this after registering the updater plugin in lib.rs.
+/// Currently unused because the updater plugin is commented out.
+/// When you uncomment `.plugin(tauri_plugin_updater::Builder::new().build())`,
+/// add `updater::mark_enabled()` immediately after it.
 #[allow(dead_code)]
 pub fn mark_enabled() {
     UPDATER_ENABLED.store(true, Ordering::SeqCst);

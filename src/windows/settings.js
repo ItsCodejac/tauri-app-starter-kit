@@ -43,6 +43,7 @@ async function loadSettings() {
 
 function applyToForm(s) {
   // General
+  setValue('startup-behavior', s.startup_behavior ?? 'empty');
   setChecked('check-updates', s['updates.checkOnStartup'] ?? true);
   setChecked('autostart', s.autostart ?? false);
   setValue('locale', s.locale ?? 'en');
@@ -74,6 +75,7 @@ function applyToForm(s) {
 function readFromForm() {
   return {
     ...current,
+    startup_behavior: getValue('startup-behavior'),
     'updates.checkOnStartup': getChecked('check-updates'),
     autostart: getChecked('autostart'),
     locale: getValue('locale'),

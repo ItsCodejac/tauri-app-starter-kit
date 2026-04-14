@@ -1,4 +1,4 @@
-import { applyBranding, closeWindow, invoke } from '../lib/window-utils.js';
+import { applyBranding, closeWindow } from '../lib/window-utils.js';
 import { ipc } from '../lib/ipc.js';
 
 applyBranding({ showVersion: false });
@@ -245,18 +245,57 @@ function renderPresetDropdown() {
   presetSelect.innerHTML = html;
 }
 
+// Inline preset name input (replaces prompt())
+const presetNameForm = document.createElement('div');
+presetNameForm.className = 'preset-name-form hidden';
+presetNameForm.style.cssText = 'display:none;align-items:center;gap:6px;';
+presetNameForm.innerHTML = `
+  <input type="text" id="preset-name-input" placeholder="Preset name" style="min-width:120px;font-size:12px;" />
+  <button id="preset-name-save" style="font-size:12px;padding:4px 10px;">Save</button>
+  <button id="preset-name-cancel" style="font-size:12px;padding:4px 10px;">Cancel</button>
+`;
+presetSelect.parentElement.appendChild(presetNameForm);
+
+function showPresetNameInput() {
+  presetNameForm.classList.remove('hidden');
+  presetNameForm.style.display = 'flex';
+  presetSelect.style.display = 'none';
+  const input = document.getElementById('preset-name-input');
+  input.value = '';
+  input.focus();
+}
+
+function hidePresetNameInput() {
+  presetNameForm.classList.add('hidden');
+  presetNameForm.style.display = 'none';
+  presetSelect.style.display = '';
+  presetSelect.value = activePresetId;
+}
+
+document.getElementById('preset-name-save').addEventListener('click', async () => {
+  const name = document.getElementById('preset-name-input').value.trim();
+  if (name) {
+    const newId = await ipc.savePreset(name);
+    activePresetId = newId;
+    await loadPresets();
+    await refreshShortcuts();
+  }
+  hidePresetNameInput();
+});
+
+document.getElementById('preset-name-cancel').addEventListener('click', () => {
+  hidePresetNameInput();
+});
+
+document.getElementById('preset-name-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('preset-name-save').click();
+  if (e.key === 'Escape') hidePresetNameInput();
+});
+
 presetSelect.addEventListener('change', async () => {
   const val = presetSelect.value;
   if (val === '__save_as__') {
-    const name = prompt('Preset name:');
-    if (name) {
-      const newId = await ipc.savePreset(name);
-      activePresetId = newId;
-      await loadPresets();
-      await refreshShortcuts();
-    } else {
-      presetSelect.value = activePresetId;
-    }
+    showPresetNameInput();
     return;
   }
   const bindings = await ipc.loadPreset(val);
@@ -591,15 +630,12 @@ document.getElementById('ctx-reset').addEventListener('click', async () => {
 // Footer buttons
 // ---------------------------------------------------------------------------
 
-document.getElementById('cancel-btn').addEventListener('click', closeWindow);
-document.getElementById('ok-btn').addEventListener('click', closeWindow);
+document.getElementById('done-btn').addEventListener('click', closeWindow);
 
 document.getElementById('reset-all-btn').addEventListener('click', async () => {
-  const confirmed = confirm('Reset all keyboard shortcuts to their defaults?');
-  if (confirmed) {
-    await ipc.resetAllShortcuts();
-    await refreshShortcuts();
-  }
+  // Reversible by loading the Default preset, so no confirmation needed
+  await ipc.resetAllShortcuts();
+  await refreshShortcuts();
 });
 
 // ---------------------------------------------------------------------------

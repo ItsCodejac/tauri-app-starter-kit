@@ -218,13 +218,22 @@ npm install vue @vitejs/plugin-vue
         });
       });
 
-      // Documentation link
-      document.getElementById('btn-docs')?.addEventListener('click', () => {
-        ipc.openDocs();
+      // Documentation link with failure feedback
+      function handleDocsClick(btn) {
+        ipc.openDocs().catch(() => {
+          if (btn) {
+            const orig = btn.textContent;
+            btn.textContent = "Run 'mdbook build docs' first";
+            setTimeout(() => { btn.textContent = orig; }, 3000);
+          }
+        });
+      }
+      document.getElementById('btn-docs')?.addEventListener('click', (e) => {
+        handleDocsClick(e.currentTarget);
       });
       document.getElementById('link-docs')?.addEventListener('click', (e) => {
         e.preventDefault();
-        ipc.openDocs();
+        handleDocsClick(e.currentTarget);
       });
     </script>
   </body>

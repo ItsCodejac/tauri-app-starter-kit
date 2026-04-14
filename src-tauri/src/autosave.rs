@@ -52,10 +52,10 @@ fn recovery_tmp_path(app: &AppHandle) -> PathBuf {
 #[tauri::command]
 pub fn start_autosave(app: AppHandle, state: State<'_, AutosaveState>, interval_secs: Option<u64>) -> Result<(), String> {
     let interval = interval_secs.unwrap_or(60);
-    *state.interval_secs.lock().unwrap() = interval;
+    *state.interval_secs.lock().unwrap_or_else(|e| e.into_inner()) = interval;
 
     {
-        let mut running = state.running.lock().unwrap();
+        let mut running = state.running.lock().unwrap_or_else(|e| e.into_inner());
         if *running {
             return Ok(()); // Already running
         }
@@ -67,11 +67,11 @@ pub fn start_autosave(app: AppHandle, state: State<'_, AutosaveState>, interval_
         loop {
             let interval = {
                 let autosave = app_handle.state::<AutosaveState>();
-                let running = autosave.running.lock().unwrap();
+                let running = autosave.running.lock().unwrap_or_else(|e| e.into_inner());
                 if !*running {
                     break;
                 }
-                let val = *autosave.interval_secs.lock().unwrap();
+                let val = *autosave.interval_secs.lock().unwrap_or_else(|e| e.into_inner());
                 val
             };
 
@@ -79,7 +79,7 @@ pub fn start_autosave(app: AppHandle, state: State<'_, AutosaveState>, interval_
 
             let should_continue = {
                 let autosave = app_handle.state::<AutosaveState>();
-                let running = autosave.running.lock().unwrap();
+                let running = autosave.running.lock().unwrap_or_else(|e| e.into_inner());
                 *running
             };
             if !should_continue {
@@ -89,7 +89,7 @@ pub fn start_autosave(app: AppHandle, state: State<'_, AutosaveState>, interval_
             // Check if there's pending state to save
             let data = {
                 let autosave = app_handle.state::<AutosaveState>();
-                let pending = autosave.pending_state.lock().unwrap();
+                let pending = autosave.pending_state.lock().unwrap_or_else(|e| e.into_inner());
                 pending.clone()
             };
 
@@ -111,7 +111,7 @@ pub fn start_autosave(app: AppHandle, state: State<'_, AutosaveState>, interval_
 /// Stop the autosave loop.
 #[tauri::command]
 pub fn stop_autosave(state: State<'_, AutosaveState>) -> Result<(), String> {
-    let mut running = state.running.lock().unwrap();
+    let mut running = state.running.lock().unwrap_or_else(|e| e.into_inner());
     *running = false;
     Ok(())
 }
@@ -119,7 +119,7 @@ pub fn stop_autosave(state: State<'_, AutosaveState>) -> Result<(), String> {
 /// Update the state data that will be saved on the next autosave tick.
 #[tauri::command]
 pub fn update_autosave_state(state: State<'_, AutosaveState>, data: String) -> Result<(), String> {
-    let mut pending = state.pending_state.lock().unwrap();
+    let mut pending = state.pending_state.lock().unwrap_or_else(|e| e.into_inner());
     *pending = Some(data);
     Ok(())
 }

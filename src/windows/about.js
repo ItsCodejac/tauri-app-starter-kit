@@ -1,4 +1,4 @@
-import { applyBranding, showButtonFeedback, branding, invoke } from '../lib/window-utils.js';
+import { applyBranding, showButtonFeedback, setupCloseButton, branding, invoke } from '../lib/window-utils.js';
 import { ipc } from '../lib/ipc.js';
 
 // Apply branding (accent color, logo, name, tagline, copyright, license, version)
@@ -20,6 +20,9 @@ if (branding.github) {
   a.addEventListener('click', (e) => { e.preventDefault(); invoke('open_external_url', { url: branding.github }); });
   linksEl.appendChild(a);
 }
+
+// Close button
+setupCloseButton('close-btn');
 
 // Copy diagnostics
 document.getElementById('diagnostics').addEventListener('click', async () => {

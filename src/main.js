@@ -16,20 +16,27 @@ document.documentElement.style.setProperty('--accent-blue', branding.accentColor
 // Wire these to your framework's handlers as needed.
 // ---------------------------------------------------------------------------
 
-events.onMenuEvent('menu:file:new', () => console.log('[menu] New'));
-events.onMenuEvent('menu:file:open', () => console.log('[menu] Open'));
-events.onMenuEvent('menu:file:save', () => console.log('[menu] Save'));
-events.onMenuEvent('menu:file:save-as', () => console.log('[menu] Save As'));
-events.onMenuEvent('menu:edit:find', () => console.log('[menu] Find'));
-events.onMenuEvent('menu:edit:find-replace', () => console.log('[menu] Find & Replace'));
+events.onMenuEvent('menu:file:new', () => console.debug('[menu] New'));
+events.onMenuEvent('menu:file:open', () => console.debug('[menu] Open'));
+events.onMenuEvent('menu:file:save', () => console.debug('[menu] Save'));
+events.onMenuEvent('menu:file:save-as', () => console.debug('[menu] Save As'));
+events.onMenuEvent('menu:edit:find', () => console.debug('[menu] Find'));
+events.onMenuEvent('menu:edit:find-replace', () => console.debug('[menu] Find & Replace'));
 
 // ---------------------------------------------------------------------------
 // Close confirmation
 // ---------------------------------------------------------------------------
 
-events.onCloseRequested(() => {
-  // Show your own confirmation UI, then call ipc.confirmClose() to proceed.
-  const confirmed = window.confirm('You have unsaved changes. Close anyway?');
+events.onCloseRequested(async () => {
+  // The Rust CloseRequested handler emits this event when dirty state is true.
+  // Use a native dialog via Tauri's dialog plugin (invoke directly to avoid
+  // an extra JS package dependency).
+  const { invoke } = await import('@tauri-apps/api/core');
+  const confirmed = await invoke('plugin:dialog|ask', {
+    message: 'You have unsaved changes. Close anyway?',
+    title: 'Unsaved Changes',
+    kind: 'warning',
+  });
   if (confirmed) {
     ipc.confirmClose();
   }
@@ -42,7 +49,7 @@ events.onCloseRequested(() => {
 ipc.getSetting('first_run').then((val) => {
   if (val === true) {
     ipc.openWindow('welcome').catch(() => {
-      console.log('Welcome window not available');
+      console.debug('Welcome window not available');
     });
   }
 }).catch(() => {});
@@ -52,6 +59,23 @@ ipc.getSetting('first_run').then((val) => {
 // ---------------------------------------------------------------------------
 
 events.onRecoveryAvailable((info) => {
-  console.log('Recovery data available from previous session:', info);
+  console.debug('Recovery data available from previous session:', info);
   // Show recovery UI to the user
+});
+
+// ---------------------------------------------------------------------------
+// Help: Report Issue
+// ---------------------------------------------------------------------------
+
+events.onMenuEvent('menu:help:report-issue', async () => {
+  try {
+    const text = await ipc.collectDiagnosticsString();
+    await navigator.clipboard.writeText(text);
+    if (branding.github) {
+      const issueUrl = branding.github.replace(/\/$/, '') + '/issues/new';
+      ipc.openExternalUrl(issueUrl);
+    }
+  } catch (e) {
+    console.debug('Report issue failed:', e);
+  }
 });

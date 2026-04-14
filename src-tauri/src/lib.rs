@@ -198,11 +198,11 @@ pub fn run() {
 
             // Spawn setup tasks as async (per Tauri docs: don't block setup).
             // Each step emits a status event so the splash screen shows real progress.
-            // Minimum 2-second splash duration so branding is visible even when init is fast.
+            // Minimum 3-second splash duration so branding is visible even when init is fast.
             let setup_handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
                 let start = tokio::time::Instant::now();
-                const MIN_SPLASH_SECS: u64 = 5;
+                const MIN_SPLASH_SECS: u64 = 3;
 
                 let emit_status = |msg: &str| {
                     let _ = setup_handle.emit("splash:status", msg);
@@ -237,12 +237,14 @@ pub fn run() {
                     tauri::WebviewUrl::App("index.html".into())
                 };
 
+                let product_name = setup_handle.config().product_name.clone().unwrap_or_else(|| "App".into());
+
                 let _ = tauri::WebviewWindowBuilder::new(
                     &setup_handle,
                     "main",
                     main_url,
                 )
-                .title("App")
+                .title(&product_name)
                 .inner_size(1280.0, 800.0)
                 .min_inner_size(900.0, 600.0)
                 .resizable(true)

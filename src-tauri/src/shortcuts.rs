@@ -246,7 +246,7 @@ where
 /// Returns all bindings from the active preset.
 #[tauri::command]
 pub fn get_shortcuts(state: State<'_, ShortcutState>) -> Vec<ShortcutBinding> {
-    let registry = state.0.lock().unwrap();
+    let registry = state.0.lock().unwrap_or_else(|e| e.into_inner());
     let active_id = &registry.active_preset_id;
     registry
         .presets
@@ -264,7 +264,7 @@ pub fn set_shortcut(
     command_id: String,
     keys: Vec<String>,
 ) -> Result<(), String> {
-    let mut registry = state.0.lock().unwrap();
+    let mut registry = state.0.lock().unwrap_or_else(|e| e.into_inner());
     with_active_preset(&mut registry, |preset| {
         let binding = preset
             .bindings
@@ -284,7 +284,7 @@ pub fn remove_shortcut(
     state: State<'_, ShortcutState>,
     command_id: String,
 ) -> Result<(), String> {
-    let mut registry = state.0.lock().unwrap();
+    let mut registry = state.0.lock().unwrap_or_else(|e| e.into_inner());
     with_active_preset(&mut registry, |preset| {
         let binding = preset
             .bindings
@@ -304,7 +304,7 @@ pub fn reset_shortcut(
     state: State<'_, ShortcutState>,
     command_id: String,
 ) -> Result<(), String> {
-    let mut registry = state.0.lock().unwrap();
+    let mut registry = state.0.lock().unwrap_or_else(|e| e.into_inner());
     with_active_preset(&mut registry, |preset| {
         let binding = preset
             .bindings
@@ -323,7 +323,7 @@ pub fn reset_all_shortcuts(
     app: AppHandle,
     state: State<'_, ShortcutState>,
 ) -> Result<(), String> {
-    let mut registry = state.0.lock().unwrap();
+    let mut registry = state.0.lock().unwrap_or_else(|e| e.into_inner());
     with_active_preset(&mut registry, |preset| {
         for binding in &mut preset.bindings {
             binding.keys = binding.default_keys.clone();
@@ -344,7 +344,7 @@ pub fn check_conflict(
     if keys.is_empty() {
         return None;
     }
-    let registry = state.0.lock().unwrap();
+    let registry = state.0.lock().unwrap_or_else(|e| e.into_inner());
     let active_id = &registry.active_preset_id;
     let preset = registry.presets.iter().find(|p| p.id == *active_id)?;
 
@@ -364,7 +364,7 @@ pub fn check_conflict(
 /// List all presets (without full bindings -- just id, name, is_builtin).
 #[tauri::command]
 pub fn get_presets(state: State<'_, ShortcutState>) -> Vec<PresetInfo> {
-    let registry = state.0.lock().unwrap();
+    let registry = state.0.lock().unwrap_or_else(|e| e.into_inner());
     registry
         .presets
         .iter()
@@ -383,7 +383,7 @@ pub fn save_preset(
     state: State<'_, ShortcutState>,
     name: String,
 ) -> Result<String, String> {
-    let mut registry = state.0.lock().unwrap();
+    let mut registry = state.0.lock().unwrap_or_else(|e| e.into_inner());
 
     // Clone bindings from active preset
     let active_id = registry.active_preset_id.clone();
@@ -421,7 +421,7 @@ pub fn load_preset(
     state: State<'_, ShortcutState>,
     preset_id: String,
 ) -> Result<Vec<ShortcutBinding>, String> {
-    let mut registry = state.0.lock().unwrap();
+    let mut registry = state.0.lock().unwrap_or_else(|e| e.into_inner());
 
     let bindings = registry
         .presets
@@ -442,7 +442,7 @@ pub fn delete_preset(
     state: State<'_, ShortcutState>,
     preset_id: String,
 ) -> Result<(), String> {
-    let mut registry = state.0.lock().unwrap();
+    let mut registry = state.0.lock().unwrap_or_else(|e| e.into_inner());
 
     // Check if builtin
     let is_builtin = registry

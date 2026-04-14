@@ -1,4 +1,4 @@
-import { applyBranding, setupCloseButton, invoke } from '../lib/window-utils.js';
+import { applyBranding, setupCloseButton } from '../lib/window-utils.js';
 import { ipc } from '../lib/ipc.js';
 
 // Apply branding (accent color, icon, version)

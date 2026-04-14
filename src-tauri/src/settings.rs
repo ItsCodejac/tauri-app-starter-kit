@@ -36,6 +36,9 @@ fn all_defaults() -> Vec<(&'static str, serde_json::Value)> {
         ("cache.maxCacheSize", serde_json::json!(10u32)),
         ("cache.cleanupOldCache", serde_json::json!(true)),
 
+        // Startup
+        ("startup_behavior", serde_json::json!("empty")),
+
         // Tray
         ("tray.minimize_to_tray", serde_json::json!(false)),
         ("tray.show_icon", serde_json::json!(true)),
