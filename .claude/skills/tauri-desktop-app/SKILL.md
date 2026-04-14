@@ -1,167 +1,83 @@
 ---
 name: tauri-desktop-app
-description: Expert guidance for building desktop apps with the tauri-app-starter template. Use when working with Tauri v2 + React + TypeScript desktop apps that use this template's patterns — native OS menus (data-driven menu.rs), resizable panel layouts, IPC between Rust and React, settings persistence, autosave/crash recovery, keyboard shortcuts, command palette, or toast notifications. Activate when modifying menus, adding panels, creating IPC commands, or customizing the app skeleton.
+description: Expert guidance for TASK (Tauri App Starter Kit). Use when working with Tauri v2 desktop apps built on this template — native OS menus (data-driven menu.rs), utility windows (plain HTML), IPC between Rust and frontend, settings persistence, keyboard shortcut registry, autosave/crash recovery, system tray, or branding. Framework-agnostic (no React/Vue/Svelte assumed).
 ---
 
-# Tauri Desktop App Starter
+# TASK — Tauri App Starter Kit
 
-Template for production desktop apps: Tauri v2 (Rust) + React + TypeScript + Vite.
+Desktop app skeleton: Tauri v2 + Rust backbone + plain HTML utility windows. Framework-agnostic.
 
 ## Project Structure
 
 ```
 src-tauri/src/
-  lib.rs            # Entry, plugin registration, IPC handler wiring
+  lib.rs            # Entry, plugin setup, splash→main window flow
   menu.rs           # Data-driven native OS menu system
-  settings.rs       # Persistent settings (tauri-plugin-store)
+  settings.rs       # Settings persistence (all_defaults pattern)
+  shortcuts.rs      # Keyboard shortcut registry with presets
   autosave.rs       # Background autosave + crash recovery
-  commands.rs       # IPC: dialogs, app info, URL open
-  recent_files.rs   # MRU file list (max 10)
-  crash_reporter.rs # Panic handler, crash report storage, frontend error logging
-  tray.rs           # System tray setup, minimize-to-tray support
-  updater.rs        # Check for updates, download and install
-  notifications.rs  # Native OS notifications
+  crash_reporter.rs # Panic handler, error logging
   diagnostics.rs    # System info collection for bug reports
+  notifications.rs  # Native OS notifications
+  recent_files.rs   # MRU file list
+  tray.rs           # System tray setup
+  updater.rs        # Auto-update (disabled by default)
+  windows.rs        # Utility window creation/management
+  commands.rs       # File dialogs, app info, docs, logs
 
 src/
-  App.tsx                            # Main component, menu listeners, shortcuts
-  main.tsx                           # Entry point, providers, global error handlers
-  lib/branding.ts                    # Centralized app branding (name, logo, colors)
-  lib/crash.ts                       # Frontend error handlers, crash detection
-  lib/i18n.ts                        # i18n system, locale detection, translation
-  lib/ipc.ts                         # Typed IPC facade wrapping all backend calls
-  components/layout/TabBar.tsx       # Workspace tab bar
-  components/layout/PanelLayout.tsx  # Resizable 4-panel layout
-  components/layout/StatusBar.tsx    # Bottom status line
-  components/ui/Toast.tsx            # Notification display
-  components/ui/CommandPalette.tsx   # Cmd+Shift+P command menu
-  components/ui/SettingsPanel.tsx    # Settings dialog (6 sections)
-  components/ui/AboutDialog.tsx      # About dialog with branding
-  components/ui/UpdateDialog.tsx     # Auto-updater UI
-  components/ui/SplashScreen.tsx     # Animated splash screen on startup
-  components/ui/DropOverlay.tsx      # Drag-and-drop file overlay
-  components/ui/WhatsNewDialog.tsx   # Changelog shown after updates
-  components/ErrorBoundary.tsx       # React error boundary with crash reporting
-  hooks/useKeyboardShortcuts.ts      # Global shortcut registry
-  hooks/useSettings.ts               # Settings IPC wrapper
-  hooks/useToast.ts                  # Toast hook
-  hooks/useTranslation.ts            # i18n translation hook
-  hooks/useDragDrop.ts               # File drag-and-drop hook
-  contexts/ToastContext.tsx          # Toast state management
-  contexts/I18nContext.tsx           # Locale state management
-  locales/en.json                    # English translations
-  locales/es.json                    # Spanish translations
-  styles/theme.css                   # CSS custom properties (dark theme)
-  styles/global.css                  # Resets, scrollbars, utilities
+  main.js           # Main window entry (menu listeners, init)
+  lib/ipc.js        # IPC facade (wraps all invoke/listen calls)
+  lib/window-utils.js # Shared utilities for all windows
+  lib/branding.js   # App identity config (name, logo, colors)
+  styles/shared.css # Dark theme CSS variables + base styles
+  windows/*.html+js # Utility windows (splash, settings, shortcuts, etc.)
 ```
 
-### Plugins Used
-dialog, fs, shell, opener, store, window-state, log, single-instance, notification, process, clipboard-manager, os, autostart, prevent-default, updater, keyring
+Uses `window.__TAURI__` globals (not npm imports) for framework agnosticism.
 
-## Adding OS Menu Items
+## Adding a Custom Menu
 
-Menus are data-driven in `src-tauri/src/menu.rs`. Edit the config functions.
-
-Add items to existing menus by editing `file_menu()`, `edit_menu()`, `view_menu()`, `window_menu()`, or `help_menu()`.
-
-Add app-specific top-level menus via `custom_menus()` — inserted between View and Window automatically.
-
+Edit `custom_menus()` in `src-tauri/src/menu.rs`:
 ```rust
 fn custom_menus() -> Vec<MenuConfig> {
     vec![MenuConfig {
-        label: "MyMenu",
+        label: "Project",
         items: vec![
-            MenuDef::Item { id: "my_action", label: "Do Thing", accel: Some("CmdOrCtrl+D") },
-            MenuDef::Separator,
-            MenuDef::Submenu { id: "my_sub", label: "More", items: vec![
-                MenuDef::Item { id: "my_sub_a", label: "Sub A", accel: None },
-            ]},
+            MenuDef::Item { id: "project_build", label: "Build", accel: Some("CmdOrCtrl+B") },
         ],
     }]
 }
 ```
+Custom menus insert between View and Window. Event `project_build` auto-forwards as `menu:project:build`.
 
-Event routing is automatic: ID `"my_action"` emits `"menu:my:action"` to frontend. For Rust-side handling, add to `handle_native()`.
+## Adding a New IPC Command
 
-**MenuDef variants:** `Item { id, label, accel }` | `Separator` | `Native(NativeItem)` | `Submenu { id, label, items }`.
+1. Rust: `#[tauri::command] pub fn my_cmd() -> Result<String, String> { Ok("hi".into()) }`
+2. Register in `lib.rs` invoke_handler
+3. Frontend: `const result = await window.__TAURI__.core.invoke('my_cmd');`
+4. Or use the facade: add to `src/lib/ipc.js`
 
-**NativeItem variants:** Undo, Redo, Cut, Copy, Paste, SelectAll, Minimize, Hide, HideOthers, ShowAll, Quit, Services, About, CloseWindow.
+## Adding a New Setting
 
-## Adding IPC Commands
-
-1. Create in Rust:
+Add one line to `all_defaults()` in `settings.rs`:
 ```rust
-#[tauri::command]
-pub async fn my_command(name: String) -> Result<String, String> {
-    Ok(format!("Hello, {name}"))
-}
+("my_feature.enabled", serde_json::json!(true)),
 ```
+Automatically works in get_all_settings, reset_settings, and init.
 
-2. Register in `lib.rs` invoke_handler:
-```rust
-.invoke_handler(tauri::generate_handler![commands::my_command])
-```
+## Adding a New Utility Window
 
-3. Call from React:
-```typescript
-import { invoke } from '@tauri-apps/api/core';
-const result = await invoke<string>('my_command', { name: 'World' });
-```
+1. Create `src/windows/mywindow.html` + `src/windows/mywindow.js`
+2. Add config to `get_window_config()` in `src-tauri/src/windows.rs`
+3. Open via: `window.__TAURI__.core.invoke('open_window', { name: 'mywindow' })`
+4. Add to Vite multi-page config in `vite.config.js`
 
-## Listening to Menu Events
+## Branding
 
-```typescript
-import { listen } from '@tauri-apps/api/event';
-useEffect(() => {
-    const unlisten = listen('menu:my:action', () => { /* handle */ });
-    return () => { unlisten.then(u => u()); };
-}, []);
-```
-
-## Workspace Tabs
-
-Edit `tabs` array in `src/App.tsx`. Render per-tab content based on `activeTab`.
-
-## Panel Layout
-
-4 resizable panels (left, center, right, bottom). Collapse on double-click header. Sizes persist to localStorage. Pass content as ReactNode props.
-
-## Settings
-
-**Rust**: Add fields to `AppSettings` in settings.rs, update `init_settings()`.  
-**React**: `const { settings, getSetting, setSetting } = useSettings();`
+Edit `src/lib/branding.js`: name, tagline, logo, accentColor, copyright, links.
+All utility windows read from this via `applyBranding()`.
 
 ## Keyboard Shortcuts
 
-```typescript
-useKeyboardShortcuts([
-    { key: 'n', modifiers: ['meta'], action: handleNew, description: 'New File' },
-]);
-```
-
-`formatShortcut()` returns display string (⌘N on Mac, Ctrl+N on Windows).
-
-## Toast Notifications
-
-```typescript
-const { toast } = useToast();
-toast('Saved', 'success'); // Types: info, success, warning, error
-```
-
-## Autosave
-
-Frontend sends state: `invoke('update_autosave_state', { state: JSON.stringify(data) })`.  
-Listen for recovery: `listen('autosave:recovery-available', handler)`.
-
-## Theme
-
-CSS variables in `theme.css`: `--surface-*`, `--border-*`, `--text-*`, `--accent-*`, `--font-*`.
-
-## New App Checklist
-
-1. `tauri.conf.json` — productName, identifier, window title/size
-2. `menu.rs` — Edit menus, add custom_menus()
-3. `App.tsx` — Workspace tabs, menu listeners
-4. `theme.css` — Accent colors
-5. `package.json` — name, version
-6. `Cargo.toml` — package name, authors
+Registry in `shortcuts.rs` with 10 IPC commands: get/set/remove/reset shortcuts, conflict detection, preset management. Interactive editor window with visual keyboard.
