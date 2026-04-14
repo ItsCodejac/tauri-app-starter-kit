@@ -1,7 +1,10 @@
+import {
+  applyBranding, closeWindow,
+  setChecked, getChecked, setValue, getValue,
+} from '../lib/window-utils.js';
 import { ipc } from '../lib/ipc.js';
-import { branding } from '../lib/branding.js';
 
-document.documentElement.style.setProperty('--accent-blue', branding.accentColor);
+applyBranding({ showVersion: false });
 
 // --- Sidebar navigation ---
 const sidebar = document.getElementById('sidebar');
@@ -19,8 +22,6 @@ sidebar.addEventListener('click', (e) => {
 });
 
 // --- Settings state ---
-// We load settings into a local copy, let the user edit freely,
-// then apply on OK (Premiere pattern: changes aren't live until OK).
 let original = {};
 let current = {};
 
@@ -34,10 +35,9 @@ async function loadSettings() {
     console.error('Failed to load settings:', e);
   }
 
-  // Also load app info for cache path
   try {
     const info = await ipc.getAppInfo();
-    document.getElementById('cache-location').value = info.app_cache_dir || '(default)';
+    setValue('cache-location', info.app_cache_dir || '(default)');
   } catch { /* ignore */ }
 }
 
@@ -93,24 +93,6 @@ function readFromForm() {
   };
 }
 
-// --- DOM helpers ---
-function setChecked(id, val) {
-  const el = document.getElementById(id);
-  if (el) el.checked = !!val;
-}
-function getChecked(id) {
-  const el = document.getElementById(id);
-  return el ? el.checked : false;
-}
-function setValue(id, val) {
-  const el = document.getElementById(id);
-  if (el) el.value = val;
-}
-function getValue(id) {
-  const el = document.getElementById(id);
-  return el ? el.value : '';
-}
-
 // --- Footer buttons ---
 
 // OK: save all changes and close window
@@ -123,16 +105,12 @@ document.getElementById('ok-btn').addEventListener('click', async () => {
     }
   }
   await Promise.all(promises).catch(e => console.error('Save error:', e));
-
-  // Close the settings window
-  const { getCurrentWindow } = await import('@tauri-apps/api/window');
-  getCurrentWindow().close();
+  closeWindow();
 });
 
 // Cancel: discard changes and close
-document.getElementById('cancel-btn').addEventListener('click', async () => {
-  const { getCurrentWindow } = await import('@tauri-apps/api/window');
-  getCurrentWindow().close();
+document.getElementById('cancel-btn').addEventListener('click', () => {
+  closeWindow();
 });
 
 // Reset: restore defaults
@@ -150,7 +128,6 @@ document.getElementById('help-btn').addEventListener('click', () => {
 
 // Clear cache
 document.getElementById('clear-cache')?.addEventListener('click', () => {
-  // Developer wires this to their actual cache clearing logic
   alert('Cache cleared.');
 });
 

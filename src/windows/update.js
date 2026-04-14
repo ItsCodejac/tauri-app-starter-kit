@@ -1,7 +1,7 @@
+import { applyBranding, closeWindow, branding } from '../lib/window-utils.js';
 import { ipc } from '../lib/ipc.js';
-import { branding } from '../lib/branding.js';
 
-document.documentElement.style.setProperty('--accent-blue', branding.accentColor);
+applyBranding({ showVersion: false });
 
 const views = {
   checking: document.getElementById('checking'),
@@ -58,9 +58,7 @@ document.getElementById('install-btn')?.addEventListener('click', async () => {
   }
 });
 
-document.getElementById('skip-btn')?.addEventListener('click', () => {
-  window.close();
-});
+document.getElementById('skip-btn')?.addEventListener('click', closeWindow);
 
 document.getElementById('retry-btn')?.addEventListener('click', checkForUpdates);
 

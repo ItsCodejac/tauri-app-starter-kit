@@ -1,10 +1,8 @@
+import { applyBranding, setupCloseButton, invoke } from '../lib/window-utils.js';
 import { ipc } from '../lib/ipc.js';
-import { branding } from '../lib/branding.js';
 
-document.documentElement.style.setProperty('--accent-blue', branding.accentColor);
-
-document.getElementById('icon').textContent = branding.name.charAt(0);
-document.getElementById('icon').style.background = branding.accentColor;
+// Apply branding (accent color, icon, version)
+applyBranding();
 
 /**
  * Changelog entries. Edit this list when you ship a new version.
@@ -45,16 +43,10 @@ for (const release of changelog) {
     </div>`;
 }
 
-// Version display
-ipc.getAppInfo().then((info) => {
-  document.getElementById('version').textContent = `v${info.version}`;
-}).catch(() => {});
-
 // Mark as seen
 ipc.getAppInfo().then((info) => {
   ipc.setSetting('app.lastSeenVersion', info.version);
 }).catch(() => {});
 
-document.getElementById('close-btn').addEventListener('click', () => {
-  window.close();
-});
+// Close button
+setupCloseButton('close-btn');

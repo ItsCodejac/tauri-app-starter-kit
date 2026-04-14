@@ -1,7 +1,7 @@
+import { applyBranding, showButtonFeedback } from '../lib/window-utils.js';
 import { ipc } from '../lib/ipc.js';
-import { branding } from '../lib/branding.js';
 
-document.documentElement.style.setProperty('--accent-blue', branding.accentColor);
+applyBranding({ showVersion: false });
 
 const logContent = document.getElementById('log-content');
 const logContainer = document.getElementById('log-container');
@@ -47,10 +47,7 @@ filterEl.addEventListener('input', render);
 document.getElementById('copy-btn').addEventListener('click', async () => {
   try {
     await navigator.clipboard.writeText(rawLog);
-    document.getElementById('copy-btn').textContent = 'Copied!';
-    setTimeout(() => {
-      document.getElementById('copy-btn').textContent = 'Copy';
-    }, 2000);
+    showButtonFeedback('copy-btn', 'Copied!', 2000);
   } catch (e) {
     console.error('Failed to copy:', e);
   }

@@ -1,6 +1,6 @@
-import { branding } from '../lib/branding.js';
+import { applyBranding, closeWindow } from '../lib/window-utils.js';
 
-document.documentElement.style.setProperty('--accent-blue', branding.accentColor);
+applyBranding({ showVersion: false });
 
 // ---------------------------------------------------------------------------
 // Shortcut definitions grouped by category
@@ -56,10 +56,8 @@ const shortcutGroups = [
 
 // ---------------------------------------------------------------------------
 // Map from key label on keyboard -> command name (for highlighting keys)
-// We parse shortcutGroups to build this. Only single-letter keys get mapped.
 // ---------------------------------------------------------------------------
 
-// Unicode symbol -> keyboard key label mapping
 const symbolToKey = {
   '\u2318': 'Cmd',
   '\u21E7': 'Shift',
@@ -71,10 +69,8 @@ function buildKeyToCommandMap() {
   const map = {};
   for (const group of shortcutGroups) {
     for (const s of group.shortcuts) {
-      // Find the non-modifier key(s) in the shortcut
       for (const k of s.keys) {
         const label = symbolToKey[k] || k;
-        // Map the key label (uppercase) to the command
         const normalizedLabel = label.toUpperCase();
         if (!map[normalizedLabel]) {
           map[normalizedLabel] = s.action;
@@ -126,11 +122,8 @@ function renderKeyboard() {
     for (const key of row) {
       const widthClass = wideKeys[key] || '';
       const isModifier = modifierKeys.has(key);
-
-      // Check if this key has an assigned shortcut
       const normalizedKey = key.toUpperCase();
       const command = keyCommandMap[normalizedKey];
-      // Modifiers are always shown as modifier style, not assigned
       const isAssigned = !isModifier && !!command;
 
       let classes = 'key';
@@ -191,12 +184,8 @@ searchEl.addEventListener('input', () => renderCommandList(searchEl.value));
 // ---------------------------------------------------------------------------
 // Footer buttons
 // ---------------------------------------------------------------------------
-document.getElementById('cancel-btn').addEventListener('click', () => {
-  window.close();
-});
-document.getElementById('ok-btn').addEventListener('click', () => {
-  window.close();
-});
+document.getElementById('cancel-btn').addEventListener('click', closeWindow);
+document.getElementById('ok-btn').addEventListener('click', closeWindow);
 
 // ---------------------------------------------------------------------------
 // Init
