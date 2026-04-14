@@ -185,7 +185,7 @@ pub fn run() {
             let setup_handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
                 let start = tokio::time::Instant::now();
-                const MIN_SPLASH_SECS: u64 = 2;
+                const MIN_SPLASH_SECS: u64 = 5;
 
                 let emit_status = |msg: &str| {
                     let _ = setup_handle.emit("splash:status", msg);
