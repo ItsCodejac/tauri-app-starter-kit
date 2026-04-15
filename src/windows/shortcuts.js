@@ -190,8 +190,8 @@ const canvasRows = [
 ];
 
 // Fixed key dimensions
-const KEY_UNIT = 42;   // 1u key width in px
-const KEY_HEIGHT = 36;
+const KEY_UNIT = 50;   // 1u key width in px
+const KEY_HEIGHT = 42;
 const KEY_GAP = 3;
 const ROW_GAP = 3;
 const BORDER_RADIUS = 5;
@@ -419,7 +419,7 @@ function renderKeyboard() {
 
         // Command label at bottom, white, truncated with ellipsis
         ctx.fillStyle = COLORS.commandLabel;
-        ctx.font = `bold 8px ${FONT_FAMILY}`;
+        ctx.font = `bold 9px ${FONT_FAMILY}`;
         const maxTextW = keyW - 8;
         const cmdText = truncateText(ctx, commands[0], maxTextW);
         ctx.textBaseline = 'bottom';
