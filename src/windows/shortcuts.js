@@ -413,13 +413,13 @@ function renderKeyboard() {
       if (isAssigned) {
         // Key label at top, lighter color
         ctx.fillStyle = COLORS.keyLabelAssigned;
-        ctx.font = `11px ${FONT_FAMILY}`;
+        ctx.font = `13px ${FONT_FAMILY}`;
         ctx.textBaseline = 'top';
         ctx.fillText(displayLabel, x + keyW / 2, rowY + 4);
 
         // Command label at bottom, white, truncated with ellipsis
         ctx.fillStyle = COLORS.commandLabel;
-        ctx.font = `bold 9px ${FONT_FAMILY}`;
+        ctx.font = `bold 11px ${FONT_FAMILY}`;
         const maxTextW = keyW - 8;
         const cmdText = truncateText(ctx, commands[0], maxTextW);
         ctx.textBaseline = 'bottom';
@@ -427,13 +427,13 @@ function renderKeyboard() {
       } else if (isMod) {
         // Modifier: centered label
         ctx.fillStyle = isModActive ? COLORS.textModActive : COLORS.textModifier;
-        ctx.font = `11px ${FONT_FAMILY}`;
+        ctx.font = `13px ${FONT_FAMILY}`;
         ctx.textBaseline = 'middle';
         ctx.fillText(displayLabel, x + keyW / 2, rowY + KEY_HEIGHT / 2);
       } else {
         // Unassigned: centered label
         ctx.fillStyle = COLORS.keyLabel;
-        ctx.font = `11px ${FONT_FAMILY}`;
+        ctx.font = `13px ${FONT_FAMILY}`;
         ctx.textBaseline = 'middle';
         ctx.fillText(displayLabel, x + keyW / 2, rowY + KEY_HEIGHT / 2);
       }
