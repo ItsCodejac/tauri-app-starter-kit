@@ -53,6 +53,12 @@
       background: var(--surface-primary);
       border: 1px solid var(--border-subtle);
       border-radius: 6px;
+      cursor: pointer;
+      transition: border-color 0.1s, background 0.1s;
+    }
+    .feature:hover {
+      background: var(--surface-hover);
+      border-color: var(--border-standard);
     }
     .feature-icon {
       font-size: 20px;
@@ -98,25 +104,25 @@
     <h1 id="welcome-title">Welcome</h1>
     <div class="subtitle" id="subtitle"></div>
     <div class="features">
-      <div class="feature">
+      <div class="feature" data-window="settings">
         <div class="feature-icon">&#9881;</div>
         <div class="feature-title">Settings</div>
-        <div class="feature-desc">Preferences persist automatically across sessions.</div>
+        <div class="feature-desc">Open Preferences to explore what's configurable.</div>
       </div>
-      <div class="feature">
+      <div class="feature" data-window="shortcuts">
         <div class="feature-icon">&#9000;</div>
         <div class="feature-title">Keyboard Shortcuts</div>
-        <div class="feature-desc">Fast navigation with customizable shortcuts.</div>
+        <div class="feature-desc">View and customize keyboard shortcuts.</div>
       </div>
-      <div class="feature">
+      <div class="feature" data-window="about">
         <div class="feature-icon">&#128190;</div>
-        <div class="feature-title">Autosave</div>
-        <div class="feature-desc">Your work is saved automatically at regular intervals.</div>
+        <div class="feature-title">About</div>
+        <div class="feature-desc">App info, version, and diagnostics.</div>
       </div>
-      <div class="feature">
+      <div class="feature" data-window="logs">
         <div class="feature-icon">&#128296;</div>
-        <div class="feature-title">Native Menus</div>
-        <div class="feature-desc">Full native menu bar with platform-standard shortcuts.</div>
+        <div class="feature-title">Log Viewer</div>
+        <div class="feature-desc">View application logs and errors.</div>
       </div>
     </div>
   </div>

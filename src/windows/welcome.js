@@ -9,6 +9,13 @@ document.getElementById('subtitle').textContent = branding.tagline;
 // Escape to close
 setupEscapeToClose();
 
+// Feature cards open their respective windows
+document.querySelectorAll('.feature[data-window]').forEach(card => {
+  card.addEventListener('click', () => {
+    ipc.openWindow(card.dataset.window);
+  });
+});
+
 // Get Started button
 document.getElementById('get-started').addEventListener('click', () => {
   const dontShow = document.getElementById('dont-show').checked;
