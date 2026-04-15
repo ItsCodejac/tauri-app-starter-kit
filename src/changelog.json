@@ -1,0 +1,17 @@
+[
+  {
+    "version": "0.1.0",
+    "date": "Initial release",
+    "changes": [
+      { "type": "new", "text": "Complete desktop app skeleton with Tauri v2" },
+      { "type": "new", "text": "Native OS menus with data-driven configuration" },
+      { "type": "new", "text": "Settings persistence with single-source defaults" },
+      { "type": "new", "text": "Keyboard shortcut registry with presets" },
+      { "type": "new", "text": "8 utility windows (splash, settings, shortcuts, about, logs, update, whatsnew, welcome)" },
+      { "type": "new", "text": "Crash reporting and diagnostics" },
+      { "type": "new", "text": "System tray with minimize-to-tray" },
+      { "type": "new", "text": "Auto-updater infrastructure" },
+      { "type": "new", "text": "Framework-agnostic (window.__TAURI__ globals)" }
+    ]
+  }
+]
