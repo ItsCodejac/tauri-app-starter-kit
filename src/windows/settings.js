@@ -51,8 +51,11 @@ function applyToForm(s) {
   // Appearance
   setValue('theme', s.theme ?? 'dark');
   setValue('zoom', String(s.view_zoom_level ?? 100));
+  setValue('font-size', s.font_size ?? 'default');
   setChecked('show-statusbar', s.show_statusbar ?? true);
   setChecked('show-tooltips', s.show_tooltips ?? true);
+  setChecked('reduce-motion', s.reduce_motion ?? false);
+  setChecked('high-contrast', s.high_contrast ?? false);
 
   // Autosave
   setChecked('autosave-enabled', s.autosave_enabled ?? true);
@@ -81,8 +84,11 @@ function readFromForm() {
     locale: getValue('locale'),
     theme: getValue('theme'),
     view_zoom_level: Number(getValue('zoom')),
+    font_size: getValue('font-size'),
     show_statusbar: getChecked('show-statusbar'),
     show_tooltips: getChecked('show-tooltips'),
+    reduce_motion: getChecked('reduce-motion'),
+    high_contrast: getChecked('high-contrast'),
     autosave_enabled: getChecked('autosave-enabled'),
     autosave_interval_secs: Number(getValue('autosave-interval')),
     'performance.mode': getValue('perf-mode'),

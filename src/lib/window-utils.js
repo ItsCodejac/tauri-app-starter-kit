@@ -34,10 +34,31 @@ export function setupCloseOnFocusLoss() {
 // Branding
 // ---------------------------------------------------------------------------
 
-/** Apply branding to the current window: accent color, logo, name, version, etc. */
+/** Apply branding and user preferences to the current window. */
 export function applyBranding(options = {}) {
   // Accent color CSS variable
   document.documentElement.style.setProperty('--accent-blue', branding.accentColor);
+
+  // Load font size and accessibility settings
+  invoke('get_all_settings').then(settings => {
+    // Font size
+    const fontSizeMap = { small: '12px', default: '13px', large: '14px', 'extra-large': '16px' };
+    const fontSize = fontSizeMap[settings?.font_size] || '13px';
+    document.documentElement.style.setProperty('--font-size-base', fontSize);
+
+    // Reduced motion
+    if (settings?.reduce_motion) {
+      document.documentElement.style.setProperty('--reduce-motion', '1');
+    }
+
+    // High contrast
+    if (settings?.high_contrast) {
+      document.documentElement.style.setProperty('--text-primary', '#ffffff');
+      document.documentElement.style.setProperty('--text-secondary', '#cccccc');
+      document.documentElement.style.setProperty('--border-standard', '#555555');
+      document.documentElement.style.setProperty('--border-subtle', '#444444');
+    }
+  }).catch(() => {});
 
   // Name
   const nameEl = document.getElementById('name');

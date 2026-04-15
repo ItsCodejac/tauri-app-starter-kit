@@ -20,8 +20,11 @@ fn all_defaults() -> Vec<(&'static str, serde_json::Value)> {
 
         // Appearance
         ("view_zoom_level", serde_json::json!(100u32)),
+        ("font_size", serde_json::json!("default")),  // small, default, large, extra-large
         ("show_statusbar", serde_json::json!(true)),
         ("show_tooltips", serde_json::json!(true)),
+        ("reduce_motion", serde_json::json!(false)),
+        ("high_contrast", serde_json::json!(false)),
 
         // Autosave
         ("autosave_enabled", serde_json::json!(true)),
