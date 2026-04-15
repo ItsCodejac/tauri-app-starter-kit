@@ -61,7 +61,7 @@ fn get_window_config(name: &str) -> Option<WindowConfig> {
             label: "shortcuts",
             title: "Keyboard Shortcuts",
             url: "src/windows/shortcuts.html",
-            width: 840.0,
+            width: 960.0,
             height: 700.0,
             min_width: 0.0,
             min_height: 0.0,
