@@ -9,7 +9,10 @@ const STORE_FILENAME: &str = "shortcuts.json";
 // DATA MODEL
 // =============================================================================
 
+/// Adding new fields to these structs is safe for upgrades because
+/// #[serde(default)] ensures old stored data deserializes without errors.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
 pub struct ShortcutBinding {
     pub command_id: String,
     pub label: String,
@@ -18,12 +21,36 @@ pub struct ShortcutBinding {
     pub default_keys: Vec<String>,
 }
 
+impl Default for ShortcutBinding {
+    fn default() -> Self {
+        Self {
+            command_id: String::new(),
+            label: String::new(),
+            category: String::new(),
+            keys: Vec::new(),
+            default_keys: Vec::new(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
 pub struct ShortcutPreset {
     pub id: String,
     pub name: String,
     pub is_builtin: bool,
     pub bindings: Vec<ShortcutBinding>,
+}
+
+impl Default for ShortcutPreset {
+    fn default() -> Self {
+        Self {
+            id: String::new(),
+            name: String::new(),
+            is_builtin: false,
+            bindings: Vec::new(),
+        }
+    }
 }
 
 /// Lightweight preset info returned by get_presets (no bindings).

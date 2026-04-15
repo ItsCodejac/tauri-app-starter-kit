@@ -62,7 +62,6 @@
     "updater:allow-download-and-install",
     "core:window:allow-set-always-on-top",
     "keyring:default",
-    "keyring:allow-get-password",
     "keyring:allow-set-password",
     "keyring:allow-delete-password"
   ]

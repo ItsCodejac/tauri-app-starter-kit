@@ -133,8 +133,13 @@ pub fn get_app_info(app: AppHandle) -> Result<AppInfo, String> {
 }
 
 /// Open a URL in the default external browser.
+/// Only allows http:// and https:// schemes to prevent protocol handler abuse.
 #[tauri::command]
 pub async fn open_external_url(app: AppHandle, url: String) -> Result<(), String> {
+    // Security: only allow safe URL schemes
+    if !url.starts_with("http://") && !url.starts_with("https://") {
+        return Err(format!("Blocked URL with unsafe scheme: {}", url));
+    }
     use tauri_plugin_opener::OpenerExt;
     app.opener()
         .open_url(&url, None::<&str>)

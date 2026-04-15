@@ -51,6 +51,16 @@ ipc.getSetting('first_run').then((val) => {
     ipc.openWindow('welcome').catch(() => {
       console.debug('Welcome window not available');
     });
+  } else {
+    // Not first run -- check if app was updated since last seen version
+    Promise.all([
+      ipc.getSetting('app.lastSeenVersion'),
+      ipc.getAppInfo(),
+    ]).then(([lastSeen, info]) => {
+      if (lastSeen && info.version && lastSeen !== info.version) {
+        ipc.openWindow('whatsnew').catch(() => {});
+      }
+    }).catch(() => {});
   }
 }).catch(() => {});
 
