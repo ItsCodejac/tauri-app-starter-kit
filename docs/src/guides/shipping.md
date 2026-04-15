@@ -15,7 +15,7 @@ In `src-tauri/tauri.conf.json`:
 ```json
 {
   "productName": "tauri-app-starter-kit",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "identifier": "com.tauri.dev",
   "bundle": {
     "active": true,
@@ -154,6 +154,7 @@ Everything you need to change to make this template yours:
   This writes all required sizes to `src-tauri/icons/`.
 - [ ] **Docs book title** -- `docs/book.toml` field `book.title`
 - [ ] **Branding config** -- update `src/lib/branding.js` (see below)
+- [ ] **Changelog** -- update `changelog.json` with your app's version history
 
 ## Branding Configuration (`src/lib/branding.js`)
 
@@ -215,4 +216,4 @@ Edit `src/windows/splash.html` and `src/windows/splash.js`. The splash uses `app
 - [ ] Test on a clean machine (no dev tools installed)
 - [ ] Verify settings/autosave paths use your real bundle identifier
 - [ ] Configure auto-updater if distributing outside an app store
-- [ ] Set CSP in `tauri.conf.json` (currently `null` -- tighten for production)
+- [ ] Review the CSP in `tauri.conf.json` -- it's set to a strict default. Adjust if your app needs external resources.

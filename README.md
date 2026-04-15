@@ -18,6 +18,8 @@ Every feature users expect from a desktop app — menus, settings, crash recover
 - Window state persistence — size, position, maximized
 - Recent files, native notifications, autostart, secure keyring
 - Browser shortcut prevention, file dialogs, quit confirmation
+- Security hardened — CSP, scoped asset protocol, URL scheme validation
+- Accessibility — font size control, high contrast, reduced motion, ARIA labels, keyboard navigation
 
 **Utility Windows (plain HTML, no framework):**
 - Splash screen — appears before initialization, branded
@@ -28,6 +30,7 @@ Every feature users expect from a desktop app — menus, settings, crash recover
 - Check for Updates — status states, install
 - What's New — changelog, version tracking
 - Welcome — first-run onboarding
+- Changelog — structured version history (changelog.json)
 
 **Zero framework dependency.** Utility windows use `window.__TAURI__` globals — no npm packages required for the infrastructure. Works with React, Svelte, Vue, Solid, Leptos, or vanilla JS.
 

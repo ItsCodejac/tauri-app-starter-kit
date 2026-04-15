@@ -29,7 +29,7 @@ All custom properties are defined in `src/styles/shared.css` on `:root`. Utility
 |----------|-------|-----|
 | `--text-primary` | `#e0e0e0` | Default body text |
 | `--text-secondary` | `#999` | Labels, secondary info |
-| `--text-tertiary` | `#666` | Placeholders, disabled text |
+| `--text-tertiary` | `#777` | Placeholders, disabled text |
 | `--text-bright` | `#fff` | Active items, headings |
 
 ## Accents

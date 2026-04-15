@@ -106,3 +106,11 @@ Registry in `shortcuts.rs` with 10 IPC commands: get/set/remove/reset shortcuts,
 ## Settings Window Navigation
 
 The settings sidebar supports arrow key navigation for keyboard-first interaction.
+
+## Security
+- CSP restricts script/style/img sources to 'self' in tauri.conf.json
+- Asset protocol scoped to $APPDATA and $RESOURCE (not filesystem-wide)
+- open_external_url validates URL scheme (http/https only)
+- Keyring read access not in default permissions (Rust proxies sensitive ops)
+- .sr-only CSS class for screen reader text
+- ARIA labels on interactive elements across all utility windows
