@@ -149,10 +149,15 @@ pub fn list_crash_reports(app: AppHandle) -> Vec<CrashReport> {
 
 #[tauri::command]
 pub fn get_crash_report(app: AppHandle, name: String) -> Result<String, String> {
+    // Reject path traversal characters before joining
+    if name.contains("..") || name.contains('/') || name.contains('\\') {
+        return Err("Invalid report name".into());
+    }
+
     let dir = get_crash_reports_dir(&app);
     let path = dir.join(&name);
 
-    // Prevent directory traversal
+    // Belt-and-suspenders: verify canonical path is still inside crash dir
     if !path.starts_with(&dir) {
         return Err("Invalid report name".into());
     }

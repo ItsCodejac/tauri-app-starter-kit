@@ -3,9 +3,13 @@
  * Every window imports from here instead of duplicating patterns.
  */
 
-const { getCurrentWindow } = window.__TAURI__.window;
-const { invoke } = window.__TAURI__.core;
-const { listen } = window.__TAURI__.event;
+const tauri = window.__TAURI__;
+if (!tauri) {
+  console.error('TASK requires Tauri runtime. This page must be loaded inside a Tauri webview.');
+}
+const getCurrentWindow = tauri?.window?.getCurrentWindow ?? (() => ({ close() {}, onFocusChanged() {} }));
+const invoke = tauri?.core?.invoke ?? (() => Promise.reject('Tauri not available'));
+const listen = tauri?.event?.listen ?? (() => Promise.resolve(() => {}));
 import { branding } from './branding.js';
 
 // ---------------------------------------------------------------------------

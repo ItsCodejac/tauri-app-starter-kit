@@ -51,7 +51,7 @@ fn recovery_tmp_path(app: &AppHandle) -> PathBuf {
 /// Start the autosave loop. Runs on a background thread.
 #[tauri::command]
 pub fn start_autosave(app: AppHandle, state: State<'_, AutosaveState>, interval_secs: Option<u64>) -> Result<(), String> {
-    let interval = interval_secs.unwrap_or(60);
+    let interval = interval_secs.unwrap_or(60).max(5); // minimum 5 seconds
     *state.interval_secs.lock().unwrap_or_else(|e| e.into_inner()) = interval;
 
     {

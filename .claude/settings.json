@@ -1,0 +1,36 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "# Guard: prevent npm imports of @tauri-apps/api (use window.__TAURI__ instead)\nif echo \"$CONTENT\" | grep -q \"from '@tauri-apps/api\" 2>/dev/null || echo \"$CONTENT\" | grep -q 'from \"@tauri-apps/api' 2>/dev/null; then\n  echo '⚠️ ARCHITECTURE: This template uses window.__TAURI__ globals, not npm imports. Use window.__TAURI__.core.invoke() instead of importing from @tauri-apps/api. See .claude/skills/tauri-desktop-app/SKILL.md'\nfi"
+          },
+          {
+            "type": "command",
+            "command": "# Guard: prevent window.close() in utility windows (use closeWindow() from window-utils.js)\nif echo \"$CONTENT\" | grep -q 'window\\.close()' 2>/dev/null; then\n  echo '⚠️ DESKTOP PATTERN: Use closeWindow() from window-utils.js instead of window.close(). Browser APIs do not work in Tauri webviews.'\nfi"
+          },
+          {
+            "type": "command",
+            "command": "# Guard: prevent browser dialogs in utility windows\nif echo \"$CONTENT\" | grep -qE '\\balert\\(|\\bconfirm\\(|\\bprompt\\(' 2>/dev/null; then\n  echo '⚠️ DESKTOP PATTERN: Do not use alert(), confirm(), or prompt(). These are browser dialogs. Use native Tauri dialogs or inline UI instead.'\nfi"
+          },
+          {
+            "type": "command",
+            "command": "# Guard: prevent React/framework in utility windows\nif echo \"$FILE_PATH\" | grep -q 'src/windows/' 2>/dev/null; then\n  if echo \"$CONTENT\" | grep -qE 'import.*React|from .react.|createElement|useState|useEffect' 2>/dev/null; then\n    echo '⚠️ ARCHITECTURE: Utility windows must be plain HTML + vanilla JS, not React/framework components. The workspace (index.html) is where the developer adds their framework.'\n  fi\nfi"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "# Guard: warn on pkill -f (can kill user processes)\nif echo \"$COMMAND\" | grep -q 'pkill -f' 2>/dev/null; then\n  echo '⚠️ CAUTION: pkill -f can kill unrelated user processes. Use specific process targeting or lsof -ti:PORT | xargs kill instead.'\nfi"
+          }
+        ]
+      }
+    ]
+  }
+}

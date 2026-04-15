@@ -195,25 +195,29 @@ const KEY_HEIGHT = 42;
 const KEY_GAP = 3;
 const ROW_GAP = 3;
 const BORDER_RADIUS = 5;
-const FONT_FAMILY = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+function getCSSVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
 
-// Colors
+const FONT_FAMILY = getCSSVar('--font-ui') || '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+
+// Colors -- read from CSS variables with hardcoded fallbacks
 const COLORS = {
-  unassignedFill: '#2a2a2a',
-  unassignedBorder: '#3a3a3a',
-  assignedFill: '#2e4a6e',
-  assignedBorder: '#3a6090',
-  modifierFill: '#333333',
-  modifierBorder: '#3a3a3a',
-  modActiveFill: '#3a3a3a',
-  modActiveBorder: '#4a9eff',
+  unassignedFill: getCSSVar('--surface-tertiary') || '#2a2a2a',
+  unassignedBorder: getCSSVar('--border-standard') || '#3a3a3a',
+  assignedFill: getCSSVar('--key-assigned-fill') || '#2e4a6e',
+  assignedBorder: getCSSVar('--key-assigned-border') || '#3a6090',
+  modifierFill: getCSSVar('--surface-secondary') || '#333333',
+  modifierBorder: getCSSVar('--border-standard') || '#3a3a3a',
+  modActiveFill: getCSSVar('--surface-active') || '#3a3a3a',
+  modActiveBorder: getCSSVar('--accent-blue') || '#4a9eff',
   hoverLighten: 15,
-  selectedBorder: '#4a9eff',
-  keyLabel: '#888888',
-  keyLabelAssigned: '#99bbdd',
-  commandLabel: '#ffffff',
-  textModifier: '#bbbbbb',
-  textModActive: '#dddddd',
+  selectedBorder: getCSSVar('--accent-blue') || '#4a9eff',
+  keyLabel: getCSSVar('--text-tertiary') || '#888888',
+  keyLabelAssigned: getCSSVar('--text-accent') || '#99bbdd',
+  commandLabel: getCSSVar('--text-primary') || '#ffffff',
+  textModifier: getCSSVar('--text-secondary') || '#bbbbbb',
+  textModActive: getCSSVar('--text-primary') || '#dddddd',
 };
 
 /**

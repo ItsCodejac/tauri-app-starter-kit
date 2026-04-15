@@ -124,7 +124,7 @@ fn edit_menu() -> MenuConfig {
 
 fn view_menu() -> MenuConfig {
     let mut items = vec![
-        MenuDef::Item { id: "view_fullscreen", label: "Toggle Fullscreen", accel: Some("Ctrl+CmdOrCtrl+F") },
+        MenuDef::Item { id: "view_fullscreen", label: "Toggle Fullscreen", accel: Some(if cfg!(target_os = "macos") { "Ctrl+CmdOrCtrl+F" } else { "F11" }) },
         MenuDef::Separator,
         MenuDef::Item { id: "view_zoom_in", label: "Zoom In", accel: Some("CmdOrCtrl+=") },
         MenuDef::Item { id: "view_zoom_out", label: "Zoom Out", accel: Some("CmdOrCtrl+-") },
@@ -145,17 +145,23 @@ fn view_menu() -> MenuConfig {
 }
 
 fn window_menu() -> MenuConfig {
+    let mut items = vec![
+        MenuDef::Native(NativeItem::Minimize),
+        MenuDef::Item { id: "window_zoom", label: "Zoom", accel: None },
+        MenuDef::Check { id: "window_stay-on-top", label: "Stay on Top", checked: false, accel: None },
+        MenuDef::Separator,
+        MenuDef::Item { id: "window_settings", label: "Settings", accel: None },
+    ];
+
+    // macOS-only
+    if cfg!(target_os = "macos") {
+        items.push(MenuDef::Separator);
+        items.push(MenuDef::Item { id: "window_bring_all", label: "Bring All to Front", accel: None });
+    }
+
     MenuConfig {
         label: "Window",
-        items: vec![
-            MenuDef::Native(NativeItem::Minimize),
-            MenuDef::Item { id: "window_zoom", label: "Zoom", accel: None },
-            MenuDef::Check { id: "window_stay-on-top", label: "Stay on Top", checked: false, accel: None },
-            MenuDef::Separator,
-            MenuDef::Item { id: "window_settings", label: "Settings", accel: None },
-            MenuDef::Separator,
-            MenuDef::Item { id: "window_bring_all", label: "Bring All to Front", accel: None },
-        ],
+        items,
     }
 }
 

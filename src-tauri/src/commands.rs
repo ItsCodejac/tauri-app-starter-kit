@@ -193,7 +193,9 @@ pub async fn open_docs(app: AppHandle) -> Result<(), String> {
         .map_err(|e| e.to_string())?;
 
     if docs_path.exists() {
-        let url = format!("file://{}", docs_path.to_string_lossy());
+        let url = url::Url::from_file_path(&docs_path)
+            .map_err(|_| "Invalid file path".to_string())?
+            .to_string();
         app.opener()
             .open_url(&url, None::<&str>)
             .map_err(|e| e.to_string())?;
@@ -204,7 +206,9 @@ pub async fn open_docs(app: AppHandle) -> Result<(), String> {
             .map_err(|e| e.to_string())?;
 
         if dev_path.exists() {
-            let url = format!("file://{}", dev_path.to_string_lossy());
+            let url = url::Url::from_file_path(&dev_path)
+                .map_err(|_| "Invalid file path".to_string())?
+                .to_string();
             app.opener()
                 .open_url(&url, None::<&str>)
                 .map_err(|e| e.to_string())?;
