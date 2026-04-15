@@ -109,7 +109,7 @@ fn custom_menus() -> Vec<MenuConfig> {
 Menu events are auto-forwarded to the frontend. The ID `project_build` emits the event `menu:project:build`. Listen in your frontend:
 
 ```javascript
-import { listen } from '@tauri-apps/api/event';
+const { listen } = window.__TAURI__.event;
 
 listen('menu:project:build', () => {
   // handle build

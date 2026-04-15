@@ -27,7 +27,7 @@ import { ipc } from './lib/ipc.js';
 
 const crash = await ipc.hasRecentCrash();
 if (crash) {
-  console.log('Crashed at:', crash.timestamp);
+  console.debug('Crashed at:', crash.timestamp);
   // Show recovery UI or notification
 }
 ```
@@ -50,7 +50,7 @@ import { ipc } from './lib/ipc.js';
 // Check for recent crash on startup
 const crash = await ipc.hasRecentCrash();
 if (crash) {
-  console.log('Crashed at:', crash.timestamp);
+  console.debug('Crashed at:', crash.timestamp);
 }
 
 // List all reports

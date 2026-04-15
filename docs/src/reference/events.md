@@ -3,10 +3,10 @@
 All Tauri events emitted between Rust and the frontend. Listen with:
 
 ```javascript
-import { listen } from '@tauri-apps/api/event';
+const { listen } = window.__TAURI__.event;
 
 const unlisten = await listen('event:name', (event) => {
-  console.log(event.payload);
+  console.debug(event.payload);
 });
 ```
 
@@ -15,7 +15,7 @@ Or use the typed `events` facade:
 ```javascript
 import { events } from './lib/ipc.js';
 
-events.onAutosaveSaved(() => console.log('Saved'));
+events.onAutosaveSaved(() => console.debug('Saved'));
 ```
 
 ## Menu Events
@@ -116,7 +116,7 @@ events.onCloseRequested(() => showUnsavedChangesDialog());
 The single-instance plugin ensures only one app instance runs. When a second instance is launched, the existing window is focused and unminimized. File arguments are forwarded via this event.
 
 ```javascript
-import { listen } from '@tauri-apps/api/event';
+const { listen } = window.__TAURI__.event;
 
 await listen('single-instance:open-files', (event) => {
   openFiles(event.payload);

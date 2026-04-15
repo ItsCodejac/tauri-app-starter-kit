@@ -236,17 +236,17 @@ Use the IPC facade:
 ```javascript
 import { events } from './lib/ipc.js';
 
-events.onMenuEvent('menu:file:new', () => console.log('New file'));
-events.onMenuEvent('menu:file:save', () => console.log('Save'));
-events.onMenuEvent('menu:image:resize', () => console.log('Resize image'));
+events.onMenuEvent('menu:file:new', () => console.debug('New file'));
+events.onMenuEvent('menu:file:save', () => console.debug('Save'));
+events.onMenuEvent('menu:image:resize', () => console.debug('Resize image'));
 ```
 
-Or use `listen()` directly from `@tauri-apps/api/event`:
+Or use `listen()` directly from `window.__TAURI__`:
 
 ```javascript
-import { listen } from '@tauri-apps/api/event';
+const { listen } = window.__TAURI__.event;
 
-listen('menu:file:new', () => console.log('New file'));
+listen('menu:file:new', () => console.debug('New file'));
 ```
 
 ## Dynamic Menu State

@@ -7,7 +7,7 @@ Tauri v2 provides native file drag-and-drop events. TASK does not include a drag
 Use Tauri's `onDragDropEvent` API from the frontend:
 
 ```javascript
-import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
+const { getCurrentWebviewWindow } = window.__TAURI__.webviewWindow;
 
 const appWindow = getCurrentWebviewWindow();
 const unlisten = await appWindow.onDragDropEvent((event) => {

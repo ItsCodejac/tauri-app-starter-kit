@@ -26,7 +26,7 @@ In `src-tauri/src/lib.rs`, add to the builder:
 ### 3. Use from the frontend
 
 ```javascript
-import { invoke } from '@tauri-apps/api/core';
+const { invoke } = window.__TAURI__.core;
 
 // Use the plugin's API directly
 // See tauri-plugin-ai documentation for details

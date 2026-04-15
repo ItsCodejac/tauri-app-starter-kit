@@ -144,7 +144,7 @@ app.emit("autosave:saved", ()).unwrap();
 import { events } from './lib/ipc.js';
 
 events.onAutosaveSaved(() => {
-  console.log('Autosave completed');
+  console.debug('Autosave completed');
 });
 ```
 

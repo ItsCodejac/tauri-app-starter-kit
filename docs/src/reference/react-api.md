@@ -85,8 +85,8 @@ Shared utilities for utility windows. Each utility window imports from here.
 | `getChecked(id)` | Get checkbox checked state |
 | `setValue(id, val)` | Set input value |
 | `getValue(id)` | Get input value |
-| `invoke` | Re-export from `@tauri-apps/api/core` |
-| `listen` | Re-export from `@tauri-apps/api/event` |
+| `invoke` | Re-export via `window.__TAURI__.core` |
+| `listen` | Re-export via `window.__TAURI__.event` |
 | `branding` | Re-export from `branding.js` |
 
 ---

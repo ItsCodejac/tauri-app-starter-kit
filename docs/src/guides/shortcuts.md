@@ -88,7 +88,7 @@ const conflict = await ipc.checkConflict(
 );
 
 if (conflict) {
-  console.log(`Conflicts with: ${conflict.label} (${conflict.command_id})`);
+  console.debug(`Conflicts with: ${conflict.label} (${conflict.command_id})`);
 }
 ```
 

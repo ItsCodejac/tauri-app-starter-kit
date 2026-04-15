@@ -15,7 +15,7 @@ const theme = await ipc.getSetting('theme');
 await ipc.setSetting('theme', 'dark');
 
 // Listen for events
-events.onAutosaveSaved(() => console.log('Saved'));
+events.onAutosaveSaved(() => console.debug('Saved'));
 ```
 
 ## How It Works
@@ -65,7 +65,7 @@ export const ipc = {
 import { ipc } from './lib/ipc.js';
 
 const message = await ipc.greet('World');
-console.log(message); // "Hello, World!"
+console.debug(message); // "Hello, World!"
 ```
 
 ## Passing Arguments
@@ -153,7 +153,7 @@ pub fn get_app_info(app: AppHandle) -> Result<AppInfo, String> {
 ```javascript
 try {
   const info = await ipc.getAppInfo();
-  console.log(info.name, info.version);
+  console.debug(info.name, info.version);
 } catch (error) {
   console.error('Failed:', error); // error is the String from Err()
 }
@@ -233,8 +233,8 @@ Use the `events` object from the IPC facade:
 ```javascript
 import { events } from './lib/ipc.js';
 
-events.onAutosaveSaved(() => console.log('Saved'));
-events.onRecoveryAvailable((info) => console.log('Recovery:', info));
+events.onAutosaveSaved(() => console.debug('Saved'));
+events.onRecoveryAvailable((info) => console.debug('Recovery:', info));
 events.onCloseRequested(() => showConfirmDialog());
 events.onMenuEvent('menu:file:new', () => handleNew());
 ```
@@ -242,10 +242,10 @@ events.onMenuEvent('menu:file:new', () => handleNew());
 Or use `listen()` directly for custom events:
 
 ```javascript
-import { listen } from '@tauri-apps/api/event';
+const { listen } = window.__TAURI__.event;
 
 const unlisten = await listen('my-custom-event', (event) => {
-  console.log(event.payload);
+  console.debug(event.payload);
 });
 
 // Clean up when done

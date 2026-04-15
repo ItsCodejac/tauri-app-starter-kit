@@ -90,7 +90,7 @@ setupCloseButton('close-btn');
 
 // Your window logic here
 const info = await invoke('get_app_info');
-console.log(info.name);
+console.debug(info.name);
 ```
 
 ### 3. Add the window config in Rust

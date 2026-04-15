@@ -70,7 +70,7 @@ await ipc.resetSettings();
 You can also call the commands directly with `invoke`:
 
 ```javascript
-import { invoke } from '@tauri-apps/api/core';
+const { invoke } = window.__TAURI__.core;
 
 const theme = await invoke('get_setting', { key: 'theme' });
 await invoke('set_setting', { key: 'theme', value: 'light' });
