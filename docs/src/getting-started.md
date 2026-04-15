@@ -26,6 +26,10 @@ On first launch, a branded splash screen appears for 3 seconds while settings in
 4. After a minimum 3-second splash duration, the **main window** is created programmatically in Rust (`lib.rs` setup) and the splash closes.
 5. The main window loads `index.html`, which includes the template's welcome page with interactive demos. Replace this with your own UI.
 
+## Where the main window is created
+
+The main window is created programmatically in `src-tauri/src/lib.rs` inside the async setup block (search for `WebviewWindowBuilder::new`). This is where you change the default window size, title, or other properties. The splash window is the only window defined in `tauri.conf.json`; the main window is built in Rust code after initialization completes.
+
 ## First customizations
 
 After cloning, make these changes to turn the template into your app:

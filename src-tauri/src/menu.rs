@@ -69,6 +69,9 @@ pub struct MenuConfig {
 // STANDARD MENUS -- Edit these to customize the built-in menus.
 // ---------------------------------------------------------------------------
 
+// Standard File menu. Edit, remove, or replace items for your app.
+// For example, if your app doesn't use files, you can clear this
+// and keep only Close Window. Or rename "New" to "New Project", etc.
 fn file_menu() -> MenuConfig {
     let mut items = vec![
         MenuDef::Item { id: "file_new", label: "New", accel: Some("CmdOrCtrl+N") },

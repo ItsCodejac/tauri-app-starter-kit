@@ -239,6 +239,8 @@ pub fn run() {
 
                 let product_name = setup_handle.config().product_name.clone().unwrap_or_else(|| "App".into());
 
+                // Main window creation: change the default size, title, or
+                // other properties here. See docs/src/getting-started.md.
                 let _ = tauri::WebviewWindowBuilder::new(
                     &setup_handle,
                     "main",

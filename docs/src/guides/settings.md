@@ -48,6 +48,77 @@ fn all_defaults() -> Vec<(&'static str, serde_json::Value)> {
 
 That is the only change needed. The new setting automatically works with `init_settings` (populated on first run), `get_all_settings` (included in the response), and `reset_settings` (reset to the default value).
 
+## Adding Your Setting to the Settings UI
+
+After adding a default in `settings.rs`, you need three pieces to make it visible in the Settings window.
+
+### 1. Add a form control in `src/windows/settings.html`
+
+Place it in the appropriate `<div class="pane">` section. Use the existing CSS classes for consistent layout.
+
+**Checkbox example** (for a boolean setting):
+
+```html
+<div class="check">
+  <input type="checkbox" id="my-feature-enabled" />
+  <label for="my-feature-enabled">Enable my feature</label>
+</div>
+```
+
+**Select example** (for a string/enum setting):
+
+```html
+<div class="row">
+  <span class="row-label">My Option</span>
+  <div class="row-value">
+    <select id="my-option">
+      <option value="a">Option A</option>
+      <option value="b">Option B</option>
+    </select>
+  </div>
+</div>
+```
+
+The `id` attribute on the control is what you reference in JavaScript. It does not need to match the setting key -- it just needs to be unique in the page.
+
+### 2. Wire it in `src/windows/settings.js`
+
+Add one line to `applyToForm()` to populate the control when settings load:
+
+```javascript
+function applyToForm(s) {
+  // ...existing lines...
+  setChecked('my-feature-enabled', s.my_feature_enabled ?? false);
+  setValue('my-option', s.my_option ?? 'a');
+}
+```
+
+Add one line to `readFromForm()` to read the control value back:
+
+```javascript
+function readFromForm() {
+  return {
+    ...current,
+    // ...existing lines...
+    my_feature_enabled: getChecked('my-feature-enabled'),
+    my_option: getValue('my-option'),
+  };
+}
+```
+
+`setChecked` / `getChecked` work with checkboxes. `setValue` / `getValue` work with selects, text inputs, and number inputs. These helpers are imported from `../lib/window-utils.js`.
+
+### 3. Summary
+
+| Step | File | What to add |
+|------|------|-------------|
+| Default value | `src-tauri/src/settings.rs` | Entry in `all_defaults()` |
+| HTML control | `src/windows/settings.html` | `<input>` or `<select>` with a unique `id` |
+| Load into form | `src/windows/settings.js` | `setChecked()` or `setValue()` in `applyToForm()` |
+| Read from form | `src/windows/settings.js` | `getChecked()` or `getValue()` in `readFromForm()` |
+
+No other wiring is needed. The OK button already diffs `readFromForm()` against the original values and saves any changes via `ipc.setSetting()`.
+
 ## Reading & Writing from the Frontend
 
 Use the IPC facade:

@@ -120,6 +120,66 @@ MenuDef::Submenu {
 
 These are handled entirely by the OS. No event is emitted.
 
+## Customizing Standard Menus
+
+Each standard menu is defined by a function in `menu.rs`: `file_menu()`, `edit_menu()`, `view_menu()`, `window_menu()`, and `help_menu()`. You can freely edit, remove, or replace items in any of them.
+
+### Removing items
+
+Delete the `MenuDef::Item` or `MenuDef::Check` line (and any adjacent `MenuDef::Separator` that no longer makes sense). For example, to remove Find from the Edit menu:
+
+```rust
+fn edit_menu() -> MenuConfig {
+    MenuConfig {
+        label: "Edit",
+        items: vec![
+            MenuDef::Native(NativeItem::Undo),
+            MenuDef::Native(NativeItem::Redo),
+            MenuDef::Separator,
+            MenuDef::Native(NativeItem::Cut),
+            MenuDef::Native(NativeItem::Copy),
+            MenuDef::Native(NativeItem::Paste),
+            MenuDef::Separator,
+            MenuDef::Native(NativeItem::SelectAll),
+            // Find and Find & Replace removed
+        ],
+    }
+}
+```
+
+### Replacing items
+
+Change the `id`, `label`, and `accel` fields. If your app doesn't use files, you could simplify the File menu:
+
+```rust
+fn file_menu() -> MenuConfig {
+    MenuConfig {
+        label: "File",
+        items: vec![
+            MenuDef::Item { id: "file_new-project", label: "New Project...", accel: Some("CmdOrCtrl+N") },
+            MenuDef::Item { id: "file_open-project", label: "Open Project...", accel: Some("CmdOrCtrl+O") },
+            MenuDef::Separator,
+            MenuDef::Native(NativeItem::CloseWindow),
+        ],
+    }
+}
+```
+
+If you add a new `id` that should be handled natively in Rust, add a case to `handle_native()`. Otherwise it is automatically forwarded to the frontend as a `menu:{category}:{action}` event.
+
+### Renaming a menu
+
+Change the `label` field in the returned `MenuConfig`:
+
+```rust
+fn file_menu() -> MenuConfig {
+    MenuConfig {
+        label: "Project",  // was "File"
+        items: vec![ /* ... */ ],
+    }
+}
+```
+
 ## Adding Items to Existing Menus
 
 Edit the corresponding function in `menu.rs`. Each standard menu is defined by a function returning `MenuConfig`:
