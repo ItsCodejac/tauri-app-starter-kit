@@ -14,6 +14,12 @@ document.querySelectorAll('.feature[data-window]').forEach(card => {
   card.addEventListener('click', () => {
     ipc.openWindow(card.dataset.window);
   });
+  card.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      ipc.openWindow(card.dataset.window);
+    }
+  });
 });
 
 // Get Started button

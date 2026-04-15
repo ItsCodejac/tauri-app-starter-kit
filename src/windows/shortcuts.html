@@ -384,17 +384,20 @@
 
   <!-- Visual keyboard (Canvas) -->
   <div class="keyboard-section" id="keyboard-section">
-    <canvas id="keyboard-canvas" width="760" height="210"></canvas>
+    <p class="sr-only">Keyboard visualization. Use the command list below to view and edit shortcuts.</p>
+    <canvas id="keyboard-canvas" width="760" height="210" role="img" aria-label="Visual keyboard layout showing assigned shortcuts">
+      <!-- Screen reader fallback: keyboard shortcuts are listed in the command table below -->
+    </canvas>
     <div id="keyboard-tooltip"></div>
   </div>
 
   <!-- Modifier toggles -->
   <div class="modifier-bar">
     <span class="label">Modifiers:</span>
-    <button class="mod-toggle" data-mod="CmdOrCtrl" id="mod-cmd"></button>
-    <button class="mod-toggle" data-mod="Shift" id="mod-shift"></button>
-    <button class="mod-toggle" data-mod="Alt" id="mod-alt"></button>
-    <button class="mod-toggle" data-mod="Ctrl" id="mod-ctrl"></button>
+    <button class="mod-toggle" data-mod="CmdOrCtrl" id="mod-cmd" aria-pressed="false"></button>
+    <button class="mod-toggle" data-mod="Shift" id="mod-shift" aria-pressed="false"></button>
+    <button class="mod-toggle" data-mod="Alt" id="mod-alt" aria-pressed="false"></button>
+    <button class="mod-toggle" data-mod="Ctrl" id="mod-ctrl" aria-pressed="false"></button>
   </div>
 
   <!-- Search + record keys -->

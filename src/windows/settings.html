@@ -66,7 +66,7 @@
     .pane.active { display: block; }
 
     /* Section header -- just text + rule */
-    .section-header {
+    h2.section-header {
       font-size: 13px;
       font-weight: 600;
       color: var(--text-primary);
@@ -75,7 +75,7 @@
       margin-bottom: 6px;
       margin-top: 24px;
     }
-    .section-header:first-child {
+    h2.section-header:first-child {
       margin-top: 0;
     }
 
@@ -166,9 +166,9 @@
 
       <!-- General -->
       <div class="pane active" id="pane-general">
-        <div class="section-header">Startup</div>
+        <h2 class="section-header">Startup</h2>
         <div class="row">
-          <span class="row-label">At Startup</span>
+          <label class="row-label" for="startup-behavior">At Startup</label>
           <div class="row-value">
             <select id="startup-behavior">
               <option value="empty">Show Empty Workspace</option>
@@ -186,9 +186,9 @@
           <label for="autostart">Launch at login</label>
         </div>
 
-        <div class="section-header">Language</div>
+        <h2 class="section-header">Language</h2>
         <div class="row">
-          <span class="row-label">Display Language</span>
+          <label class="row-label" for="locale">Display Language</label>
           <div class="row-value">
             <select id="locale">
               <option value="en">English</option>
@@ -200,9 +200,9 @@
 
       <!-- Appearance -->
       <div class="pane" id="pane-appearance">
-        <div class="section-header">Theme</div>
+        <h2 class="section-header">Theme</h2>
         <div class="row">
-          <span class="row-label">Application Theme</span>
+          <label class="row-label" for="theme">Application Theme</label>
           <div class="row-value">
             <select id="theme">
               <option value="dark">Dark</option>
@@ -212,7 +212,7 @@
           </div>
         </div>
         <div class="row">
-          <span class="row-label">UI Zoom</span>
+          <label class="row-label" for="zoom">UI Zoom</label>
           <div class="row-value">
             <select id="zoom">
               <option value="80">80%</option>
@@ -225,7 +225,7 @@
           </div>
         </div>
         <div class="row">
-          <span class="row-label">Font Size</span>
+          <label class="row-label" for="font-size">Font Size</label>
           <div class="row-value">
             <select id="font-size">
               <option value="small">Small (12px)</option>
@@ -236,7 +236,7 @@
           </div>
         </div>
 
-        <div class="section-header">Display</div>
+        <h2 class="section-header">Display</h2>
         <div class="check">
           <input type="checkbox" id="show-statusbar" checked />
           <label for="show-statusbar">Show Status Bar</label>
@@ -246,7 +246,7 @@
           <label for="show-tooltips">Show Tooltips</label>
         </div>
 
-        <div class="section-header">Accessibility</div>
+        <h2 class="section-header">Accessibility</h2>
         <div class="check">
           <input type="checkbox" id="reduce-motion" />
           <label for="reduce-motion">Reduce motion and animations</label>
@@ -259,13 +259,13 @@
 
       <!-- Auto Save -->
       <div class="pane" id="pane-autosave">
-        <div class="section-header">Recovery</div>
+        <h2 class="section-header">Recovery</h2>
         <div class="check">
           <input type="checkbox" id="autosave-enabled" checked />
           <label for="autosave-enabled">Automatically save recovery information</label>
         </div>
         <div class="row">
-          <span class="row-label">Save Interval</span>
+          <label class="row-label" for="autosave-interval">Save Interval</label>
           <div class="row-value">
             <input type="number" id="autosave-interval" value="60" min="10" max="600" />
             <span class="row-hint">seconds</span>
@@ -275,9 +275,9 @@
 
       <!-- Performance -->
       <div class="pane" id="pane-performance">
-        <div class="section-header">Processing</div>
+        <h2 class="section-header">Processing</h2>
         <div class="row">
-          <span class="row-label">Performance Mode</span>
+          <label class="row-label" for="perf-mode">Performance Mode</label>
           <div class="row-value">
             <select id="perf-mode">
               <option value="balanced">Balanced</option>
@@ -287,7 +287,7 @@
           </div>
         </div>
 
-        <div class="section-header">Hardware</div>
+        <h2 class="section-header">Hardware</h2>
         <div class="check">
           <input type="checkbox" id="hw-accel" checked />
           <label for="hw-accel">Enable hardware acceleration</label>
@@ -300,23 +300,23 @@
 
       <!-- Media Cache -->
       <div class="pane" id="pane-cache">
-        <div class="section-header">Cache Location</div>
+        <h2 class="section-header">Cache Location</h2>
         <div class="row">
-          <span class="row-label">Cache Folder</span>
+          <label class="row-label" for="cache-location">Cache Folder</label>
           <div class="row-value">
             <input type="text" id="cache-location" readonly style="flex: 1; color: var(--text-tertiary);" />
             <button id="browse-cache">Browse...</button>
           </div>
         </div>
         <div class="row">
-          <span class="row-label">Maximum Size</span>
+          <label class="row-label" for="cache-max">Maximum Size</label>
           <div class="row-value">
             <input type="number" id="cache-max" value="10" min="1" max="100" />
             <span class="row-hint">GB</span>
           </div>
         </div>
 
-        <div class="section-header">Maintenance</div>
+        <h2 class="section-header">Maintenance</h2>
         <div class="check">
           <input type="checkbox" id="cleanup-cache" checked />
           <label for="cleanup-cache">Automatically clean old cache files</label>
@@ -328,7 +328,7 @@
 
       <!-- System Tray -->
       <div class="pane" id="pane-tray">
-        <div class="section-header">Behavior</div>
+        <h2 class="section-header">Behavior</h2>
         <div class="check">
           <input type="checkbox" id="minimize-to-tray" />
           <label for="minimize-to-tray">Minimize to system tray when window is closed</label>

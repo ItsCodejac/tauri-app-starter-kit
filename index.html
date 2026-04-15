@@ -227,34 +227,34 @@
       <!-- Docs sidebar -->
       <nav class="sidebar" id="sidebar">
         <div class="sidebar-section">Getting Started</div>
-        <a class="sidebar-link active" data-page="welcome">Welcome</a>
-        <a class="sidebar-link" data-page="getting-started">Quick Start</a>
-        <a class="sidebar-link" data-page="structure">Project Structure</a>
+        <a class="sidebar-link active" href="#" data-page="welcome">Welcome</a>
+        <a class="sidebar-link" href="#" data-page="getting-started">Quick Start</a>
+        <a class="sidebar-link" href="#" data-page="structure">Project Structure</a>
 
         <div class="sidebar-section">Guides</div>
-        <a class="sidebar-link" data-page="guides/menus">Menus</a>
-        <a class="sidebar-link" data-page="guides/ipc-commands">IPC Commands</a>
-        <a class="sidebar-link" data-page="guides/panels">Utility Windows</a>
-        <a class="sidebar-link" data-page="guides/settings">Settings</a>
-        <a class="sidebar-link" data-page="guides/shortcuts">Shortcuts</a>
-        <a class="sidebar-link" data-page="guides/undo-redo">Undo & Redo</a>
-        <a class="sidebar-link" data-page="guides/autosave">Autosave</a>
-        <a class="sidebar-link" data-page="guides/crash-reporting">Crash Reporting</a>
-        <a class="sidebar-link" data-page="guides/drag-drop">Drag & Drop</a>
-        <a class="sidebar-link" data-page="guides/theming">Theming</a>
-        <a class="sidebar-link" data-page="guides/tray">System Tray</a>
-        <a class="sidebar-link" data-page="guides/notifications">Notifications</a>
-        <a class="sidebar-link" data-page="guides/localization">Localization</a>
-        <a class="sidebar-link" data-page="guides/updater">Auto-Updater</a>
-        <a class="sidebar-link" data-page="guides/keyring">Secure Storage</a>
-        <a class="sidebar-link" data-page="guides/shipping">Shipping</a>
-        <a class="sidebar-link" data-page="guides/ai">AI Integration</a>
+        <a class="sidebar-link" href="#" data-page="guides/menus">Menus</a>
+        <a class="sidebar-link" href="#" data-page="guides/ipc-commands">IPC Commands</a>
+        <a class="sidebar-link" href="#" data-page="guides/panels">Utility Windows</a>
+        <a class="sidebar-link" href="#" data-page="guides/settings">Settings</a>
+        <a class="sidebar-link" href="#" data-page="guides/shortcuts">Shortcuts</a>
+        <a class="sidebar-link" href="#" data-page="guides/undo-redo">Undo & Redo</a>
+        <a class="sidebar-link" href="#" data-page="guides/autosave">Autosave</a>
+        <a class="sidebar-link" href="#" data-page="guides/crash-reporting">Crash Reporting</a>
+        <a class="sidebar-link" href="#" data-page="guides/drag-drop">Drag & Drop</a>
+        <a class="sidebar-link" href="#" data-page="guides/theming">Theming</a>
+        <a class="sidebar-link" href="#" data-page="guides/tray">System Tray</a>
+        <a class="sidebar-link" href="#" data-page="guides/notifications">Notifications</a>
+        <a class="sidebar-link" href="#" data-page="guides/localization">Localization</a>
+        <a class="sidebar-link" href="#" data-page="guides/updater">Auto-Updater</a>
+        <a class="sidebar-link" href="#" data-page="guides/keyring">Secure Storage</a>
+        <a class="sidebar-link" href="#" data-page="guides/shipping">Shipping</a>
+        <a class="sidebar-link" href="#" data-page="guides/ai">AI Integration</a>
 
         <div class="sidebar-section">Reference</div>
-        <a class="sidebar-link" data-page="reference/rust-api">Rust API</a>
-        <a class="sidebar-link" data-page="reference/react-api">Frontend API</a>
-        <a class="sidebar-link" data-page="reference/events">Events</a>
-        <a class="sidebar-link" data-page="reference/css-variables">CSS Variables</a>
+        <a class="sidebar-link" href="#" data-page="reference/rust-api">Rust API</a>
+        <a class="sidebar-link" href="#" data-page="reference/react-api">Frontend API</a>
+        <a class="sidebar-link" href="#" data-page="reference/events">Events</a>
+        <a class="sidebar-link" href="#" data-page="reference/css-variables">CSS Variables</a>
       </nav>
 
       <!-- Content: welcome page or docs iframe -->
@@ -313,6 +313,7 @@ npm install vue @vitejs/plugin-vue
       sidebar.addEventListener('click', (e) => {
         const link = e.target.closest('.sidebar-link');
         if (!link) return;
+        e.preventDefault();
         const page = link.dataset.page;
 
         // Highlight active link

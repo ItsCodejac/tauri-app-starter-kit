@@ -601,9 +601,11 @@ for (const [mod, el] of Object.entries(modButtons)) {
     if (activeModifiers.has(mod)) {
       activeModifiers.delete(mod);
       el.classList.remove('active');
+      el.setAttribute('aria-pressed', 'false');
     } else {
       activeModifiers.add(mod);
       el.classList.add('active');
+      el.setAttribute('aria-pressed', 'true');
     }
     renderKeyboard();
   });
