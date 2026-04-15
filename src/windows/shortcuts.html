@@ -208,13 +208,17 @@
       color: var(--text-primary);
       flex: 1;
       min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .command-shortcut {
       display: flex;
       align-items: center;
       gap: 4px;
-      min-width: 180px;
+      min-width: 120px;
+      flex-shrink: 0;
       cursor: pointer;
       padding: 2px 4px;
       border-radius: 4px;
@@ -262,8 +266,12 @@
     .command-category {
       color: var(--text-tertiary);
       font-size: 11px;
-      min-width: 60px;
+      min-width: 50px;
+      flex-shrink: 0;
       text-align: right;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .remove-btn {

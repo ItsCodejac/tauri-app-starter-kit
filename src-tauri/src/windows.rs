@@ -7,6 +7,8 @@ struct WindowConfig {
     url: &'static str,
     width: f64,
     height: f64,
+    min_width: f64,
+    min_height: f64,
     resizable: bool,
     decorations: bool,
     always_on_top: bool,
@@ -22,6 +24,8 @@ fn get_window_config(name: &str) -> Option<WindowConfig> {
             url: "src/windows/splash.html",
             width: 480.0,
             height: 300.0,
+            min_width: 0.0,
+            min_height: 0.0,
             resizable: false,
             decorations: false,
             always_on_top: true,
@@ -33,6 +37,8 @@ fn get_window_config(name: &str) -> Option<WindowConfig> {
             url: "src/windows/settings.html",
             width: 780.0,
             height: 580.0,
+            min_width: 520.0,
+            min_height: 340.0,
             resizable: true,
             decorations: true,
             always_on_top: false,
@@ -44,6 +50,8 @@ fn get_window_config(name: &str) -> Option<WindowConfig> {
             url: "src/windows/about.html",
             width: 360.0,
             height: 400.0,
+            min_width: 0.0,
+            min_height: 0.0,
             resizable: false,
             decorations: true,
             always_on_top: true,
@@ -55,6 +63,8 @@ fn get_window_config(name: &str) -> Option<WindowConfig> {
             url: "src/windows/shortcuts.html",
             width: 800.0,
             height: 650.0,
+            min_width: 560.0,
+            min_height: 400.0,
             resizable: true,
             decorations: true,
             always_on_top: false,
@@ -66,6 +76,8 @@ fn get_window_config(name: &str) -> Option<WindowConfig> {
             url: "src/windows/logs.html",
             width: 700.0,
             height: 500.0,
+            min_width: 420.0,
+            min_height: 200.0,
             resizable: true,
             decorations: true,
             always_on_top: false,
@@ -77,6 +89,8 @@ fn get_window_config(name: &str) -> Option<WindowConfig> {
             url: "src/windows/update.html",
             width: 420.0,
             height: 340.0,
+            min_width: 0.0,
+            min_height: 0.0,
             resizable: false,
             decorations: true,
             always_on_top: true,
@@ -88,6 +102,8 @@ fn get_window_config(name: &str) -> Option<WindowConfig> {
             url: "src/windows/whatsnew.html",
             width: 500.0,
             height: 520.0,
+            min_width: 360.0,
+            min_height: 300.0,
             resizable: true,
             decorations: true,
             always_on_top: false,
@@ -99,6 +115,8 @@ fn get_window_config(name: &str) -> Option<WindowConfig> {
             url: "src/windows/welcome.html",
             width: 540.0,
             height: 480.0,
+            min_width: 0.0,
+            min_height: 0.0,
             resizable: false,
             decorations: true,
             always_on_top: true,
@@ -140,6 +158,11 @@ pub fn open_window(app: AppHandle, name: String) -> Result<(), String> {
         .decorations(config.decorations)
         .always_on_top(config.always_on_top)
         .visible(true);
+
+    // Set minimum sizes for resizable windows to prevent layout breakage
+    if config.resizable {
+        builder = builder.min_inner_size(config.min_width, config.min_height);
+    }
 
     if config.center {
         builder = builder.center();

@@ -15,12 +15,14 @@
       border-bottom: 1px solid var(--border-standard);
       background: var(--surface-primary);
       flex-shrink: 0;
+      min-width: 0;
     }
     .toolbar h1 {
       font-size: 13px;
       font-weight: 600;
       color: var(--text-bright);
       margin-right: auto;
+      flex-shrink: 0;
     }
     .log-container {
       flex: 1;
@@ -49,7 +51,8 @@
       color: var(--text-tertiary);
       font-size: 12px;
     }
-    .filter-input { width: 180px; }
+    .filter-input { width: 180px; min-width: 80px; flex-shrink: 1; }
+    .toolbar button { flex-shrink: 0; }
     .status-bar {
       height: 24px;
       display: flex;
