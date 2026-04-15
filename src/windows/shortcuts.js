@@ -395,6 +395,12 @@ function renderKeyboard() {
   const keyCommandMap = buildKeyCommandMapWithDisplay();
   setupCanvas();
 
+  // Read font size setting to scale canvas text proportionally
+  const baseFontSize = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--font-size-base')) || 13;
+  const fontScale = baseFontSize / 13;
+  const keyLabelSize = Math.round(13 * fontScale);
+  const cmdLabelSize = Math.round(11 * fontScale);
+
   keyRects = [];
   ctx.clearRect(0, 0, KEYBOARD_WIDTH, KEYBOARD_HEIGHT);
 
@@ -458,13 +464,13 @@ function renderKeyboard() {
       if (isAssigned) {
         // Key label at top, lighter color
         ctx.fillStyle = COLORS.keyLabelAssigned;
-        ctx.font = `13px ${FONT_FAMILY}`;
+        ctx.font = `${keyLabelSize}px ${FONT_FAMILY}`;
         ctx.textBaseline = 'top';
         ctx.fillText(displayLabel, x + keyW / 2, rowY + 4);
 
         // Command label at bottom, white, truncated with ellipsis
         ctx.fillStyle = COLORS.commandLabel;
-        ctx.font = `bold 11px ${FONT_FAMILY}`;
+        ctx.font = `bold ${cmdLabelSize}px ${FONT_FAMILY}`;
         const maxTextW = keyW - 8;
         const cmdText = truncateText(ctx, commands[0], maxTextW);
         ctx.textBaseline = 'bottom';
@@ -472,13 +478,13 @@ function renderKeyboard() {
       } else if (isMod) {
         // Modifier: centered label
         ctx.fillStyle = isModActive ? COLORS.textModActive : COLORS.textModifier;
-        ctx.font = `13px ${FONT_FAMILY}`;
+        ctx.font = `${keyLabelSize}px ${FONT_FAMILY}`;
         ctx.textBaseline = 'middle';
         ctx.fillText(displayLabel, x + keyW / 2, rowY + KEY_HEIGHT / 2);
       } else {
         // Unassigned: centered label
         ctx.fillStyle = COLORS.keyLabel;
-        ctx.font = `13px ${FONT_FAMILY}`;
+        ctx.font = `${keyLabelSize}px ${FONT_FAMILY}`;
         ctx.textBaseline = 'middle';
         ctx.fillText(displayLabel, x + keyW / 2, rowY + KEY_HEIGHT / 2);
       }
@@ -760,7 +766,7 @@ function renderCommandList() {
   for (const cat of categoryNames) {
     const collapsed = collapsedCategories.has(cat);
     html += `<div class="category-group${collapsed ? ' collapsed' : ''}" data-category="${cat}">`;
-    html += `<div class="category-header${collapsed ? ' collapsed' : ''}" data-category="${cat}">`;
+    html += `<div class="category-header${collapsed ? ' collapsed' : ''}" data-category="${cat}" role="button" tabindex="0" aria-expanded="${collapsed ? 'false' : 'true'}">`;
     html += `<span class="chevron">\u25BC</span> ${cat}`;
     html += '</div>';
 
@@ -775,7 +781,7 @@ function renderCommandList() {
         : keysHtml;
       const recordingClass = isRecording ? ' recording' : '';
 
-      html += `<div class="command-row" data-command="${s.command_id}">`;
+      html += `<div class="command-row" data-command="${s.command_id}" tabindex="0">`;
       html += `  <span class="command-name">${s.label}</span>`;
       html += `  <div class="command-shortcut${recordingClass}" data-command="${s.command_id}">${shortcutContent}</div>`;
       html += `  <span class="command-category">${s.category}</span>`;
@@ -825,6 +831,17 @@ function attachCommandListHandlers() {
     el.addEventListener('contextmenu', (e) => {
       e.preventDefault();
       showContextMenu(e.clientX, e.clientY, el.dataset.command);
+    });
+  });
+
+  // Shift+F10 keyboard context menu on focused/selected command rows
+  listEl.querySelectorAll('.command-row').forEach((el) => {
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'F10' && e.shiftKey) {
+        e.preventDefault();
+        const rect = el.getBoundingClientRect();
+        showContextMenu(rect.left + rect.width / 2, rect.top + rect.height / 2, el.dataset.command);
+      }
     });
   });
 }
@@ -1002,6 +1019,9 @@ function showContextMenu(x, y, commandId) {
   contextMenuEl.style.left = x + 'px';
   contextMenuEl.style.top = y + 'px';
   contextMenuEl.classList.remove('hidden');
+  // Focus the first menu item for keyboard access
+  const firstItem = contextMenuEl.querySelector('[role="menuitem"]');
+  if (firstItem) firstItem.focus();
 }
 
 function hideContextMenu() {
@@ -1010,6 +1030,29 @@ function hideContextMenu() {
 }
 
 document.addEventListener('click', () => hideContextMenu());
+
+// Keyboard navigation for context menu (Escape to close, arrow keys between items)
+contextMenuEl.addEventListener('keydown', (e) => {
+  const items = [...contextMenuEl.querySelectorAll('[role="menuitem"]')];
+  const current = document.activeElement;
+  const idx = items.indexOf(current);
+
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    hideContextMenu();
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    const next = idx < items.length - 1 ? idx + 1 : 0;
+    items[next].focus();
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    const prev = idx > 0 ? idx - 1 : items.length - 1;
+    items[prev].focus();
+  } else if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    if (current && current.click) current.click();
+  }
+});
 
 document.getElementById('ctx-reset').addEventListener('click', async () => {
   if (contextMenuTarget) {

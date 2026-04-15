@@ -377,7 +377,7 @@
   <div class="header-bar">
     <span class="title">Keyboard Shortcuts</span>
     <div class="preset-group">
-      <label>Preset:</label>
+      <label for="preset-select">Preset:</label>
       <select id="preset-select"></select>
     </div>
   </div>
@@ -422,8 +422,8 @@
   </div>
 
   <!-- Context menu (hidden) -->
-  <div class="context-menu hidden" id="context-menu">
-    <div class="context-menu-item" id="ctx-reset">Reset to Default</div>
+  <div class="context-menu hidden" id="context-menu" role="menu">
+    <div class="context-menu-item" id="ctx-reset" role="menuitem" tabindex="-1">Reset to Default</div>
   </div>
 
   <script type="module" src="shortcuts.js"></script>

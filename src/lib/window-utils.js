@@ -66,6 +66,7 @@ export function applyBranding(options = {}) {
     if (settings?.high_contrast) {
       document.documentElement.style.setProperty('--text-primary', '#ffffff');
       document.documentElement.style.setProperty('--text-secondary', '#cccccc');
+      document.documentElement.style.setProperty('--text-tertiary', '#aaaaaa');
       document.documentElement.style.setProperty('--border-standard', '#555555');
       document.documentElement.style.setProperty('--border-subtle', '#444444');
     }

@@ -28,7 +28,7 @@
   /* Text */
   --text-primary: #e0e0e0;
   --text-secondary: #999;
-  --text-tertiary: #666;
+  --text-tertiary: #777;
   --text-bright: #fff;
 
   /* Accent — Override via branding.js or set dynamically */
@@ -130,7 +130,7 @@ button {
   font-family: var(--font-ui);
   font-size: 13px;
   padding: 0 14px;
-  height: 28px;
+  min-height: 28px;
   border: 1px solid var(--border-standard);
   border-radius: 3px;
   background: var(--surface-tertiary);
@@ -150,7 +150,7 @@ button:active {
 }
 
 button.primary {
-  height: 32px;
+  min-height: 32px;
   background: var(--accent-blue);
   border-color: var(--accent-blue);
   color: var(--text-bright);
@@ -182,7 +182,7 @@ textarea {
   font-family: var(--font-ui);
   font-size: 13px;
   padding: 4px 10px;
-  height: 28px;
+  min-height: 28px;
   border: 1px solid var(--border-standard);
   border-radius: 3px;
   background: var(--surface-primary);
@@ -192,7 +192,7 @@ textarea {
 }
 
 textarea {
-  height: auto;
+  min-height: auto;
 }
 
 input:focus,
@@ -211,7 +211,7 @@ select {
   font-family: var(--font-ui);
   font-size: 13px;
   padding: 4px 10px;
-  height: 28px;
+  min-height: 28px;
   min-width: 160px;
   border: 1px solid var(--border-standard);
   border-radius: 3px;
