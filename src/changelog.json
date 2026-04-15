@@ -1,17 +1,81 @@
 [
   {
+    "version": "1.0.0",
+    "date": "2026-04-14",
+    "changes": [
+      { "type": "new", "text": "Security hardened: CSP, scoped asset protocol, URL scheme validation" },
+      { "type": "new", "text": "Full WCAG accessibility: ARIA labels, keyboard navigation, screen reader support" },
+      { "type": "new", "text": "Font size control (Small / Default / Large / Extra Large)" },
+      { "type": "new", "text": "High contrast mode and reduced motion preferences" },
+      { "type": "new", "text": "Auto What's New trigger on version upgrade" },
+      { "type": "new", "text": "Forward-compatible shortcut storage (serde default)" },
+      { "type": "new", "text": "Removing Features guide for all 5 optional modules" },
+      { "type": "new", "text": "Claude Code hooks for agent safety" },
+      { "type": "improved", "text": "Canvas keyboard renders platform-appropriate keys (Win/Bksp/Enter on Windows)" },
+      { "type": "improved", "text": "Canvas keyboard colors read from CSS variables (theme-aware)" },
+      { "type": "improved", "text": "Canvas keyboard scales with font size setting" },
+      { "type": "improved", "text": "All hardcoded colors replaced with CSS variables or documented mappings" },
+      { "type": "improved", "text": "Settings window: flat Premiere-style layout with proper form labels" },
+      { "type": "improved", "text": "All utility window footers visually consistent" },
+      { "type": "improved", "text": "Window resize edge cases handled with min-size enforcement" },
+      { "type": "fix", "text": "Fullscreen shortcut: Ctrl+Cmd+F on macOS, F11 on Windows/Linux" },
+      { "type": "fix", "text": "Bring All to Front only shown on macOS" },
+      { "type": "fix", "text": "file:// URL construction fixed for Windows paths" },
+      { "type": "fix", "text": "Path traversal blocked in crash report reader" },
+      { "type": "fix", "text": "Autosave interval enforces 5-second minimum" },
+      { "type": "fix", "text": "window.__TAURI__ guarded with fallbacks (no white screen)" },
+      { "type": "fix", "text": "Duplicate modifier keys deduplicated in shortcuts" },
+      { "type": "fix", "text": "--text-tertiary contrast meets WCAG AA (4.5:1)" }
+    ]
+  },
+  {
+    "version": "0.9.0",
+    "date": "2026-04-14",
+    "changes": [
+      { "type": "new", "text": "Interactive keyboard shortcut editor with Canvas visualization" },
+      { "type": "new", "text": "Shortcut recording, conflict detection, and preset management" },
+      { "type": "new", "text": "Main window with sidebar docs browser and demo launcher" },
+      { "type": "new", "text": "Centralized branding config (branding.js)" },
+      { "type": "new", "text": "Splash screen opens before main window with real init status" },
+      { "type": "new", "text": "Changelog driven from changelog.json" },
+      { "type": "new", "text": "Shared window-utils.js eliminates code duplication" },
+      { "type": "new", "text": "Escape-to-close on all utility windows" },
+      { "type": "new", "text": "Arrow key navigation in settings sidebar" },
+      { "type": "new", "text": "Cmd+F focuses filter in log viewer" },
+      { "type": "new", "text": "File drop prevention on all windows" },
+      { "type": "new", "text": "Text selection enabled where appropriate" },
+      { "type": "improved", "text": "color-scheme: dark for native control rendering" },
+      { "type": "improved", "text": "All interaction patterns: Escape, Tab, arrow keys, right-click" }
+    ]
+  },
+  {
+    "version": "0.5.0",
+    "date": "2026-04-14",
+    "changes": [
+      { "type": "new", "text": "Framework-agnostic architecture: window.__TAURI__ globals, zero npm deps" },
+      { "type": "new", "text": "Plain HTML utility windows (not React components)" },
+      { "type": "new", "text": "Settings window with Premiere-style sidebar navigation" },
+      { "type": "new", "text": "System tray with minimize-to-tray" },
+      { "type": "new", "text": "Native notifications, autostart, secure keyring storage" },
+      { "type": "new", "text": "Quit confirmation with unsaved changes flow" },
+      { "type": "new", "text": "Single instance lock" },
+      { "type": "new", "text": "Browser shortcut prevention (Cmd+L, F5, etc.)" },
+      { "type": "new", "text": "24-page mdBook documentation" },
+      { "type": "new", "text": "16 Tauri plugins integrated" }
+    ]
+  },
+  {
     "version": "0.1.0",
-    "date": "Initial release",
+    "date": "2026-04-13",
     "changes": [
       { "type": "new", "text": "Complete desktop app skeleton with Tauri v2" },
       { "type": "new", "text": "Native OS menus with data-driven configuration" },
       { "type": "new", "text": "Settings persistence with single-source defaults" },
-      { "type": "new", "text": "Keyboard shortcut registry with presets" },
-      { "type": "new", "text": "8 utility windows (splash, settings, shortcuts, about, logs, update, whatsnew, welcome)" },
-      { "type": "new", "text": "Crash reporting and diagnostics" },
-      { "type": "new", "text": "System tray with minimize-to-tray" },
-      { "type": "new", "text": "Auto-updater infrastructure" },
-      { "type": "new", "text": "Framework-agnostic (window.__TAURI__ globals)" }
+      { "type": "new", "text": "Autosave with crash recovery" },
+      { "type": "new", "text": "Crash reporting with panic handler and diagnostics" },
+      { "type": "new", "text": "Window state persistence" },
+      { "type": "new", "text": "Recent files management" },
+      { "type": "new", "text": "Dark theme with CSS custom properties" }
     ]
   }
 ]
