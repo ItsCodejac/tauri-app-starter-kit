@@ -97,8 +97,16 @@ fn default_bindings() -> Vec<ShortcutBinding> {
             command_id: "view.fullscreen".into(),
             label: "Toggle Fullscreen".into(),
             category: "View".into(),
-            keys: vec!["Ctrl".into(), "CmdOrCtrl".into(), "F".into()],
-            default_keys: vec!["Ctrl".into(), "CmdOrCtrl".into(), "F".into()],
+            keys: if cfg!(target_os = "macos") {
+                vec!["Ctrl".into(), "CmdOrCtrl".into(), "F".into()]
+            } else {
+                vec!["F11".into()]
+            },
+            default_keys: if cfg!(target_os = "macos") {
+                vec!["Ctrl".into(), "CmdOrCtrl".into(), "F".into()]
+            } else {
+                vec!["F11".into()]
+            },
         },
         ShortcutBinding {
             command_id: "view.zoom_in".into(),
