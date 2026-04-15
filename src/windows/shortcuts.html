@@ -44,97 +44,34 @@
       min-width: 140px;
     }
 
-    /* ---- Keyboard Layout ---- */
+    /* ---- Keyboard Canvas ---- */
     .keyboard-section {
       padding: 14px 20px 10px;
       flex-shrink: 0;
       border-bottom: 1px solid var(--border-subtle);
-    }
-
-    .keyboard-row {
-      display: flex;
-      gap: 3px;
-      margin-bottom: 3px;
-    }
-
-    .key {
-      min-width: 38px;
-      min-height: 30px;
-      padding: 3px 5px;
-      font-size: 10px;
-      font-family: var(--font-ui);
-      border-radius: 5px;
-      background: var(--surface-tertiary);
-      border: 1px solid var(--border-subtle);
-      color: var(--text-secondary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
       position: relative;
-      transition: border-color 0.12s, background 0.12s;
-      flex-shrink: 0;
     }
 
-    .key:hover {
-      border-color: var(--border-emphasis);
+    #keyboard-canvas {
+      display: block;
+      width: 100%;
+      cursor: pointer;
     }
 
-    .key.assigned {
-      background: var(--accent-blue);
-      border-color: var(--accent-blue);
-      color: #fff;
-      font-weight: 500;
-    }
-
-    .key.assigned:hover {
-      filter: brightness(1.15);
-    }
-
-    .key.modifier {
-      background: var(--surface-active);
-      border-color: var(--border-standard);
-      color: var(--text-primary);
-      font-weight: 500;
-    }
-
-    .key.modifier.active {
-      background: var(--accent-blue);
-      border-color: var(--accent-blue);
-      color: #fff;
-    }
-
-    .key.selected {
-      outline: 2px solid var(--accent-blue);
-      outline-offset: -1px;
-    }
-
-    /* Tooltip */
-    .key[data-tooltip]:hover::after {
-      content: attr(data-tooltip);
+    /* Canvas tooltip overlay */
+    #keyboard-tooltip {
       position: absolute;
-      bottom: calc(100% + 6px);
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--surface-elevated);
-      color: var(--text-bright);
+      background: #444;
+      color: #fff;
       font-size: 11px;
-      font-weight: 400;
       padding: 4px 8px;
       border-radius: 4px;
       white-space: nowrap;
-      z-index: 100;
       pointer-events: none;
-      border: 1px solid var(--border-standard);
+      border: 1px solid #3a3a3a;
+      z-index: 100;
+      display: none;
     }
-
-    /* Key widths */
-    .key-w-1   { min-width: 38px; }
-    .key-w-1-2 { min-width: 49px; }
-    .key-w-1-5 { min-width: 60px; }
-    .key-w-1-8 { min-width: 72px; }
-    .key-w-2-2 { min-width: 87px; }
-    .key-w-5   { min-width: 198px; flex: 1; }
 
     /* ---- Modifier toggle bar ---- */
     .modifier-bar {
@@ -436,8 +373,11 @@
     </div>
   </div>
 
-  <!-- Visual keyboard -->
-  <div class="keyboard-section" id="keyboard"></div>
+  <!-- Visual keyboard (Canvas) -->
+  <div class="keyboard-section" id="keyboard-section">
+    <canvas id="keyboard-canvas" width="760" height="210"></canvas>
+    <div id="keyboard-tooltip"></div>
+  </div>
 
   <!-- Modifier toggles -->
   <div class="modifier-bar">

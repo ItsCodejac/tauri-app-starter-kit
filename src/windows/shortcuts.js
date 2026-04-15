@@ -141,62 +141,299 @@ function buildKeyCommandMap() {
 }
 
 // ---------------------------------------------------------------------------
-// Keyboard rendering
+// Keyboard Canvas rendering
 // ---------------------------------------------------------------------------
 
-const keyboardEl = document.getElementById('keyboard');
+const canvas = document.getElementById('keyboard-canvas');
+const ctx = canvas.getContext('2d');
+const tooltipEl = document.getElementById('keyboard-tooltip');
+const keyboardSection = document.getElementById('keyboard-section');
+
+// Layout definition with width multipliers
+const canvasRows = [
+  { keys: [
+    { label: '`', w: 1 }, { label: '1', w: 1 }, { label: '2', w: 1 },
+    { label: '3', w: 1 }, { label: '4', w: 1 }, { label: '5', w: 1 },
+    { label: '6', w: 1 }, { label: '7', w: 1 }, { label: '8', w: 1 },
+    { label: '9', w: 1 }, { label: '0', w: 1 }, { label: '-', w: 1 },
+    { label: '=', w: 1 }, { label: 'Delete', w: 1.5 }
+  ]},
+  { keys: [
+    { label: 'Tab', w: 1.5 }, { label: 'Q', w: 1 }, { label: 'W', w: 1 },
+    { label: 'E', w: 1 }, { label: 'R', w: 1 }, { label: 'T', w: 1 },
+    { label: 'Y', w: 1 }, { label: 'U', w: 1 }, { label: 'I', w: 1 },
+    { label: 'O', w: 1 }, { label: 'P', w: 1 }, { label: '[', w: 1 },
+    { label: ']', w: 1 }, { label: '\\', w: 1 }
+  ]},
+  { keys: [
+    { label: 'Caps', w: 1.75 }, { label: 'A', w: 1 }, { label: 'S', w: 1 },
+    { label: 'D', w: 1 }, { label: 'F', w: 1 }, { label: 'G', w: 1 },
+    { label: 'H', w: 1 }, { label: 'J', w: 1 }, { label: 'K', w: 1 },
+    { label: 'L', w: 1 }, { label: ';', w: 1 }, { label: "'", w: 1 },
+    { label: 'Return', w: 1.75 }
+  ]},
+  { keys: [
+    { label: 'Shift', w: 2.25 }, { label: 'Z', w: 1 }, { label: 'X', w: 1 },
+    { label: 'C', w: 1 }, { label: 'V', w: 1 }, { label: 'B', w: 1 },
+    { label: 'N', w: 1 }, { label: 'M', w: 1 }, { label: ',', w: 1 },
+    { label: '.', w: 1 }, { label: '/', w: 1 }, { label: 'Shift', w: 2.25 }
+  ]},
+  { keys: [
+    { label: 'Fn', w: 1 }, { label: 'Ctrl', w: 1 }, { label: 'Alt', w: 1 },
+    { label: 'Cmd', w: 1.25 }, { label: 'Space', w: 6.0 },
+    { label: 'Cmd', w: 1.25 }, { label: 'Alt', w: 1 },
+    { label: 'Left', w: 1 }, { label: 'Up', w: 1 },
+    { label: 'Down', w: 1 }, { label: 'Right', w: 1 }
+  ]}
+];
+
+// Colors
+const COLORS = {
+  unassignedFill: '#2a2a2a',
+  unassignedBorder: '#3a3a3a',
+  assignedFill: '#2a5a9e',
+  assignedBorder: '#2a5a9e',
+  modifierFill: '#333333',
+  modifierBorder: '#3a3a3a',
+  hoverLighten: 20,
+  selectedBorder: '#4a9eff',
+  textUnassigned: '#999999',
+  textAssigned: '#ffffff',
+  textModifier: '#e0e0e0',
+};
+
+const KEY_GAP = 3;
+const KEY_HEIGHT = 36;
+const ROW_GAP = 3;
+const BORDER_RADIUS = 5;
+
+// Stored key rectangles for hit detection
+let keyRects = []; // { x, y, w, h, label, displayLabel, isMod, commands }
+let hoveredKey = null;
+let dpr = 1;
+
+function lightenColor(hex, amount) {
+  const r = Math.min(255, parseInt(hex.slice(1, 3), 16) + amount);
+  const g = Math.min(255, parseInt(hex.slice(3, 5), 16) + amount);
+  const b = Math.min(255, parseInt(hex.slice(5, 7), 16) + amount);
+  return `rgb(${r},${g},${b})`;
+}
+
+function calculateLayout() {
+  const section = keyboardSection;
+  const availableWidth = section.clientWidth - 32; // 20px padding each side minus some margin
+  canvas.style.width = availableWidth + 'px';
+
+  // Calculate total width units for the widest row to determine unit size
+  let maxUnits = 0;
+  for (const row of canvasRows) {
+    let units = 0;
+    for (const key of row.keys) units += key.w;
+    // Add gaps: (numKeys - 1) gaps in unit-space
+    const gapUnits = (row.keys.length - 1) * (KEY_GAP / 42); // approximate
+    if (units > maxUnits) maxUnits = units;
+  }
+
+  // Unit width: how many pixels per 1.0 width unit
+  // We need: totalKeys * unitWidth + (numKeys-1) * gap = availableWidth
+  // Use the first row (14.5 units, 13 gaps) as reference
+  const refRow = canvasRows[0];
+  let refUnits = 0;
+  for (const key of refRow.keys) refUnits += key.w;
+  const refGaps = refRow.keys.length - 1;
+  const unitWidth = (availableWidth - refGaps * KEY_GAP) / refUnits;
+
+  // Total height
+  const totalHeight = canvasRows.length * KEY_HEIGHT + (canvasRows.length - 1) * ROW_GAP;
+
+  // Set canvas size with device pixel ratio for sharp rendering
+  dpr = window.devicePixelRatio || 1;
+  canvas.width = availableWidth * dpr;
+  canvas.height = totalHeight * dpr;
+  canvas.style.height = totalHeight + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  return { unitWidth, totalHeight, availableWidth };
+}
 
 function renderKeyboard() {
   const keyCommandMap = buildKeyCommandMap();
-  let html = '';
+  const { unitWidth } = calculateLayout();
 
-  for (const row of keyboardRows) {
-    html += '<div class="keyboard-row">';
-    for (const key of row) {
-      const widthClass = wideKeys[key] || '';
-      const isMod = modifierKeyLabels.has(key);
-      const normalizedKey = key.toUpperCase();
+  keyRects = [];
+  const w = parseFloat(canvas.style.width);
+  const h = parseFloat(canvas.style.height);
+
+  // Clear
+  ctx.clearRect(0, 0, w, h);
+
+  let rowY = 0;
+  for (const row of canvasRows) {
+    let x = 0;
+    for (const keyDef of row.keys) {
+      const keyW = keyDef.w * unitWidth + (keyDef.w - 1) * KEY_GAP * (keyDef.w > 1 ? (keyDef.w - 1) / keyDef.w : 0);
+      // Simpler: key pixel width = keyDef.w * unitWidth + max(0, keyDef.w - 1) * KEY_GAP * fraction
+      // Actually, let's compute simply: the key occupies keyDef.w units + the gaps between those units
+      const keyPixelW = keyDef.w * unitWidth + Math.max(0, Math.floor(keyDef.w) - 1) * KEY_GAP;
+
+      const isMod = modifierKeyLabels.has(keyDef.label);
+      const normalizedKey = keyDef.label.toUpperCase();
       const commands = keyCommandMap[normalizedKey];
       const isAssigned = !isMod && !!commands;
       const isSelected = selectedKeyFilter === normalizedKey;
-
-      // Check if this modifier is active
-      const modToken = keyToBindingToken[key];
+      const modToken = keyToBindingToken[keyDef.label];
       const isModActive = isMod && modToken && activeModifiers.has(modToken);
+      const isHovered = hoveredKey && hoveredKey.label === keyDef.label &&
+                        hoveredKey.x === x && hoveredKey.y === rowY;
 
-      let classes = 'key';
-      if (widthClass) classes += ' ' + widthClass;
-      if (isMod) classes += ' modifier';
-      if (isModActive) classes += ' active';
-      if (isAssigned) classes += ' assigned';
-      if (isSelected) classes += ' selected';
+      // Determine colors
+      let fillColor, borderColor, textColor;
+      if (isAssigned) {
+        fillColor = COLORS.assignedFill;
+        borderColor = COLORS.assignedBorder;
+        textColor = COLORS.textAssigned;
+      } else if (isModActive) {
+        fillColor = '#4a9eff';
+        borderColor = '#4a9eff';
+        textColor = '#ffffff';
+      } else if (isMod) {
+        fillColor = COLORS.modifierFill;
+        borderColor = COLORS.modifierBorder;
+        textColor = COLORS.textModifier;
+      } else {
+        fillColor = COLORS.unassignedFill;
+        borderColor = COLORS.unassignedBorder;
+        textColor = COLORS.textUnassigned;
+      }
 
-      const tooltip = isAssigned ? ` data-tooltip="${commands.join(', ')}"` : '';
-      const displayLabel = arrowSymbols[key] || key;
+      if (isHovered) {
+        fillColor = lightenColor(fillColor.startsWith('#') ? fillColor : '#2a2a2a', COLORS.hoverLighten);
+      }
 
-      html += `<div class="${classes}" data-key="${key}"${tooltip}>${displayLabel}</div>`;
+      // Draw key background with rounded rect
+      ctx.beginPath();
+      roundRect(ctx, x, rowY, keyPixelW, KEY_HEIGHT, BORDER_RADIUS);
+      ctx.fillStyle = fillColor;
+      ctx.fill();
+
+      // Draw border
+      ctx.strokeStyle = isSelected ? COLORS.selectedBorder : borderColor;
+      ctx.lineWidth = isSelected ? 2 : 1;
+      ctx.stroke();
+
+      // Draw selected accent outline outside
+      if (isSelected) {
+        ctx.beginPath();
+        roundRect(ctx, x - 1, rowY - 1, keyPixelW + 2, KEY_HEIGHT + 2, BORDER_RADIUS + 1);
+        ctx.strokeStyle = COLORS.selectedBorder;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
+      // Draw label
+      const displayLabel = arrowSymbols[keyDef.label] || keyDef.label;
+      ctx.fillStyle = textColor;
+      ctx.font = `${isMod || keyDef.w > 1 ? '11' : '12'}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(displayLabel, x + keyPixelW / 2, rowY + KEY_HEIGHT / 2);
+
+      // Store rect for hit detection
+      keyRects.push({
+        x, y: rowY, w: keyPixelW, h: KEY_HEIGHT,
+        label: keyDef.label,
+        displayLabel,
+        isMod,
+        commands: commands || null
+      });
+
+      x += keyPixelW + KEY_GAP;
     }
-    html += '</div>';
+    rowY += KEY_HEIGHT + ROW_GAP;
+  }
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h);
+  ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
+}
+
+function findKeyAtPoint(mx, my) {
+  for (const rect of keyRects) {
+    if (mx >= rect.x && mx <= rect.x + rect.w &&
+        my >= rect.y && my <= rect.y + rect.h) {
+      return rect;
+    }
+  }
+  return null;
+}
+
+// Mouse event handlers
+canvas.addEventListener('mousemove', (e) => {
+  const bounds = canvas.getBoundingClientRect();
+  const scaleX = parseFloat(canvas.style.width) / bounds.width;
+  const scaleY = parseFloat(canvas.style.height) / bounds.height;
+  const mx = (e.clientX - bounds.left) * scaleX;
+  const my = (e.clientY - bounds.top) * scaleY;
+
+  const key = findKeyAtPoint(mx, my);
+  const prevHovered = hoveredKey;
+  hoveredKey = key;
+
+  // Show/hide tooltip
+  if (key && key.commands) {
+    tooltipEl.textContent = key.commands.join(', ');
+    tooltipEl.style.display = 'block';
+    tooltipEl.style.left = (e.clientX - keyboardSection.getBoundingClientRect().left + 12) + 'px';
+    tooltipEl.style.top = (e.clientY - keyboardSection.getBoundingClientRect().top - 30) + 'px';
+  } else {
+    tooltipEl.style.display = 'none';
   }
 
-  keyboardEl.innerHTML = html;
+  // Redraw if hover state changed
+  if (prevHovered !== key) {
+    renderKeyboard();
+  }
+});
 
-  // Attach click handlers
-  keyboardEl.querySelectorAll('.key').forEach((el) => {
-    el.addEventListener('click', () => {
-      const key = el.dataset.key;
-      if (modifierKeyLabels.has(key)) return; // Don't filter on modifier click from keyboard
-      const norm = key.toUpperCase();
-      if (selectedKeyFilter === norm) {
-        selectedKeyFilter = null; // Toggle off
-      } else {
-        selectedKeyFilter = norm;
-      }
-      renderKeyboard();
-      renderCommandList();
-    });
-  });
-}
+canvas.addEventListener('mouseleave', () => {
+  hoveredKey = null;
+  tooltipEl.style.display = 'none';
+  renderKeyboard();
+});
+
+canvas.addEventListener('click', (e) => {
+  const bounds = canvas.getBoundingClientRect();
+  const scaleX = parseFloat(canvas.style.width) / bounds.width;
+  const scaleY = parseFloat(canvas.style.height) / bounds.height;
+  const mx = (e.clientX - bounds.left) * scaleX;
+  const my = (e.clientY - bounds.top) * scaleY;
+
+  const key = findKeyAtPoint(mx, my);
+  if (!key || key.isMod) return;
+
+  const norm = key.label.toUpperCase();
+  if (selectedKeyFilter === norm) {
+    selectedKeyFilter = null;
+  } else {
+    selectedKeyFilter = norm;
+  }
+  renderKeyboard();
+  renderCommandList();
+});
+
+// Resize handler
+window.addEventListener('resize', () => {
+  renderKeyboard();
+});
 
 // ---------------------------------------------------------------------------
 // Modifier toggle bar
