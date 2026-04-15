@@ -5,11 +5,11 @@
  * All brand-aware windows (splash, about, etc.) read from this file.
  */
 export const branding = {
-  /** App display name */
-  name: "My App",
+  /** App display name — change this first */
+  name: "Your App",
 
   /** Short tagline shown on splash screen */
-  tagline: "Built with TASK",
+  tagline: "",
 
   /** Path to logo image (SVG or PNG, relative to public/) */
   logo: "",

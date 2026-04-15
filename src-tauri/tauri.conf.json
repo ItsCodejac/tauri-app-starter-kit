@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "tauri-app-starter-kit",
+  "productName": "Your App",
   "version": "0.1.0",
-  "identifier": "com.tauri.dev",
+  "identifier": "com.yourcompany.yourapp",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:5173",
