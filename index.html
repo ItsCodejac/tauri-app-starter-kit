@@ -314,15 +314,38 @@ npm install vue @vitejs/plugin-vue
         link.classList.add('active');
 
         if (page === 'welcome') {
-          // Show welcome content, hide iframe
           welcomeEl.style.display = 'block';
           docsFrame.style.display = 'none';
         } else {
-          // Load doc page in iframe
           welcomeEl.style.display = 'none';
           docsFrame.style.display = 'block';
-          // In dev mode, serve from built docs. In prod, from bundled.
           docsFrame.src = `/docs/book/${page}.html`;
+
+          // After iframe loads, hide mdBook's own sidebar and nav
+          // so we don't get sidebar-inside-sidebar
+          docsFrame.onload = () => {
+            try {
+              const doc = docsFrame.contentDocument;
+              if (!doc) return;
+              const style = doc.createElement('style');
+              style.textContent = `
+                .sidebar { display: none !important; }
+                .nav-wrapper { display: none !important; }
+                .nav-wide-wrapper { display: none !important; }
+                .menu-bar { display: none !important; }
+                #sidebar-toggle-anchor + .sidebar { display: none !important; }
+                .page-wrapper { margin-left: 0 !important; padding: 0 20px !important; }
+                .page { max-width: 100% !important; }
+                .content { max-width: 100% !important; padding: 0 !important; }
+                main { max-width: 100% !important; }
+                #content { max-width: 100% !important; }
+                body { background: #222 !important; }
+              `;
+              doc.head.appendChild(style);
+            } catch (e) {
+              // Cross-origin -- can't modify iframe. Fall back to showing full mdBook page.
+            }
+          };
         }
       });
 
