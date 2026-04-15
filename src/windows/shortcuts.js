@@ -149,7 +149,7 @@ const ctx = canvas.getContext('2d');
 const tooltipEl = document.getElementById('keyboard-tooltip');
 const keyboardSection = document.getElementById('keyboard-section');
 
-// Layout definition with width multipliers
+// Layout definition with width multipliers (all rows sum to 14.5u)
 const canvasRows = [
   { keys: [
     { label: '`', w: 1 }, { label: '1', w: 1 }, { label: '2', w: 1 },
@@ -179,106 +179,193 @@ const canvasRows = [
     { label: '.', w: 1 }, { label: '/', w: 1 }, { label: 'Shift', w: 2.25 }
   ]},
   { keys: [
-    { label: 'Fn', w: 1 }, { label: 'Ctrl', w: 1 }, { label: 'Alt', w: 1 },
-    { label: 'Cmd', w: 1.25 }, { label: 'Space', w: 6.0 },
-    { label: 'Cmd', w: 1.25 }, { label: 'Alt', w: 1 },
+    { label: 'Fn', w: 1 }, { label: 'Ctrl', w: 1 }, { label: 'Alt', w: 1.25 },
+    { label: 'Cmd', w: 1.25 }, { label: 'Space', w: 5.0 },
+    { label: 'Cmd', w: 1.25 }, { label: 'Alt', w: 1.25 },
     { label: 'Left', w: 1 }, { label: 'Up', w: 1 },
     { label: 'Down', w: 1 }, { label: 'Right', w: 1 }
   ]}
 ];
 
+// Fixed key dimensions
+const KEY_UNIT = 42;   // 1u key width in px
+const KEY_HEIGHT = 36;
+const KEY_GAP = 3;
+const ROW_GAP = 3;
+const BORDER_RADIUS = 5;
+const FONT_FAMILY = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+
 // Colors
 const COLORS = {
   unassignedFill: '#2a2a2a',
   unassignedBorder: '#3a3a3a',
-  assignedFill: '#2a5a9e',
-  assignedBorder: '#2a5a9e',
+  assignedFill: '#2e4a6e',
+  assignedBorder: '#3a6090',
   modifierFill: '#333333',
   modifierBorder: '#3a3a3a',
-  hoverLighten: 20,
+  modActiveFill: '#3a3a3a',
+  modActiveBorder: '#4a9eff',
+  hoverLighten: 15,
   selectedBorder: '#4a9eff',
-  textUnassigned: '#999999',
-  textAssigned: '#ffffff',
-  textModifier: '#e0e0e0',
+  keyLabel: '#888888',
+  keyLabelAssigned: '#99bbdd',
+  commandLabel: '#ffffff',
+  textModifier: '#bbbbbb',
+  textModActive: '#dddddd',
 };
 
-const KEY_GAP = 3;
-const KEY_HEIGHT = 36;
-const ROW_GAP = 3;
-const BORDER_RADIUS = 5;
+/**
+ * Calculate the pixel width for a key given its unit width.
+ * A key spanning `w` units occupies the key space plus the internal gaps:
+ *   w * KEY_UNIT + (w - 1) * KEY_GAP
+ */
+function keyPixelWidth(w) {
+  return w * KEY_UNIT + (w - 1) * KEY_GAP;
+}
+
+/**
+ * Calculate the total pixel width of a row (keys + gaps between them).
+ */
+function calcRowWidth(row) {
+  let total = 0;
+  for (let i = 0; i < row.keys.length; i++) {
+    total += keyPixelWidth(row.keys[i].w);
+    if (i < row.keys.length - 1) total += KEY_GAP;
+  }
+  return total;
+}
+
+/**
+ * Calculate fixed keyboard width from the widest row.
+ */
+function calcFixedWidth() {
+  let maxW = 0;
+  for (const row of canvasRows) {
+    const w = calcRowWidth(row);
+    if (w > maxW) maxW = w;
+  }
+  return Math.ceil(maxW);
+}
+
+const KEYBOARD_WIDTH = calcFixedWidth();
+const KEYBOARD_HEIGHT = canvasRows.length * KEY_HEIGHT + (canvasRows.length - 1) * ROW_GAP;
 
 // Stored key rectangles for hit detection
-let keyRects = []; // { x, y, w, h, label, displayLabel, isMod, commands }
+let keyRects = []; // { x, y, w, h, label, displayLabel, isMod, commands, shortcutDisplay }
 let hoveredKey = null;
 let dpr = 1;
 
-function lightenColor(hex, amount) {
+/**
+ * Lighten a hex color by a fixed amount per channel.
+ */
+function lightenHex(hex, amount) {
+  if (!hex || hex[0] !== '#' || hex.length < 7) return hex;
   const r = Math.min(255, parseInt(hex.slice(1, 3), 16) + amount);
   const g = Math.min(255, parseInt(hex.slice(3, 5), 16) + amount);
   const b = Math.min(255, parseInt(hex.slice(5, 7), 16) + amount);
   return `rgb(${r},${g},${b})`;
 }
 
-function calculateLayout() {
-  const section = keyboardSection;
-  const availableWidth = section.clientWidth - 32; // 20px padding each side minus some margin
-  canvas.style.width = availableWidth + 'px';
+/**
+ * Build a map: normalized visual key label -> { commands: string[], shortcutDisplays: string[] }
+ * Only includes bindings whose modifiers exactly match the active modifier toggles.
+ */
+function buildKeyCommandMapWithDisplay() {
+  const map = {};
+  for (const s of shortcuts) {
+    if (s.keys.length === 0) continue;
+    const mods = new Set();
+    let mainKey = null;
+    for (const k of s.keys) {
+      if (k === 'CmdOrCtrl' || k === 'Shift' || k === 'Alt' || k === 'Ctrl') {
+        mods.add(k);
+      } else {
+        mainKey = k;
+      }
+    }
+    if (!mainKey) continue;
 
-  // Calculate total width units for the widest row to determine unit size
-  let maxUnits = 0;
-  for (const row of canvasRows) {
-    let units = 0;
-    for (const key of row.keys) units += key.w;
-    // Add gaps: (numKeys - 1) gaps in unit-space
-    const gapUnits = (row.keys.length - 1) * (KEY_GAP / 42); // approximate
-    if (units > maxUnits) maxUnits = units;
+    // Match modifiers exactly against active toggles
+    let modsMatch = true;
+    for (const am of activeModifiers) {
+      if (!mods.has(am)) { modsMatch = false; break; }
+    }
+    if (!modsMatch) continue;
+    for (const m of mods) {
+      if (!activeModifiers.has(m)) { modsMatch = false; break; }
+    }
+    if (!modsMatch) continue;
+
+    const visualLabel = (bindingTokenToDisplay[mainKey] || mainKey).toUpperCase();
+    if (!map[visualLabel]) map[visualLabel] = { commands: [], shortcutDisplays: [] };
+    map[visualLabel].commands.push(s.label);
+    const displayParts = keysToDisplayParts(s.keys);
+    map[visualLabel].shortcutDisplays.push(displayParts.join(''));
   }
+  return map;
+}
 
-  // Unit width: how many pixels per 1.0 width unit
-  // We need: totalKeys * unitWidth + (numKeys-1) * gap = availableWidth
-  // Use the first row (14.5 units, 13 gaps) as reference
-  const refRow = canvasRows[0];
-  let refUnits = 0;
-  for (const key of refRow.keys) refUnits += key.w;
-  const refGaps = refRow.keys.length - 1;
-  const unitWidth = (availableWidth - refGaps * KEY_GAP) / refUnits;
-
-  // Total height
-  const totalHeight = canvasRows.length * KEY_HEIGHT + (canvasRows.length - 1) * ROW_GAP;
-
-  // Set canvas size with device pixel ratio for sharp rendering
+function setupCanvas() {
   dpr = window.devicePixelRatio || 1;
-  canvas.width = availableWidth * dpr;
-  canvas.height = totalHeight * dpr;
-  canvas.style.height = totalHeight + 'px';
+  canvas.width = KEYBOARD_WIDTH * dpr;
+  canvas.height = KEYBOARD_HEIGHT * dpr;
+  canvas.style.width = KEYBOARD_WIDTH + 'px';
+  canvas.style.height = KEYBOARD_HEIGHT + 'px';
+  canvas.style.display = 'block';
+  canvas.style.margin = '0 auto';
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
 
-  return { unitWidth, totalHeight, availableWidth };
+/**
+ * Draw a rounded rectangle path (caller must call beginPath first).
+ */
+function roundRect(c, x, y, w, h, r) {
+  c.moveTo(x + r, y);
+  c.lineTo(x + w - r, y);
+  c.arcTo(x + w, y, x + w, y + r, r);
+  c.lineTo(x + w, y + h - r);
+  c.arcTo(x + w, y + h, x + w - r, y + h, r);
+  c.lineTo(x + r, y + h);
+  c.arcTo(x, y + h, x, y + h - r, r);
+  c.lineTo(x, y + r);
+  c.arcTo(x, y, x + r, y, r);
+  c.closePath();
+}
+
+/**
+ * Truncate text to fit within maxWidth, appending ellipsis if needed.
+ */
+function truncateText(c, text, maxWidth) {
+  if (c.measureText(text).width <= maxWidth) return text;
+  let t = text;
+  while (t.length > 1 && c.measureText(t + '\u2026').width > maxWidth) {
+    t = t.slice(0, -1);
+  }
+  return t + '\u2026';
 }
 
 function renderKeyboard() {
-  const keyCommandMap = buildKeyCommandMap();
-  const { unitWidth } = calculateLayout();
+  const keyCommandMap = buildKeyCommandMapWithDisplay();
+  setupCanvas();
 
   keyRects = [];
-  const w = parseFloat(canvas.style.width);
-  const h = parseFloat(canvas.style.height);
-
-  // Clear
-  ctx.clearRect(0, 0, w, h);
+  ctx.clearRect(0, 0, KEYBOARD_WIDTH, KEYBOARD_HEIGHT);
 
   let rowY = 0;
   for (const row of canvasRows) {
-    let x = 0;
+    // Calculate this row's total pixel width to center it
+    const rowTotalW = calcRowWidth(row);
+    // Center the row within KEYBOARD_WIDTH
+    let x = Math.round((KEYBOARD_WIDTH - rowTotalW) / 2);
+
     for (const keyDef of row.keys) {
-      const keyW = keyDef.w * unitWidth + (keyDef.w - 1) * KEY_GAP * (keyDef.w > 1 ? (keyDef.w - 1) / keyDef.w : 0);
-      // Simpler: key pixel width = keyDef.w * unitWidth + max(0, keyDef.w - 1) * KEY_GAP * fraction
-      // Actually, let's compute simply: the key occupies keyDef.w units + the gaps between those units
-      const keyPixelW = keyDef.w * unitWidth + Math.max(0, Math.floor(keyDef.w) - 1) * KEY_GAP;
+      const keyW = keyPixelWidth(keyDef.w);
 
       const isMod = modifierKeyLabels.has(keyDef.label);
       const normalizedKey = keyDef.label.toUpperCase();
-      const commands = keyCommandMap[normalizedKey];
+      const mapEntry = keyCommandMap[normalizedKey];
+      const commands = mapEntry ? mapEntry.commands : null;
+      const shortcutDisplay = mapEntry ? mapEntry.shortcutDisplays[0] : null;
       const isAssigned = !isMod && !!commands;
       const isSelected = selectedKeyFilter === normalizedKey;
       const modToken = keyToBindingToken[keyDef.label];
@@ -286,84 +373,83 @@ function renderKeyboard() {
       const isHovered = hoveredKey && hoveredKey.label === keyDef.label &&
                         hoveredKey.x === x && hoveredKey.y === rowY;
 
-      // Determine colors
-      let fillColor, borderColor, textColor;
+      // --- Determine colors ---
+      let fillColor, borderColor;
       if (isAssigned) {
         fillColor = COLORS.assignedFill;
         borderColor = COLORS.assignedBorder;
-        textColor = COLORS.textAssigned;
       } else if (isModActive) {
-        fillColor = '#4a9eff';
-        borderColor = '#4a9eff';
-        textColor = '#ffffff';
+        fillColor = COLORS.modActiveFill;
+        borderColor = COLORS.modActiveBorder;
       } else if (isMod) {
         fillColor = COLORS.modifierFill;
         borderColor = COLORS.modifierBorder;
-        textColor = COLORS.textModifier;
       } else {
         fillColor = COLORS.unassignedFill;
         borderColor = COLORS.unassignedBorder;
-        textColor = COLORS.textUnassigned;
       }
 
       if (isHovered) {
-        fillColor = lightenColor(fillColor.startsWith('#') ? fillColor : '#2a2a2a', COLORS.hoverLighten);
+        fillColor = lightenHex(fillColor, COLORS.hoverLighten);
       }
 
-      // Draw key background with rounded rect
+      // --- 1. Draw fill ---
       ctx.beginPath();
-      roundRect(ctx, x, rowY, keyPixelW, KEY_HEIGHT, BORDER_RADIUS);
+      roundRect(ctx, x + 0.5, rowY + 0.5, keyW - 1, KEY_HEIGHT - 1, BORDER_RADIUS);
       ctx.fillStyle = fillColor;
       ctx.fill();
 
-      // Draw border
+      // --- 2. Draw border ---
       ctx.strokeStyle = isSelected ? COLORS.selectedBorder : borderColor;
       ctx.lineWidth = isSelected ? 2 : 1;
       ctx.stroke();
 
-      // Draw selected accent outline outside
-      if (isSelected) {
-        ctx.beginPath();
-        roundRect(ctx, x - 1, rowY - 1, keyPixelW + 2, KEY_HEIGHT + 2, BORDER_RADIUS + 1);
-        ctx.strokeStyle = COLORS.selectedBorder;
-        ctx.lineWidth = 2;
-        ctx.stroke();
+      // --- 3. Draw key label text (top) + command label text (bottom) ---
+      const displayLabel = arrowSymbols[keyDef.label] || keyDef.label;
+      ctx.textAlign = 'center';
+
+      if (isAssigned) {
+        // Key label at top, lighter color
+        ctx.fillStyle = COLORS.keyLabelAssigned;
+        ctx.font = `11px ${FONT_FAMILY}`;
+        ctx.textBaseline = 'top';
+        ctx.fillText(displayLabel, x + keyW / 2, rowY + 4);
+
+        // Command label at bottom, white, truncated with ellipsis
+        ctx.fillStyle = COLORS.commandLabel;
+        ctx.font = `bold 8px ${FONT_FAMILY}`;
+        const maxTextW = keyW - 8;
+        const cmdText = truncateText(ctx, commands[0], maxTextW);
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(cmdText, x + keyW / 2, rowY + KEY_HEIGHT - 3);
+      } else if (isMod) {
+        // Modifier: centered label
+        ctx.fillStyle = isModActive ? COLORS.textModActive : COLORS.textModifier;
+        ctx.font = `11px ${FONT_FAMILY}`;
+        ctx.textBaseline = 'middle';
+        ctx.fillText(displayLabel, x + keyW / 2, rowY + KEY_HEIGHT / 2);
+      } else {
+        // Unassigned: centered label
+        ctx.fillStyle = COLORS.keyLabel;
+        ctx.font = `11px ${FONT_FAMILY}`;
+        ctx.textBaseline = 'middle';
+        ctx.fillText(displayLabel, x + keyW / 2, rowY + KEY_HEIGHT / 2);
       }
 
-      // Draw label
-      const displayLabel = arrowSymbols[keyDef.label] || keyDef.label;
-      ctx.fillStyle = textColor;
-      ctx.font = `${isMod || keyDef.w > 1 ? '11' : '12'}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(displayLabel, x + keyPixelW / 2, rowY + KEY_HEIGHT / 2);
-
-      // Store rect for hit detection
+      // --- Store rect for hit detection ---
       keyRects.push({
-        x, y: rowY, w: keyPixelW, h: KEY_HEIGHT,
+        x, y: rowY, w: keyW, h: KEY_HEIGHT,
         label: keyDef.label,
         displayLabel,
         isMod,
-        commands: commands || null
+        commands: commands || null,
+        shortcutDisplay: shortcutDisplay || null
       });
 
-      x += keyPixelW + KEY_GAP;
+      x += keyW + KEY_GAP;
     }
     rowY += KEY_HEIGHT + ROW_GAP;
   }
-}
-
-function roundRect(ctx, x, y, w, h, r) {
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.arcTo(x + w, y, x + w, y + r, r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
-  ctx.lineTo(x + r, y + h);
-  ctx.arcTo(x, y + h, x, y + h - r, r);
-  ctx.lineTo(x, y + r);
-  ctx.arcTo(x, y, x + r, y, r);
-  ctx.closePath();
 }
 
 function findKeyAtPoint(mx, my) {
@@ -376,29 +462,46 @@ function findKeyAtPoint(mx, my) {
   return null;
 }
 
+function showTooltip(key, clientX, clientY) {
+  if (!key || !key.commands) {
+    tooltipEl.style.display = 'none';
+    return;
+  }
+  // Build tooltip: "Command Name -- shortcut"
+  const cmdName = key.commands.join(', ');
+  const shortcut = key.shortcutDisplay || '';
+  tooltipEl.textContent = shortcut ? `${cmdName} \u2014 ${shortcut}` : cmdName;
+  tooltipEl.style.display = 'block';
+
+  // Position above the key, centered horizontally on the key
+  const sectionRect = keyboardSection.getBoundingClientRect();
+  const canvasRect = canvas.getBoundingClientRect();
+
+  // Scale factor from logical coords to screen coords
+  const scaleX = canvasRect.width / KEYBOARD_WIDTH;
+  const scaleY = canvasRect.height / KEYBOARD_HEIGHT;
+
+  // Key center in screen coords relative to the keyboard-section container
+  const keyCenterScreenX = canvasRect.left + (key.x + key.w / 2) * scaleX - sectionRect.left;
+  const keyTopScreenY = canvasRect.top + key.y * scaleY - sectionRect.top;
+
+  tooltipEl.style.left = keyCenterScreenX + 'px';
+  tooltipEl.style.top = Math.max(0, keyTopScreenY - 30) + 'px';
+  tooltipEl.style.transform = 'translateX(-50%)';
+}
+
 // Mouse event handlers
 canvas.addEventListener('mousemove', (e) => {
   const bounds = canvas.getBoundingClientRect();
-  const scaleX = parseFloat(canvas.style.width) / bounds.width;
-  const scaleY = parseFloat(canvas.style.height) / bounds.height;
-  const mx = (e.clientX - bounds.left) * scaleX;
-  const my = (e.clientY - bounds.top) * scaleY;
+  const mx = (e.clientX - bounds.left) * (KEYBOARD_WIDTH / bounds.width);
+  const my = (e.clientY - bounds.top) * (KEYBOARD_HEIGHT / bounds.height);
 
   const key = findKeyAtPoint(mx, my);
   const prevHovered = hoveredKey;
   hoveredKey = key;
 
-  // Show/hide tooltip
-  if (key && key.commands) {
-    tooltipEl.textContent = key.commands.join(', ');
-    tooltipEl.style.display = 'block';
-    tooltipEl.style.left = (e.clientX - keyboardSection.getBoundingClientRect().left + 12) + 'px';
-    tooltipEl.style.top = (e.clientY - keyboardSection.getBoundingClientRect().top - 30) + 'px';
-  } else {
-    tooltipEl.style.display = 'none';
-  }
+  showTooltip(key, e.clientX, e.clientY);
 
-  // Redraw if hover state changed
   if (prevHovered !== key) {
     renderKeyboard();
   }
@@ -412,10 +515,8 @@ canvas.addEventListener('mouseleave', () => {
 
 canvas.addEventListener('click', (e) => {
   const bounds = canvas.getBoundingClientRect();
-  const scaleX = parseFloat(canvas.style.width) / bounds.width;
-  const scaleY = parseFloat(canvas.style.height) / bounds.height;
-  const mx = (e.clientX - bounds.left) * scaleX;
-  const my = (e.clientY - bounds.top) * scaleY;
+  const mx = (e.clientX - bounds.left) * (KEYBOARD_WIDTH / bounds.width);
+  const my = (e.clientY - bounds.top) * (KEYBOARD_HEIGHT / bounds.height);
 
   const key = findKeyAtPoint(mx, my);
   if (!key || key.isMod) return;
@@ -430,7 +531,7 @@ canvas.addEventListener('click', (e) => {
   renderCommandList();
 });
 
-// Resize handler
+// Resize handler -- keyboard is fixed size, just redraw to re-center
 window.addEventListener('resize', () => {
   renderKeyboard();
 });

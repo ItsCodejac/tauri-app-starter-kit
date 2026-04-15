@@ -54,21 +54,22 @@
 
     #keyboard-canvas {
       display: block;
-      width: 100%;
       cursor: pointer;
+      /* Fixed size, centered via margin set in JS */
     }
 
     /* Canvas tooltip overlay */
     #keyboard-tooltip {
       position: absolute;
-      background: #444;
-      color: #fff;
+      background: var(--surface-elevated);
+      color: var(--text-primary);
       font-size: 11px;
-      padding: 4px 8px;
+      padding: 5px 10px;
       border-radius: 4px;
       white-space: nowrap;
       pointer-events: none;
-      border: 1px solid #3a3a3a;
+      border: 1px solid var(--border-standard);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
       z-index: 100;
       display: none;
     }
