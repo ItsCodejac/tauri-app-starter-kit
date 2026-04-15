@@ -1,5 +1,5 @@
 import {
-  applyBranding, closeWindow,
+  applyBranding, closeWindow, setupEscapeToClose,
   setChecked, getChecked, setValue, getValue,
 } from '../lib/window-utils.js';
 import { ipc } from '../lib/ipc.js';
@@ -142,5 +142,24 @@ document.getElementById('clear-cache')?.addEventListener('click', async () => {
   }
 });
 
+// --- Escape to close (same as Cancel) ---
+setupEscapeToClose();
+
+// --- Arrow key navigation in sidebar ---
+sidebar.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    const items = [...sidebar.querySelectorAll('.sidebar-item')];
+    const activeIndex = items.findIndex(i => i.classList.contains('active'));
+    const nextIndex = e.key === 'ArrowDown'
+      ? Math.min(activeIndex + 1, items.length - 1)
+      : Math.max(activeIndex - 1, 0);
+    items[nextIndex].click();
+    items[nextIndex].focus();
+  }
+});
+
 // --- Init ---
-loadSettings();
+loadSettings().then(() => {
+  document.querySelector('.sidebar-item.active')?.focus();
+});

@@ -321,3 +321,10 @@ a {
 a:hover {
   color: var(--text-bright);
 }
+
+/* ---------- Prevent image dragging ---------- */
+
+img {
+  -webkit-user-drag: none;
+  user-drag: none;
+}

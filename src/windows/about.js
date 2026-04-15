@@ -1,4 +1,4 @@
-import { applyBranding, showButtonFeedback, setupCloseButton, branding, invoke } from '../lib/window-utils.js';
+import { applyBranding, showButtonFeedback, setupCloseButton, setupEscapeToClose, branding, invoke } from '../lib/window-utils.js';
 import { ipc } from '../lib/ipc.js';
 
 // Apply branding (accent color, logo, name, tagline, copyright, license, version)
@@ -21,8 +21,9 @@ if (branding.github) {
   linksEl.appendChild(a);
 }
 
-// Close button
+// Close button + Escape to close
 setupCloseButton('close-btn');
+setupEscapeToClose();
 
 // Copy diagnostics
 document.getElementById('diagnostics').addEventListener('click', async () => {

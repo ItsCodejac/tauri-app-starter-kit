@@ -125,6 +125,31 @@ export function setupExternalLink(elementId, url) {
 export { invoke, listen, branding };
 
 // ---------------------------------------------------------------------------
+// Escape to close
+// ---------------------------------------------------------------------------
+
+/** Set up Escape key to close the current window.
+ *  Call with optional callback for windows that need custom behavior (like settings Cancel). */
+export function setupEscapeToClose(beforeClose) {
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (beforeClose) {
+        beforeClose();
+      } else {
+        closeWindow();
+      }
+    }
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Prevent file drops from navigating the webview
+// ---------------------------------------------------------------------------
+
+document.addEventListener('dragover', (e) => e.preventDefault());
+document.addEventListener('drop', (e) => e.preventDefault());
+
+// ---------------------------------------------------------------------------
 // Form helpers
 // ---------------------------------------------------------------------------
 

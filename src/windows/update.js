@@ -1,4 +1,4 @@
-import { applyBranding, closeWindow, branding } from '../lib/window-utils.js';
+import { applyBranding, closeWindow, setupEscapeToClose, branding } from '../lib/window-utils.js';
 import { ipc } from '../lib/ipc.js';
 
 applyBranding({ showVersion: false });
@@ -75,6 +75,9 @@ document.getElementById('skip-btn')?.addEventListener('click', closeWindow);
 document.getElementById('retry-btn')?.addEventListener('click', checkForUpdates);
 
 document.getElementById('close-btn')?.addEventListener('click', closeWindow);
+
+// Escape to close
+setupEscapeToClose();
 
 // Start check
 checkForUpdates();

@@ -1,4 +1,4 @@
-import { applyBranding, setupCloseButton } from '../lib/window-utils.js';
+import { applyBranding, setupCloseButton, setupEscapeToClose } from '../lib/window-utils.js';
 import { ipc } from '../lib/ipc.js';
 
 // Apply branding (accent color, icon, version)
@@ -48,5 +48,6 @@ ipc.getAppInfo().then((info) => {
   ipc.setSetting('app.lastSeenVersion', info.version);
 }).catch(() => {});
 
-// Close button
+// Close button + Escape to close
 setupCloseButton('close-btn');
+setupEscapeToClose();

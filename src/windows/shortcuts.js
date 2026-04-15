@@ -1,4 +1,4 @@
-import { applyBranding, closeWindow } from '../lib/window-utils.js';
+import { applyBranding, closeWindow, setupEscapeToClose } from '../lib/window-utils.js';
 import { ipc } from '../lib/ipc.js';
 
 applyBranding({ showVersion: false });
@@ -510,6 +510,12 @@ document.addEventListener('keydown', async (e) => {
     await ipc.setShortcut(recordingCommandId, keys);
     recordingCommandId = null;
     await refreshShortcuts();
+    return;
+  }
+
+  // Not recording and not in record-search: Escape closes the window
+  if (e.key === 'Escape') {
+    closeWindow();
   }
 });
 
@@ -674,6 +680,9 @@ async function init() {
   renderPresetDropdown();
   renderKeyboard();
   renderCommandList();
+
+  // Focus the search input on open
+  searchEl.focus();
 }
 
 init();

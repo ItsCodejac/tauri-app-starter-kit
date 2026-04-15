@@ -1,4 +1,4 @@
-import { applyBranding, showButtonFeedback } from '../lib/window-utils.js';
+import { applyBranding, showButtonFeedback, setupEscapeToClose } from '../lib/window-utils.js';
 import { ipc } from '../lib/ipc.js';
 
 applyBranding({ showVersion: false });
@@ -54,6 +54,26 @@ document.getElementById('copy-btn').addEventListener('click', async () => {
 });
 
 document.getElementById('refresh-btn').addEventListener('click', loadLogs);
+
+// Escape to close
+setupEscapeToClose();
+
+// Cmd+F / Ctrl+F focuses filter input
+document.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
+    e.preventDefault();
+    document.getElementById('filter')?.focus();
+  }
+});
+
+// Right-click on log content: copy selected text if any
+logContainer.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  const selection = window.getSelection().toString();
+  if (selection) {
+    navigator.clipboard.writeText(selection);
+  }
+});
 
 // Initial load
 loadLogs();
