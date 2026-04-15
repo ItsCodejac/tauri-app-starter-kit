@@ -80,6 +80,24 @@ Your workspace (add any framework):
   index.html → mount React, Svelte, Vue, or write vanilla JS
 ```
 
+## Screenshots
+
+**Main window** — sidebar docs browser + demo launcher:
+
+![Main window](docs/assets/screenshots/main-window.png)
+
+**Keyboard Shortcuts** — Canvas keyboard with editable bindings:
+
+![Keyboard Shortcuts](docs/assets/screenshots/shortcuts.png)
+
+**About** — app info, version, diagnostics:
+
+![About](docs/assets/screenshots/about.png)
+
+**Log Viewer** — filtered, colorized, copyable:
+
+![Log Viewer](docs/assets/screenshots/logs.png)
+
 ## License
 
 [MIT](LICENSE)
