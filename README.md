@@ -41,7 +41,7 @@ Every feature users expect from a desktop app — menus, settings, crash recover
 Prerequisites: [Rust](https://rustup.rs/), [Node.js](https://nodejs.org/) (v18+), [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/)
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/ItsCodejac/tauri-app-starter-kit.git
 cd tauri-app-starter-kit
 npm install
 cargo tauri dev

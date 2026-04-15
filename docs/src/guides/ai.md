@@ -10,7 +10,7 @@ The plugin is not yet on crates.io. Add it as a git or path dependency in `src-t
 
 ```toml
 [dependencies]
-tauri-plugin-ai = { git = "https://github.com/youruser/tauri-plugin-ai" }
+tauri-plugin-ai = { git = "https://github.com/ItsCodejac/tauri-plugin-ai" }
 # Or for local development:
 # tauri-plugin-ai = { path = "../../tauri-plugin-ai" }
 ```
@@ -128,11 +128,11 @@ All API calls go through Rust (reqwest), not the browser. TASK's strict CSP does
 
 ```toml
 # Cloud only (default)
-tauri-plugin-ai = { git = "..." }
+tauri-plugin-ai = { git = "https://github.com/ItsCodejac/tauri-plugin-ai" }
 
 # Cloud + local ONNX
-tauri-plugin-ai = { git = "...", features = ["cloud", "local-onnx"] }
+tauri-plugin-ai = { git = "https://github.com/ItsCodejac/tauri-plugin-ai", features = ["cloud", "local-onnx"] }
 
 # ONNX only, no cloud
-tauri-plugin-ai = { git = "...", default-features = false, features = ["local-onnx"] }
+tauri-plugin-ai = { git = "https://github.com/ItsCodejac/tauri-plugin-ai", default-features = false, features = ["local-onnx"] }
 ```
