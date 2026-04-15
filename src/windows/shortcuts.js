@@ -106,9 +106,11 @@ function keysToDisplayParts(keys) {
  */
 function buildKeyCommandMap() {
   const map = {};
+  const hasActiveModifiers = activeModifiers.size > 0;
+
   for (const s of shortcuts) {
     if (s.keys.length === 0) continue;
-    // Extract modifiers and the main key from the binding
+
     const mods = new Set();
     let mainKey = null;
     for (const k of s.keys) {
@@ -120,19 +122,19 @@ function buildKeyCommandMap() {
     }
     if (!mainKey) continue;
 
-    // Check if the binding's modifiers match the active modifier toggles
-    let modsMatch = true;
-    for (const am of activeModifiers) {
-      if (!mods.has(am)) { modsMatch = false; break; }
+    if (hasActiveModifiers) {
+      // When modifiers are toggled: show only shortcuts that EXACTLY match
+      let modsMatch = true;
+      for (const am of activeModifiers) {
+        if (!mods.has(am)) { modsMatch = false; break; }
+      }
+      for (const m of mods) {
+        if (!activeModifiers.has(m)) { modsMatch = false; break; }
+      }
+      if (!modsMatch) continue;
     }
-    if (!modsMatch) continue;
-    // Also check no extra mods in the binding beyond active toggles
-    for (const m of mods) {
-      if (!activeModifiers.has(m)) { modsMatch = false; break; }
-    }
-    if (!modsMatch) continue;
+    // When NO modifiers toggled: show ALL assigned shortcuts (overview mode)
 
-    // Normalize key label for keyboard display
     const visualLabel = (bindingTokenToDisplay[mainKey] || mainKey).toUpperCase();
     if (!map[visualLabel]) map[visualLabel] = [];
     map[visualLabel].push(s.label);
