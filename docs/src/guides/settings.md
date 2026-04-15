@@ -28,6 +28,9 @@ All settings and their defaults are centralized in the `all_defaults()` function
 | `startup_behavior` | `string` | `"empty"` | Startup |
 | `tray.minimize_to_tray` | `boolean` | `false` | Tray |
 | `tray.show_icon` | `boolean` | `true` | Tray |
+| `font_size` | `string` | `"default"` | Appearance |
+| `reduce_motion` | `boolean` | `false` | Accessibility |
+| `high_contrast` | `boolean` | `false` | Accessibility |
 | `recent_files` | `string[]` | `[]` | Internal |
 
 ## Adding a New Setting

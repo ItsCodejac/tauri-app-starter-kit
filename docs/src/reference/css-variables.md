@@ -49,6 +49,25 @@ All custom properties are defined in `src/styles/shared.css` on `:root`. Utility
 | `--font-ui` | `-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif` | All UI text |
 | `--font-mono` | `'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace` | Code, shortcuts |
 
+## Color Scheme
+
+```css
+:root {
+  color-scheme: dark;
+}
+```
+
+The `color-scheme: dark` declaration tells the browser to render native controls (scrollbars, checkboxes, select dropdowns, date pickers, etc.) using their dark-mode appearance. Without this, native controls would appear in light mode even though the rest of the UI is dark.
+
+## Dynamic Variables
+
+These variables are set at runtime from user settings, not hardcoded in the stylesheet.
+
+| Variable | Source | Use |
+|----------|--------|-----|
+| `--font-size-base` | `font_size` setting | Base font size applied to `body`. Values map to: Small = `12px`, Default = `13px`, Large = `14px`, Extra Large = `16px`. |
+| `--reduce-motion` | `reduce_motion` setting | Used in conjunction with the `prefers-reduced-motion` media query to disable transitions and animations. |
+
 ## Base Styles
 
 Applied globally via `shared.css`:

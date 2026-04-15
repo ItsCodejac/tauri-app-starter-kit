@@ -118,6 +118,57 @@ import { ipc } from './lib/ipc.js';
 const theme = await ipc.getSetting('theme');
 ```
 
+## Color Scheme and Native Controls
+
+`shared.css` declares `color-scheme: dark` on `:root`. This instructs the browser to render all native form controls (scrollbars, checkboxes, select dropdowns, date pickers, color pickers, etc.) in their dark appearance. Without it, native controls would render in light mode, clashing with the dark UI.
+
+If you add a light theme, update the color-scheme accordingly:
+
+```css
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+```
+
+## Accessibility CSS Features
+
+### Reduced Motion
+
+The `reduce_motion` setting (boolean, default `false`) disables transitions and animations app-wide. When enabled, the app applies:
+
+```css
+@media (prefers-reduced-motion: reduce), [data-reduce-motion="true"] {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+```
+
+When adding new animations or transitions, always respect this setting. Use the `--reduce-motion` CSS variable or the `prefers-reduced-motion` media query.
+
+### High Contrast
+
+The `high_contrast` setting (boolean, default `false`) increases contrast for text and borders. When enabled, key adjustments include stronger border colors and brighter text values.
+
+## Font Size Customization
+
+The `font_size` setting controls the base font size for the entire app via the `--font-size-base` CSS variable:
+
+| Setting Value | CSS Value |
+|--------------|-----------|
+| `"small"` | `12px` |
+| `"default"` | `13px` |
+| `"large"` | `14px` |
+| `"extra-large"` | `16px` |
+
+The variable is set dynamically on `document.documentElement` when the setting changes. All text sizes derive from this base, so changing it scales the entire UI proportionally.
+
+```javascript
+// Applied automatically by the settings window
+document.documentElement.style.setProperty('--font-size-base', '14px');
+```
+
 ## Base Styles
 
 `shared.css` includes a full reset and base styles:

@@ -37,6 +37,9 @@ Persisted to `settings.json` via `tauri-plugin-store`.
 | `startup_behavior` | `string` | `"empty"` |
 | `tray.minimize_to_tray` | `boolean` | `false` |
 | `tray.show_icon` | `boolean` | `true` |
+| `font_size` | `string` | `"default"` |
+| `reduce_motion` | `boolean` | `false` |
+| `high_contrast` | `boolean` | `false` |
 | `recent_files` | `string[]` | `[]` |
 
 ## Autosave (`autosave.rs`)

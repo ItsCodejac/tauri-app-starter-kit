@@ -4,6 +4,7 @@
 tauri-app-starter-kit/
 ├── src/                          # Frontend (framework-agnostic)
 │   ├── main.js                   # Main window entry: branding, menu listeners, first-run, recovery
+│   ├── changelog.json            # Structured changelog data (version history for What's New window)
 │   ├── lib/
 │   │   ├── ipc.js                # IPC facade: typed wrappers for all invoke() calls + event listeners
 │   │   ├── window-utils.js       # Shared utilities for utility windows (close, branding, forms)

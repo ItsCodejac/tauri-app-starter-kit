@@ -27,10 +27,11 @@ src-tauri/src/
 
 src/
   main.js           # Main window entry (menu listeners, init)
+  changelog.json    # Structured changelog data (used by What's New window)
   lib/ipc.js        # IPC facade (wraps all invoke/listen calls)
-  lib/window-utils.js # Shared utilities for all windows
+  lib/window-utils.js # Shared utilities for all windows (close, branding, escape-to-close, file drop prevention)
   lib/branding.js   # App identity config (name, logo, colors)
-  styles/shared.css # Dark theme CSS variables + base styles
+  styles/shared.css # Dark theme CSS variables + base styles (color-scheme: dark, user-select: none)
   windows/*.html+js # Utility windows (splash, settings, shortcuts, etc.)
 ```
 
@@ -66,6 +67,12 @@ Add one line to `all_defaults()` in `settings.rs`:
 ```
 Automatically works in get_all_settings, reset_settings, and init.
 
+### Built-in Appearance & Accessibility Settings
+
+- `font_size` (string, default `"default"`) -- Small/Default/Large/Extra Large. Applied via `--font-size-base` CSS variable.
+- `reduce_motion` (boolean, default `false`) -- Disables animations app-wide.
+- `high_contrast` (boolean, default `false`) -- Increases contrast for better visibility.
+
 ## Adding a New Utility Window
 
 1. Create `src/windows/mywindow.html` + `src/windows/mywindow.js`
@@ -80,4 +87,22 @@ All utility windows read from this via `applyBranding()`.
 
 ## Keyboard Shortcuts
 
-Registry in `shortcuts.rs` with 10 IPC commands: get/set/remove/reset shortcuts, conflict detection, preset management. Interactive editor window with visual keyboard.
+Registry in `shortcuts.rs` with 10 IPC commands: get/set/remove/reset shortcuts, conflict detection, preset management. Interactive editor window with canvas-based keyboard visualization (not DOM elements). The shortcuts window is fixed-size (800x680, non-resizable) with a modifier toggle bar for filtering by Cmd/Shift/Alt/Ctrl, collapsible categories, right-click context menu to reset individual shortcuts, and record-search mode (press keys to search by binding). Command labels are displayed directly on assigned keys.
+
+## Window Utilities
+
+`window-utils.js` provides shared behavior for all utility windows:
+
+- **Escape-to-close:** `setupEscapeToClose()` wires the Escape key to close the current window.
+- **File drop prevention:** Prevents accidental file drops from navigating away from the window.
+- **Branding application:** Applies app name, logo, and accent color from `branding.js`.
+
+## CSS Conventions
+
+- `color-scheme: dark` in `shared.css` -- tells the browser to render native controls (scrollbars, form elements) in dark mode.
+- `user-select: none` by default on `body` -- prevents accidental text selection. Use `.selectable` class to override.
+- `--font-size-base` CSS variable -- dynamically set from the `font_size` setting.
+
+## Settings Window Navigation
+
+The settings sidebar supports arrow key navigation for keyboard-first interaction.
