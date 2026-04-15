@@ -5,6 +5,11 @@
    ========================================================================== */
 
 :root {
+  /* Tell the browser to render ALL native controls in dark mode.
+     This affects checkboxes, selects, scrollbars, color pickers,
+     date inputs, and any other native form element automatically. */
+  color-scheme: dark;
+
   /* Surfaces */
   --surface-base: #0d0d0d;
   --surface-primary: #1a1a1a;
