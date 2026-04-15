@@ -41,40 +41,44 @@ let contextMenuTarget = null;  // command_id for context menu
 // Keyboard layout definition
 // ---------------------------------------------------------------------------
 
-const keyboardRows = [
-  ['`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 'Delete'],
-  ['Tab', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']', '\\'],
-  ['Caps', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', "'", 'Return'],
-  ['Shift', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', 'Shift'],
-  ['Fn', 'Ctrl', 'Alt', 'Cmd', 'Space', 'Cmd', 'Alt', 'Left', 'Up', 'Down', 'Right'],
-];
+const keyboardRows = isMac
+  ? [
+    ['`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 'Delete'],
+    ['Tab', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']', '\\'],
+    ['Caps', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', "'", 'Return'],
+    ['Shift', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', 'Shift'],
+    ['Fn', 'Ctrl', 'Alt', 'Cmd', 'Space', 'Cmd', 'Alt', 'Left', 'Up', 'Down', 'Right'],
+  ]
+  : [
+    ['`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 'Bksp'],
+    ['Tab', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']', '\\'],
+    ['Caps', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', "'", 'Enter'],
+    ['Shift', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', 'Shift'],
+    ['Ctrl', 'Win', 'Alt', 'Space', 'Alt', 'Ctrl', 'Left', 'Up', 'Down', 'Right'],
+  ];
 
-const wideKeys = {
-  Delete: 'key-w-1-5', Tab: 'key-w-1-5',
-  Caps: 'key-w-1-8', Return: 'key-w-1-8',
-  Shift: 'key-w-2-2', Space: 'key-w-5',
-  Cmd: 'key-w-1-2',
-};
+const wideKeys = isMac
+  ? { Delete: 'key-w-1-5', Tab: 'key-w-1-5', Caps: 'key-w-1-8', Return: 'key-w-1-8', Shift: 'key-w-2-2', Space: 'key-w-5', Cmd: 'key-w-1-2' }
+  : { Bksp: 'key-w-1-5', Tab: 'key-w-1-5', Caps: 'key-w-1-8', Enter: 'key-w-1-8', Shift: 'key-w-2-2', Space: 'key-w-5', Ctrl: 'key-w-1-2' };
 
-const modifierKeyLabels = new Set(['Shift', 'Ctrl', 'Alt', 'Cmd', 'Caps', 'Fn']);
+const modifierKeyLabels = isMac
+  ? new Set(['Shift', 'Ctrl', 'Alt', 'Cmd', 'Caps', 'Fn'])
+  : new Set(['Shift', 'Ctrl', 'Alt', 'Win', 'Caps']);
 
 const arrowSymbols = { Left: '\u2190', Right: '\u2192', Up: '\u2191', Down: '\u2193' };
 
 // Map visual keyboard label -> the key token used in Rust bindings
-const keyToBindingToken = {
-  Cmd: 'CmdOrCtrl',
-  Ctrl: 'Ctrl',
-  Shift: 'Shift',
-  Alt: 'Alt',
-  Delete: 'Backspace',
-  Return: 'Enter',
-  Space: 'Space',
-  Tab: 'Tab',
-  Left: 'ArrowLeft',
-  Right: 'ArrowRight',
-  Up: 'ArrowUp',
-  Down: 'ArrowDown',
-};
+const keyToBindingToken = isMac
+  ? {
+    Cmd: 'CmdOrCtrl', Ctrl: 'Ctrl', Shift: 'Shift', Alt: 'Alt',
+    Delete: 'Backspace', Return: 'Enter', Space: 'Space', Tab: 'Tab',
+    Left: 'ArrowLeft', Right: 'ArrowRight', Up: 'ArrowUp', Down: 'ArrowDown',
+  }
+  : {
+    Ctrl: 'CmdOrCtrl', Win: 'Meta', Shift: 'Shift', Alt: 'Alt',
+    Bksp: 'Backspace', Enter: 'Enter', Space: 'Space', Tab: 'Tab',
+    Left: 'ArrowLeft', Right: 'ArrowRight', Up: 'ArrowUp', Down: 'ArrowDown',
+  };
 
 // Reverse: binding token -> visual label (for non-letter keys)
 const bindingTokenToDisplay = {};
@@ -151,43 +155,80 @@ const ctx = canvas.getContext('2d');
 const tooltipEl = document.getElementById('keyboard-tooltip');
 const keyboardSection = document.getElementById('keyboard-section');
 
-// Layout definition with width multipliers (all rows sum to 14.5u)
-const canvasRows = [
-  { keys: [
-    { label: '`', w: 1 }, { label: '1', w: 1 }, { label: '2', w: 1 },
-    { label: '3', w: 1 }, { label: '4', w: 1 }, { label: '5', w: 1 },
-    { label: '6', w: 1 }, { label: '7', w: 1 }, { label: '8', w: 1 },
-    { label: '9', w: 1 }, { label: '0', w: 1 }, { label: '-', w: 1 },
-    { label: '=', w: 1 }, { label: 'Delete', w: 1.5 }
-  ]},
-  { keys: [
-    { label: 'Tab', w: 1.5 }, { label: 'Q', w: 1 }, { label: 'W', w: 1 },
-    { label: 'E', w: 1 }, { label: 'R', w: 1 }, { label: 'T', w: 1 },
-    { label: 'Y', w: 1 }, { label: 'U', w: 1 }, { label: 'I', w: 1 },
-    { label: 'O', w: 1 }, { label: 'P', w: 1 }, { label: '[', w: 1 },
-    { label: ']', w: 1 }, { label: '\\', w: 1 }
-  ]},
-  { keys: [
-    { label: 'Caps', w: 1.75 }, { label: 'A', w: 1 }, { label: 'S', w: 1 },
-    { label: 'D', w: 1 }, { label: 'F', w: 1 }, { label: 'G', w: 1 },
-    { label: 'H', w: 1 }, { label: 'J', w: 1 }, { label: 'K', w: 1 },
-    { label: 'L', w: 1 }, { label: ';', w: 1 }, { label: "'", w: 1 },
-    { label: 'Return', w: 1.75 }
-  ]},
-  { keys: [
-    { label: 'Shift', w: 2.25 }, { label: 'Z', w: 1 }, { label: 'X', w: 1 },
-    { label: 'C', w: 1 }, { label: 'V', w: 1 }, { label: 'B', w: 1 },
-    { label: 'N', w: 1 }, { label: 'M', w: 1 }, { label: ',', w: 1 },
-    { label: '.', w: 1 }, { label: '/', w: 1 }, { label: 'Shift', w: 2.25 }
-  ]},
-  { keys: [
-    { label: 'Fn', w: 1 }, { label: 'Ctrl', w: 1 }, { label: 'Alt', w: 1.25 },
-    { label: 'Cmd', w: 1.25 }, { label: 'Space', w: 5.0 },
-    { label: 'Cmd', w: 1.25 }, { label: 'Alt', w: 1.25 },
-    { label: 'Left', w: 1 }, { label: 'Up', w: 1 },
-    { label: 'Down', w: 1 }, { label: 'Right', w: 1 }
-  ]}
-];
+// Layout definition with width multipliers (all rows sum to ~14.5u)
+const canvasRows = isMac
+  ? [
+    { keys: [
+      { label: '`', w: 1 }, { label: '1', w: 1 }, { label: '2', w: 1 },
+      { label: '3', w: 1 }, { label: '4', w: 1 }, { label: '5', w: 1 },
+      { label: '6', w: 1 }, { label: '7', w: 1 }, { label: '8', w: 1 },
+      { label: '9', w: 1 }, { label: '0', w: 1 }, { label: '-', w: 1 },
+      { label: '=', w: 1 }, { label: 'Delete', w: 1.5 }
+    ]},
+    { keys: [
+      { label: 'Tab', w: 1.5 }, { label: 'Q', w: 1 }, { label: 'W', w: 1 },
+      { label: 'E', w: 1 }, { label: 'R', w: 1 }, { label: 'T', w: 1 },
+      { label: 'Y', w: 1 }, { label: 'U', w: 1 }, { label: 'I', w: 1 },
+      { label: 'O', w: 1 }, { label: 'P', w: 1 }, { label: '[', w: 1 },
+      { label: ']', w: 1 }, { label: '\\', w: 1 }
+    ]},
+    { keys: [
+      { label: 'Caps', w: 1.75 }, { label: 'A', w: 1 }, { label: 'S', w: 1 },
+      { label: 'D', w: 1 }, { label: 'F', w: 1 }, { label: 'G', w: 1 },
+      { label: 'H', w: 1 }, { label: 'J', w: 1 }, { label: 'K', w: 1 },
+      { label: 'L', w: 1 }, { label: ';', w: 1 }, { label: "'", w: 1 },
+      { label: 'Return', w: 1.75 }
+    ]},
+    { keys: [
+      { label: 'Shift', w: 2.25 }, { label: 'Z', w: 1 }, { label: 'X', w: 1 },
+      { label: 'C', w: 1 }, { label: 'V', w: 1 }, { label: 'B', w: 1 },
+      { label: 'N', w: 1 }, { label: 'M', w: 1 }, { label: ',', w: 1 },
+      { label: '.', w: 1 }, { label: '/', w: 1 }, { label: 'Shift', w: 2.25 }
+    ]},
+    { keys: [
+      { label: 'Fn', w: 1 }, { label: 'Ctrl', w: 1 }, { label: 'Alt', w: 1.25 },
+      { label: 'Cmd', w: 1.25 }, { label: 'Space', w: 5.0 },
+      { label: 'Cmd', w: 1.25 }, { label: 'Alt', w: 1.25 },
+      { label: 'Left', w: 1 }, { label: 'Up', w: 1 },
+      { label: 'Down', w: 1 }, { label: 'Right', w: 1 }
+    ]}
+  ]
+  : [
+    { keys: [
+      { label: '`', w: 1 }, { label: '1', w: 1 }, { label: '2', w: 1 },
+      { label: '3', w: 1 }, { label: '4', w: 1 }, { label: '5', w: 1 },
+      { label: '6', w: 1 }, { label: '7', w: 1 }, { label: '8', w: 1 },
+      { label: '9', w: 1 }, { label: '0', w: 1 }, { label: '-', w: 1 },
+      { label: '=', w: 1 }, { label: 'Bksp', w: 1.5 }
+    ]},
+    { keys: [
+      { label: 'Tab', w: 1.5 }, { label: 'Q', w: 1 }, { label: 'W', w: 1 },
+      { label: 'E', w: 1 }, { label: 'R', w: 1 }, { label: 'T', w: 1 },
+      { label: 'Y', w: 1 }, { label: 'U', w: 1 }, { label: 'I', w: 1 },
+      { label: 'O', w: 1 }, { label: 'P', w: 1 }, { label: '[', w: 1 },
+      { label: ']', w: 1 }, { label: '\\', w: 1 }
+    ]},
+    { keys: [
+      { label: 'Caps', w: 1.75 }, { label: 'A', w: 1 }, { label: 'S', w: 1 },
+      { label: 'D', w: 1 }, { label: 'F', w: 1 }, { label: 'G', w: 1 },
+      { label: 'H', w: 1 }, { label: 'J', w: 1 }, { label: 'K', w: 1 },
+      { label: 'L', w: 1 }, { label: ';', w: 1 }, { label: "'", w: 1 },
+      { label: 'Enter', w: 1.75 }
+    ]},
+    { keys: [
+      { label: 'Shift', w: 2.25 }, { label: 'Z', w: 1 }, { label: 'X', w: 1 },
+      { label: 'C', w: 1 }, { label: 'V', w: 1 }, { label: 'B', w: 1 },
+      { label: 'N', w: 1 }, { label: 'M', w: 1 }, { label: ',', w: 1 },
+      { label: '.', w: 1 }, { label: '/', w: 1 }, { label: 'Shift', w: 2.25 }
+    ]},
+    { keys: [
+      { label: 'Ctrl', w: 1.25 }, { label: 'Win', w: 1 }, { label: 'Alt', w: 1.25 },
+      { label: 'Space', w: 5.5 },
+      { label: 'Alt', w: 1.25 }, { label: 'Ctrl', w: 1.25 },
+      { label: 'Left', w: 1 }, { label: 'Up', w: 1 },
+      { label: 'Down', w: 1 }, { label: 'Right', w: 1 }
+    ]}
+  ];
 
 // Fixed key dimensions
 const KEY_UNIT = 50;   // 1u key width in px

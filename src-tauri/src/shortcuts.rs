@@ -264,6 +264,10 @@ pub fn set_shortcut(
     command_id: String,
     keys: Vec<String>,
 ) -> Result<(), String> {
+    // Deduplicate keys while preserving order (e.g. user accidentally sends CmdOrCtrl twice)
+    let mut seen = std::collections::HashSet::new();
+    let keys: Vec<String> = keys.into_iter().filter(|k| seen.insert(k.clone())).collect();
+
     let mut registry = state.0.lock().unwrap_or_else(|e| e.into_inner());
     with_active_preset(&mut registry, |preset| {
         let binding = preset

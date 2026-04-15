@@ -40,8 +40,15 @@ export function setupCloseOnFocusLoss() {
 
 /** Apply branding and user preferences to the current window. */
 export function applyBranding(options = {}) {
-  // Accent color CSS variable
+  // Accent color CSS variable + dim variant
   document.documentElement.style.setProperty('--accent-blue', branding.accentColor);
+  const hex = branding.accentColor;
+  if (hex && hex.length >= 7) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    document.documentElement.style.setProperty('--accent-blue-dim', `rgba(${r},${g},${b},0.15)`);
+  }
 
   // Load font size and accessibility settings
   invoke('get_all_settings').then(settings => {

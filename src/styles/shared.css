@@ -35,7 +35,9 @@
   --accent-blue: #4a9eff;
   --accent-blue-dim: rgba(74, 158, 255, 0.15);
   --accent-green: #4caf50;
+  --accent-green-dim: rgba(76, 175, 80, 0.2);
   --accent-orange: #ff9800;
+  --accent-orange-dim: rgba(255, 152, 0, 0.2);
   --accent-red: #f44336;
 
   /* Fonts */
@@ -151,7 +153,7 @@ button.primary {
   height: 32px;
   background: var(--accent-blue);
   border-color: var(--accent-blue);
-  color: #fff;
+  color: var(--text-bright);
   font-weight: 600;
   line-height: 30px;
 }

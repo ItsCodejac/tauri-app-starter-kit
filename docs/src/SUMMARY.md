@@ -24,6 +24,7 @@
 - [Auto-Updater](./guides/updater.md)
 - [Secure Storage](./guides/keyring.md)
 - [Theming](./guides/theming.md)
+- [Removing Features](./guides/removing-features.md)
 - [Shipping Your App](./guides/shipping.md)
 - [AI Integration](./guides/ai.md)
 

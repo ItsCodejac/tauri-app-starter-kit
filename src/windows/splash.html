@@ -4,12 +4,19 @@
   <meta charset="UTF-8" />
   <title>Loading</title>
   <style>
-    /* All inline for instant render — no external deps */
+    /*
+     * All inline for instant render — no external CSS deps.
+     * These values match shared.css defaults. If you change shared.css, update these too.
+     *   --surface-base: #0d0d0d  --surface-hover: #333
+     *   --text-primary: #e0e0e0  --text-bright: #fff
+     *   --text-secondary: #999   --text-tertiary: #666
+     *   --accent-blue: #4a9eff   --border-emphasis: #555
+     */
     :root { color-scheme: dark; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: #0d0d0d;
-      color: #e0e0e0;
+      background: #0d0d0d; /* --surface-base */
+      color: #e0e0e0; /* --text-primary */
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       display: flex;
       flex-direction: column;
@@ -23,9 +30,9 @@
     .logo {
       width: 64px; height: 64px;
       border-radius: 14px;
-      background: #4a9eff;
+      background: #4a9eff; /* --accent-blue */
       display: flex; align-items: center; justify-content: center;
-      font-size: 28px; font-weight: 700; color: white;
+      font-size: 28px; font-weight: 700; color: #fff; /* --text-bright */
       margin-bottom: 16px;
       animation: pulse 2s ease-in-out infinite;
     }
@@ -34,13 +41,13 @@
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.02); }
     }
-    .name { font-size: 20px; font-weight: 600; color: white; margin-bottom: 4px; }
-    .tagline { font-size: 12px; color: #999; margin-bottom: 4px; }
-    .version { font-size: 12px; color: #666; margin-bottom: 24px; }
-    .status { font-size: 11px; color: #666; margin-bottom: 12px; min-height: 16px; }
-    .progress { width: 200px; height: 2px; background: #333; border-radius: 1px; overflow: hidden; }
+    .name { font-size: 20px; font-weight: 600; color: #fff; /* --text-bright */ margin-bottom: 4px; }
+    .tagline { font-size: 12px; color: #999; /* --text-secondary */ margin-bottom: 4px; }
+    .version { font-size: 12px; color: #666; /* --text-tertiary */ margin-bottom: 24px; }
+    .status { font-size: 11px; color: #666; /* --text-tertiary */ margin-bottom: 12px; min-height: 16px; }
+    .progress { width: 200px; height: 2px; background: #333; /* --surface-hover */ border-radius: 1px; overflow: hidden; }
     .progress-bar {
-      height: 100%; background: #4a9eff; width: 30%;
+      height: 100%; background: #4a9eff; /* --accent-blue */ width: 30%;
       animation: loading 1.5s ease-in-out infinite;
     }
     @keyframes loading {
@@ -49,7 +56,7 @@
     }
     .copyright {
       position: absolute; bottom: 12px;
-      font-size: 10px; color: #555;
+      font-size: 10px; color: #555; /* --border-emphasis */
     }
   </style>
 </head>
