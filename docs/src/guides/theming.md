@@ -209,3 +209,13 @@ document.documentElement.style.setProperty('--font-size-base', '14px');
 | `.flex`, `.flex-col`, `.flex-1` | Flexbox helpers |
 | `.items-center`, `.justify-between`, `.justify-center` | Alignment |
 | `.gap-4`, `.gap-8`, `.gap-12`, `.gap-16` | 4px / 8px / 12px / 16px gap |
+
+## Cross-Platform CSS Normalization
+
+TASK includes a basic cross-platform CSS reset in `shared.css`. For more comprehensive normalization across WebKit (macOS/Linux) and Chromium (Windows) webviews, consider using [tauri-plugin-normalize](https://github.com/ItsCodejac/tauri-plugin-normalize):
+
+```toml
+tauri-plugin-normalize = { git = "https://github.com/ItsCodejac/tauri-plugin-normalize" }
+```
+
+The plugin auto-injects normalizing CSS on every page load and adds platform classes (`.webview-webkit` or `.webview-chromium`) for targeted styling.
