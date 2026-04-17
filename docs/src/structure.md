@@ -55,7 +55,7 @@ Each `.rs` file in `src-tauri/src/` has a single responsibility:
 | File | Purpose |
 |------|---------|
 | `main.rs` | Binary entry point. Calls `app_lib::run()`. |
-| `lib.rs` | Wires everything together: registers 17 plugins, IPC handlers, menu, managed state, splash-to-main window transition, quit confirmation, and cleanup. |
+| `lib.rs` | Wires everything together: registers 18 plugins, IPC handlers, menu, managed state, splash-to-main window transition, quit confirmation, and cleanup. |
 | `menu.rs` | Declarative menu system. Define menus as data (`MenuConfig` / `MenuDef`), the builder turns them into native menus. Events auto-forward to the frontend as `menu:{category}:{action}`. Includes dynamic menu state commands (`menu_set_enabled`, `menu_set_checked`, `menu_set_label`). |
 | `commands.rs` | General IPC commands: native open/save dialogs, app info (name, version, paths), opening external URLs, reading log file contents, and opening bundled docs. |
 | `settings.rs` | Persistent key-value settings using `tauri-plugin-store`. Centralizes all defaults in `all_defaults()`. Exposes `get_setting`, `set_setting`, `get_all_settings`, `reset_settings`. |
@@ -88,6 +88,7 @@ Each `.rs` file in `src-tauri/src/` has a single responsibility:
 | `tauri-plugin-autostart` | Launch at login |
 | `tauri-plugin-updater` | Auto-update (commented out until configured) |
 | `tauri-plugin-keyring` | OS keychain access |
+| `tauri-plugin-normalize` | Cross-platform CSS normalization (WebKit/Chromium) |
 | `tauri-plugin-log` | Structured logging to file |
 
 ## Frontend

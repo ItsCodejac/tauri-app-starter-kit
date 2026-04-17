@@ -212,10 +212,6 @@ document.documentElement.style.setProperty('--font-size-base', '14px');
 
 ## Cross-Platform CSS Normalization
 
-TASK includes a basic cross-platform CSS reset in `shared.css`. For more comprehensive normalization across WebKit (macOS/Linux) and Chromium (Windows) webviews, consider using [tauri-plugin-normalize](https://github.com/ItsCodejac/tauri-plugin-normalize):
+TASK includes [tauri-plugin-normalize](https://github.com/ItsCodejac/tauri-plugin-normalize), which auto-injects normalizing CSS on every page load and adds platform classes (`.webview-webkit` or `.webview-chromium`) to the `<html>` element for targeted styling.
 
-```toml
-tauri-plugin-normalize = { git = "https://github.com/ItsCodejac/tauri-plugin-normalize" }
-```
-
-The plugin auto-injects normalizing CSS on every page load and adds platform classes (`.webview-webkit` or `.webview-chromium`) for targeted styling.
+The plugin handles box-sizing, font rendering, line-height normalization, form control font inheritance, table border-color, search input appearance, placeholder opacity, and reduced motion. `shared.css` only contains TASK-specific styles (surfaces, accents, scrollbar theming, buttons, inputs, etc.) without duplicating the normalization layer.

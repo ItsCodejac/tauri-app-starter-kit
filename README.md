@@ -17,6 +17,7 @@ Every feature users expect from a desktop app — menus, settings, crash recover
 - Single instance lock — focus existing window on relaunch
 - Window state persistence — size, position, maximized
 - Recent files, native notifications, autostart, secure keyring
+- Cross-platform CSS normalization — WebKit/Chromium consistency via tauri-plugin-normalize
 - Browser shortcut prevention, file dialogs, quit confirmation
 - Security hardened — CSP, scoped asset protocol, URL scheme validation
 - Accessibility — font size control, high contrast, reduced motion, ARIA labels, keyboard navigation
@@ -34,7 +35,7 @@ Every feature users expect from a desktop app — menus, settings, crash recover
 
 **Zero framework dependency.** Utility windows use `window.__TAURI__` globals — no npm packages required for the infrastructure. Works with React, Svelte, Vue, Solid, Leptos, or vanilla JS.
 
-**16 Tauri plugins integrated.**
+**17 Tauri plugins integrated.**
 
 ## Quick Start
 

@@ -16,7 +16,7 @@ npm install
 cargo tauri dev
 ```
 
-On first launch, a branded splash screen appears for 3 seconds while settings initialize. Then the main window opens showing a welcome page with interactive buttons that let you try every utility window.
+On first launch, a branded splash screen appears for 3 seconds while settings initialize. Then the main window opens showing a welcome page with interactive buttons that let you try every utility window. Cross-platform CSS normalization is handled automatically by `tauri-plugin-normalize`, which injects consistent styles across WebKit and Chromium webviews on every page load.
 
 ## What happens on first launch
 

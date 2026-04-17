@@ -91,6 +91,7 @@ dependencies = [
  "tauri-plugin-fs",
  "tauri-plugin-keyring",
  "tauri-plugin-log",
+ "tauri-plugin-normalize",
  "tauri-plugin-notification",
  "tauri-plugin-opener",
  "tauri-plugin-os",
@@ -4987,6 +4988,16 @@ dependencies = [
  "tauri-plugin",
  "thiserror 2.0.18",
  "time",
+]
+
+[[package]]
+name = "tauri-plugin-normalize"
+version = "0.1.0"
+dependencies = [
+ "log",
+ "serde",
+ "tauri",
+ "tauri-plugin",
 ]
 
 [[package]]

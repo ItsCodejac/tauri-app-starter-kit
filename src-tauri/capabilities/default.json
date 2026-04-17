@@ -63,6 +63,7 @@
     "core:window:allow-set-always-on-top",
     "keyring:default",
     "keyring:allow-set-password",
-    "keyring:allow-delete-password"
+    "keyring:allow-delete-password",
+    "normalize:default"
   ]
 }

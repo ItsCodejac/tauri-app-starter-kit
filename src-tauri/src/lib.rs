@@ -68,6 +68,7 @@ pub fn run() {
 
     tauri::Builder::default()
         // -- Plugins --
+        .plugin(tauri_plugin_normalize::init())
         .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
             // Focus the existing window when a second instance tries to launch
             if let Some(w) = app.get_webview_window("main") {

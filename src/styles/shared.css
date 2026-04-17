@@ -49,36 +49,14 @@
   --reduce-motion: 0; /* set to 1 to disable animations */
 }
 
-/* ---------- Cross-Platform Reset ---------- */
-/* Normalizes WebKit (macOS/Linux) vs Chromium (Windows) differences */
+/* Cross-platform normalization handled by tauri-plugin-normalize */
 
 *,
 *::before,
 *::after {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
 }
-
-/* Consistent font rendering across engines */
-body {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-}
-
-/* Normalize line-height across WebKit/Chromium */
-html { line-height: 1.15; -webkit-text-size-adjust: 100%; }
-
-/* Remove default button/input styles that differ between engines */
-button, input, select, textarea {
-  font-family: inherit;
-  font-size: inherit;
-  line-height: inherit;
-}
-
-/* Consistent table rendering */
-table { border-collapse: collapse; border-spacing: 0; }
 
 /* Standard scrollbar styling fallback for non-WebKit engines */
 @supports not selector(::-webkit-scrollbar) {

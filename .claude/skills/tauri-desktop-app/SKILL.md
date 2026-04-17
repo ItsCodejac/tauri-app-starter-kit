@@ -99,6 +99,7 @@ Registry in `shortcuts.rs` with 10 IPC commands: get/set/remove/reset shortcuts,
 
 ## CSS Conventions
 
+- Cross-platform normalization is handled by `tauri-plugin-normalize` (registered first in `lib.rs`). It injects CSS on every page load for box-sizing, font rendering, form controls, and adds `.webview-webkit` / `.webview-chromium` classes to `<html>`.
 - `color-scheme: dark` in `shared.css` -- tells the browser to render native controls (scrollbars, form elements) in dark mode.
 - `user-select: none` by default on `body` -- prevents accidental text selection. Use `.selectable` class to override.
 - `--font-size-base` CSS variable -- dynamically set from the `font_size` setting.
