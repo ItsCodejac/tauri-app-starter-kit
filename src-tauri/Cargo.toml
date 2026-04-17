@@ -48,4 +48,4 @@ tauri-plugin-clipboard-manager = "2"
 tauri-plugin-autostart = "2"
 tauri-plugin-updater = "2"
 tauri-plugin-keyring = "0.1"
-tauri-plugin-normalize = { path = "../../tauri-plugin-normalize" }
+tauri-plugin-normalize = { git = "https://github.com/ItsCodejac/tauri-plugin-normalize" }
